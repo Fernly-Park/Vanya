@@ -1,8 +1,8 @@
 import { registerActivity } from "../../src/models/activityModel";
-import {setupDatabaseForTests} from '../fixtures/db';
 import db from '../../src/modules/database/db';
 import { IActivity } from "../../src/interfaces/iActivity.model";
 import { ActivityTable } from '../../src/modules/database/activityTable.model';
+import { setupDatabaseForTests } from "@Tests/fixtures/db";
 
 describe('create activity in db', () => {
     

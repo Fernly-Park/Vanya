@@ -4,10 +4,9 @@ import loadLogging from './loadLogging';
 import activitiesRouter from '../controllers/activityController';
 import handleError from '../errors/errorHandler';
 import * as logger from '../modules/logging';
-import { isAString } from '../utils/stringUtils';
 
 export default async (app: express.Express): Promise<void> => {
-    
+
     loadLogging(app);
     app.use(express.json());
     app.use('/api/activities', activitiesRouter);

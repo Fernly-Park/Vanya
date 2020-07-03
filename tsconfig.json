@@ -9,6 +9,8 @@
       "outDir": "dist",
       "baseUrl": ".",
       "paths": {
+          "@App/*": ["src/*"],
+          "@Tests/*": ["tests/*"],
           "*": [
               "node_modules/*"
           ]

@@ -9,4 +9,8 @@ module.exports = {
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"
     },
+    moduleNameMapper: {
+      '^@App/(.*)$': '<rootDir>/src/$1',
+      '^@Tests/(.*)$': '<rootDir>/tests/$1'
+    }
   }
