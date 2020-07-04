@@ -3,14 +3,23 @@ import * as logger from '../modules/logging';
 import { IActivity } from '../interfaces/iActivity.model';
 import { ActivityTable } from '../modules/database/activityTable.model';
 
-export const registerActivity = async (activity: IActivity): Promise<void> => {
-    if (!activity || !activity.name || typeof activity.name !== 'string' || activity.name)
-    logger.logDebug(`registering activity '${activity.name}'`);
+export const insertActivity = async (activityName: string): Promise<void> => {
+    logger.logDebug(`registering activity '${activityName}'`);
     try {
-        await db('activities').insert({[ActivityTable.nameColumn]: activity.name});
-        logger.logInfo(`activity '${activity.name}' registered`);
+        await db(ActivityTable.tableName).insert({[ActivityTable.nameColumn]: activityName});
+        logger.logInfo(`activity '${activityName}' registered`);
     } catch (err) {
-        logger.logError(`Unable to register activity '${activity.name}'`);
+        logger.logError(`Unable to register activity '${activityName}'`);
         throw err;
     }
 };
+
+export const selectActivityByName = async(activityName: string): Promise<IActivity> => {
+    logger.logDebug(`selecting activity '${activityName}'`);
+
+    try {
+        return await db<IActivity>(ActivityTable.tableName).where(ActivityTable.nameColumn, activityName).first();
+    } catch (err) {
+        logger.logError(`Unable to select activity '${activityName}'`);
+    }
+}
