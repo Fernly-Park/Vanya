@@ -17,6 +17,7 @@ module.exports = {
   ],
   "rules": {
     "no-control-regex": 0,
-    "jest/no-hooks": 0
+    "jest/no-hooks": 0,
+    "jest/require-to-throw-message": 0
   }
 };
