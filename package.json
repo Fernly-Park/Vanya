@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "env-cmd -f ./config/dev.env nodemon -e js,msj,json,ts --watch src/**/*.ts --exec  ts-node  -r tsconfig-paths/register src/bin/www   | pino-pretty",
-    "test": "env-cmd -f ./config/test.env jest"
+    "test": "env-cmd -f ./config/test.env jest -i "
   },
   "jest": {
     "testEnvironment": "node"
