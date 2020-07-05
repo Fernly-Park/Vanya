@@ -1,4 +1,4 @@
-import { insertActivity, selectActivityByName } from "../../src/models/activityModel"; 
+import * as ActivityModel from "../../src/models/activityModel"; 
 import db from '../../src/modules/database/db';
 import { IActivity } from "../../src/interfaces/iActivity.model";
 import { ActivityTable } from '../../src/modules/database/activityTable.model';
@@ -10,45 +10,88 @@ describe('create activity in db', () => {
         await setupDatabaseForTests();
     });
     it('correctly create an activity', async () => {
-        expect.assertions(2);
-        
-        await insertActivity('test');
+        expect.assertions(3);
+        const activtyArn = '999999999999:test';
+        const activityName = 'test';
+        await ActivityModel.insertActivity(activtyArn, activityName);
+
         const result = await db.select<IActivity[]>().table(ActivityTable.tableName);
 
         expect(result).toHaveLength(1);
-        expect(result[0].name).toBe('test');
+        expect(result[0].arn).toBe(activtyArn);
+        expect(result[0].name).toBe(activityName);
     });
 
-    it('throws an exception when given an empty activity name', async () => {
+    it('throws an exception when given an undefined activity name', async () => {
         expect.assertions(1);
         
-        await expect(insertActivity(undefined)).rejects.toThrow();
+        await expect(ActivityModel.insertActivity('999999999999:test', undefined)).rejects.toThrow();
+    });
+
+    it('throws an exception when given an undefined activity arn', async () => {
+        expect.assertions(1);
+        
+        await expect(ActivityModel.insertActivity(undefined, 'test')).rejects.toThrow();
     });
 });
 
 describe('select activity from db', () => {
+
     beforeEach(async () => {
         await setupDatabaseForTests();
     });
-
-    it('should select an existing activity', async () => {
-        expect.assertions(3);
+    
+    const cases = [[ActivityModel.selectActivityByName, 'name'], [ActivityModel.selectActivityByArn, '999999999999:name']];
+    it.each(cases)('should select an existing activity', async (selectFunction: ((resource: string) => Promise<IActivity>), resource: string) => {
+        expect.assertions(4);
 
         const activityName = 'name';
+        const activityArn = '999999999999:name';
 
-        await db(ActivityTable.tableName).insert({[ActivityTable.nameColumn]: activityName});
-        const activity = await selectActivityByName(activityName);
+        await db(ActivityTable.tableName).insert({
+            [ActivityTable.arnColumn]: activityArn,
+            [ActivityTable.nameColumn]: activityName
+        });
+        const activity = await selectFunction(resource);
         
         expect(activity.id).toBeGreaterThan(0);
         expect(activity.name).toBe(activityName);
-        expect(activity.createdAt).toBeDefined();
+        expect(activity.arn).toBe(activityArn);
+        expect(activity.creationDate).toBeDefined();
     });
 
-    it('should return undefined when selecting an unexisting activity', async () => {
+    it.each([ActivityModel.selectActivityByName, ActivityModel.selectActivityByArn])('should return undefined when selecting an unexisting activity', async (selectFunction) => {
         expect.assertions(1);
 
-        const activity = await selectActivityByName('unexistingActivity');
+        const activity = await selectFunction('unexistingActivity');
 
         expect(activity).toBeUndefined();
     });
 })
+
+describe('delete activity from db', () => {
+    const activityName = 'test';
+    const activityArn = '999999999999:test'
+
+    beforeEach(async () => {
+        await setupDatabaseForTests();
+        await db(ActivityTable.tableName).insert({
+            [ActivityTable.arnColumn]: activityArn,
+            [ActivityTable.nameColumn]: activityName
+        });
+    });
+
+    it.only('should correctly delete the activity', async () => {
+        expect.assertions(4);
+        const retrieveAllActivities = async () => await db.select<IActivity[]>().table(ActivityTable.tableName)
+        const activitiesBeforeDeletion = await retrieveAllActivities();
+        const result = await ActivityModel.deleteActivityByArn(activityArn);
+        const activitiesAfterDeletion = await retrieveAllActivities();
+
+        expect(activitiesBeforeDeletion).toHaveLength(1);
+        expect(activitiesBeforeDeletion[0].arn).toBe(activityArn);
+        expect(activitiesBeforeDeletion[0].name).toBe(activityName);
+
+        expect(activitiesAfterDeletion).toHaveLength(0);
+    });
+});

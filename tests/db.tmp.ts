@@ -11,11 +11,11 @@ describe('ensuring that the setted up database is correct', () => {
         const activitiesTableExists = await db.schema.hasTable(activitiesTableName);
         const hasIdColumn = await db.schema.hasColumn(activitiesTableName, 'id');
         const hasNameColumn = await db.schema.hasColumn(activitiesTableName, 'name')
-        const hasCreatedAtColumn = await db.schema.hasColumn(activitiesTableName, 'created_at')
+        const hasCreationDateColumn = await db.schema.hasColumn(activitiesTableName, 'created_at')
 
         expect(activitiesTableExists).toBe(true);
         expect(hasIdColumn).toBe(true);
         expect(hasNameColumn).toBe(true);
-        expect(hasCreatedAtColumn).toBe(true);
+        expect(hasCreationDateColumn).toBe(true);
     });
 });

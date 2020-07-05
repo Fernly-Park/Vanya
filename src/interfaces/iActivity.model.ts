@@ -1,5 +1,6 @@
 export interface IActivity {
     id: number
+    arn: string;
     name: string;
-    createdAt: Date;
+    creationDate: Date;
 }

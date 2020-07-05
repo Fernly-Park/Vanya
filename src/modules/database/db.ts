@@ -23,8 +23,9 @@ export const setupDatabase = async (): Promise<void> => {
         logInfo('Creating activity table');
         await db.schema.createTable(ActivityTable.tableName, (tableBuilder: knex.CreateTableBuilder): void => {
             tableBuilder.increments();
+            tableBuilder.string(ActivityTable.arnColumn).notNullable().unique().index();
             tableBuilder.string(ActivityTable.nameColumn).notNullable().unique().index();
-            tableBuilder.timestamp(ActivityTable.createdAtColumn).notNullable().defaultTo(db.fn.now());
+            tableBuilder.timestamp(ActivityTable.creationDateColumn).notNullable().defaultTo(db.fn.now());
         });
     }
 }

@@ -3,23 +3,46 @@ import * as logger from '../modules/logging';
 import { IActivity } from '../interfaces/iActivity.model';
 import { ActivityTable } from '../modules/database/activityTable.model';
 
-export const insertActivity = async (activityName: string): Promise<void> => {
-    logger.logDebug(`registering activity '${activityName}'`);
+export const insertActivity = async (activityArn: string, activityName: string): Promise<void> => {
+    logger.logDebug(`registering activity '${activityArn}'`);
     try {
-        await db(ActivityTable.tableName).insert({[ActivityTable.nameColumn]: activityName});
-        logger.logInfo(`activity '${activityName}' registered`);
+        await db(ActivityTable.tableName).insert({
+            [ActivityTable.arnColumn]: activityArn,
+            [ActivityTable.nameColumn]: activityName
+        });
+        logger.logInfo(`activity '${activityArn}' registered`);
     } catch (err) {
-        logger.logError(`Unable to register activity '${activityName}'`);
+        logger.logError(`Unable to register activity '${activityArn}'`);
         throw err;
     }
 };
 
-export const selectActivityByName = async(activityName: string): Promise<IActivity> => {
-    logger.logDebug(`selecting activity '${activityName}'`);
-
+export const deleteActivityByArn = async (activityArn: string): Promise<void> => {
+    logger.logDebug(`deleting activity '${activityArn}'`);
     try {
-        return await db<IActivity>(ActivityTable.tableName).where(ActivityTable.nameColumn, activityName).first();
+        const result = await db(ActivityTable.tableName)
+        .where(ActivityTable.arnColumn, activityArn)
+        .delete();
+
+        console.log(result);
     } catch (err) {
-        logger.logError(`Unable to select activity '${activityName}'`);
+        logger.logError(`Unable to delete activity '${activityArn}'`);
     }
 }
+
+export const selectActivityByName = async(activityName: string): Promise<IActivity> => {
+    return await selectActivityBy(ActivityTable.nameColumn, activityName);
+};
+
+export const selectActivityByArn = async(activityArn: string): Promise<IActivity> => {
+    return await selectActivityBy(ActivityTable.arnColumn, activityArn);
+};
+
+const selectActivityBy = async (column: ActivityTable, ressource: string): Promise<IActivity> => {
+    try {
+        return await db<IActivity>(ActivityTable.tableName).where(column, ressource).first();
+    } catch (err) {
+        logger.logError(`Unable to select activity with column '${column}' equal to '${ressource}'`);
+    }
+};
+

@@ -20,7 +20,7 @@ describe('create activities service', () => {
         expect(createdActivity.name).toBe(activityName);
         expect(activityFromDb.name).toBe(activityName);
         expect(createdActivity.id).toBe(activityFromDb.id);
-        expect(createdActivity.createdAt).toStrictEqual(activityFromDb.createdAt);
+        expect(createdActivity.creationDate).toStrictEqual(activityFromDb.creationDate);
     });
 
     const badActivityNameCases = ["", " ", "   ", "<", ">", "{", "}", "[", "]", "*", "?", "\"", "#", "%", "\\", "^", "|", "~", "`", "$", "&", ",", ";", ":", "/"]
