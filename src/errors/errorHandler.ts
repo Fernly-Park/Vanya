@@ -1,8 +1,8 @@
 import * as logger from '../modules/logging';
 import {BaseError} from '../errors/customErrors';
 
-const handleError = (err: Error): boolean => {
-    logger.logError(err.toString());
+const handleError = (err: any): boolean => {
+    logger.logError(err);
     return isOperationalError(err);
 }
 

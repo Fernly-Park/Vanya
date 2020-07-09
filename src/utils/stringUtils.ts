@@ -1,4 +1,4 @@
-export const isAString = (string: string): boolean => {
+export const isAString = (string: any): boolean => {
     return typeof string === 'string';
 };
 

@@ -1,8 +1,8 @@
 
 import pino from 'pino';
 import { asyncLocalStorage } from '../utils/contextualStorage';
-import {REQUEST_ID_HEADER} from '../utils/constants';
 import config from '../config/index';
+import { AWSConstant, REQUEST_ID_HEADER } from '@App/utils/constants';
 
 export const logger = pino({
     level: config.log.level || 'info',

@@ -1,7 +1,7 @@
-import db from '../modules/database/db';
-import * as logger from '../modules/logging';
-import { IActivity } from '../interfaces/iActivity.model';
-import { ActivityTable } from '../modules/database/activityTable.model';
+import db from '../../modules/database/db';
+import * as logger from '../../modules/logging';
+import { IActivity } from './activity.interfaces';
+import { ActivityTable } from '../../modules/database/activityTable.model';
 
 export const insertActivity = async (activityArn: string, activityName: string): Promise<void> => {
     logger.logDebug(`registering activity '${activityArn}'`);
@@ -10,21 +10,23 @@ export const insertActivity = async (activityArn: string, activityName: string):
             [ActivityTable.arnColumn]: activityArn,
             [ActivityTable.nameColumn]: activityName
         });
+        
         logger.logInfo(`activity '${activityArn}' registered`);
     } catch (err) {
         logger.logError(`Unable to register activity '${activityArn}'`);
         throw err;
     }
+    
 };
 
-export const deleteActivityByArn = async (activityArn: string): Promise<void> => {
+export const deleteActivityByArn = async (activityArn: string): Promise<boolean> => {
     logger.logDebug(`deleting activity '${activityArn}'`);
     try {
         const result = await db(ActivityTable.tableName)
         .where(ActivityTable.arnColumn, activityArn)
         .delete();
 
-        console.log(result);
+        return result === 1;
     } catch (err) {
         logger.logError(`Unable to delete activity '${activityArn}'`);
     }

@@ -1,21 +1,18 @@
 import * as express from "express";
-import * as logger from '../modules/logging'
+import * as logger from '../../modules/logging'
 import Joi from '@hapi/joi';
 import { InvalidRequestInputError } from "@App/errors/customErrors";
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
-import * as ActivityService from "@App/services/activityService";
-import { CreateActivityReq, DeleteActivityReq } from "@App/interfaces/req/ActivityReq.model";
-import { CreateActivityResp } from "@App/interfaces/resp/ActivityResp.model";
+import * as ActivityService from "@App/components/activity/activityService";
+import { CreateActivityReq, CreateActivityResp, DeleteActivityReq } from "./activity.interfaces";
 
 const router = express.Router();
 
-router.post('/', async (req, resp, next) => {
+export const createActivity =  async (req: express.Request, resp: express.Response, next: express.NextFunction): Promise<void> => {
     logger.logDebug('Entering create activity controller');
-
     try {
         const body: CreateActivityReq = req.body;
         ensureCreateActivityReqBodyIsValid(body);
-
         const activity = await ActivityService.createActivity(body.name);
 
         logger.logInfo(`Activity '${activity.arn}' has been created and attributed the id '${activity.id}'`);
@@ -28,7 +25,7 @@ router.post('/', async (req, resp, next) => {
     } catch (error) {
         next(error);
     }
-});
+};
 
 const ensureCreateActivityReqBodyIsValid = (activityReq: CreateActivityReq): void => {
     logger.logDebug('Ensuring the create activity request input is valid');

@@ -1,4 +1,4 @@
-import * as ArnHelper from "@App/services/ArnHelper";
+import * as ArnHelper from "@App/utils/ArnHelper";
 
 
 describe('arn helper function', () => {

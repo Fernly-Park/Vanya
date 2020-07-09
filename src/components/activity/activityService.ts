@@ -1,14 +1,15 @@
-import * as logger from '../modules/logging';
-import { InvalidNameError, ResourceAlreadyExistsError } from '../errors/customErrors';
-import * as ActivityModel from '@App/models/activityModel';
-import { IActivity } from '@App/interfaces/iActivity.model';
+import * as logger from '../../modules/logging';
+import { InvalidNameError, ResourceAlreadyExistsError } from '../../errors/customErrors';
+import * as ActivityModel from '@App/components/activity/activityDAL';
+import { IActivity } from '@App/components/activity/activity.interfaces';
 import Joi from '@hapi/joi';
-import * as ArnHelper from './ArnHelper';
+import * as ArnHelper from '../../utils/ArnHelper';
+import { isAString } from '@App/utils/stringUtils';
 
 const maxActivityNameLength = 80;
 
 export const createActivity = async (activityName: string): Promise<IActivity> => {
-    logger.logInfo(`Creating an activity named '${activityName}'`);
+    logger.logDebug(`Creating an activity named '${activityName}'`);
     EnsureActivityNameIsValid(activityName);
     logger.logDebug(`Activity name '${activityName}' is valid`);
 
@@ -50,5 +51,7 @@ const EnsureActivityNameIsValid = (activityName: string): void => {
 };
 
 export const deleteActivity = async (activityArn: string): Promise<void> => {
-
+    isAString(activityArn);
+    // const wasDeleted = ActivityModel.deleteActivityByArn(activityArn);
+    // logger.logInfo(`activity '${ActivityModel}'`)
 }

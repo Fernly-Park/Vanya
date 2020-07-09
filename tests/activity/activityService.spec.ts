@@ -1,7 +1,7 @@
 import { InvalidNameError, ResourceAlreadyExistsError } from '../../src/errors/customErrors';
 import { setupDatabaseForTests } from '@Tests/fixtures/db';
-import { createActivity } from '@App/services/activityService';
-import { selectActivityByName } from '@App/models/activityModel';
+import { createActivity } from '@App/components/activity/activityService';
+import { selectActivityByName } from '@App/components/activity/activityDAL';
 
 
 describe('create activities service', () => {

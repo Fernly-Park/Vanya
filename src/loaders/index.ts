@@ -1,34 +1,28 @@
 import express = require('express');
 import loadDatabase from './loadDatabase';
 import loadLogging from './loadLogging';
-import activitiesRouter from '../controllers/activityController';
+import awsRouter from '../components/aws/awsController';
 import handleError from '../errors/errorHandler';
 import * as logger from '../modules/logging';
 import { HttpStatusCode } from '@App/utils/httpStatusCode';
 import { ResourceAlreadyExistsError } from '@App/errors/customErrors';
+import cors from 'cors';
+import { AWSConstant } from '@App/utils/constants';
+import {AWSRequestFilterMiddleware} from './middleware/AWSMiddleware'
+import { errorHandlerMiddleware } from './middleware/errorHandlerMiddleware';
 
 export default async (app: express.Express): Promise<void> => {
 
-    loadLogging(app);
-    app.use(express.json());
-    app.use('/api/activities', activitiesRouter);
+  loadLogging(app);
 
-    app.use((error: Error, request: express.Request, response: express.Response, next: express.NextFunction) => {
- 
-    const isOperationalError = handleError(error);
-    if (isOperationalError) {
-      if (error instanceof ResourceAlreadyExistsError) {
-        response.status(HttpStatusCode.CONFLICT);
-      } else {
-        response.status(HttpStatusCode.BAD_REQUEST);
-      }
-      response.send({ message: error.message});
-      next(error);
-    } else {
-      logger.logError('Potentially fatar error, restarting');
-      process.exit(-1);
-    }
-  });
+  app.use(cors());
+  app.use(express.json({
+    type: AWSConstant.headers.CONTENT_TYPE
+  }));
+  
+  app.use(AWSRequestFilterMiddleware);
+  app.use('/', awsRouter);
+  app.use(errorHandlerMiddleware);
   await loadDatabase();
 
   logger.logInfo('App init complete');

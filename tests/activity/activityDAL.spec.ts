@@ -1,6 +1,6 @@
-import * as ActivityModel from "../../src/models/activityModel"; 
+import * as ActivityModel from "../../src/components/activity/activityDAL"; 
 import db from '../../src/modules/database/db';
-import { IActivity } from "../../src/interfaces/iActivity.model";
+import { IActivity } from "../../src/components/activity/activity.interfaces";
 import { ActivityTable } from '../../src/modules/database/activityTable.model';
 import { setupDatabaseForTests } from "@Tests/fixtures/db";
 
@@ -72,6 +72,7 @@ describe('select activity from db', () => {
 describe('delete activity from db', () => {
     const activityName = 'test';
     const activityArn = '999999999999:test'
+    const retrieveAllActivities = async () => await db.select<IActivity[]>().table(ActivityTable.tableName);
 
     beforeEach(async () => {
         await setupDatabaseForTests();
@@ -81,17 +82,31 @@ describe('delete activity from db', () => {
         });
     });
 
-    it.only('should correctly delete the activity', async () => {
-        expect.assertions(4);
-        const retrieveAllActivities = async () => await db.select<IActivity[]>().table(ActivityTable.tableName)
+    it('should correctly delete the activity', async () => {
+        expect.assertions(5);
+        
         const activitiesBeforeDeletion = await retrieveAllActivities();
-        const result = await ActivityModel.deleteActivityByArn(activityArn);
+        const wasDeleted = await ActivityModel.deleteActivityByArn(activityArn);
         const activitiesAfterDeletion = await retrieveAllActivities();
+
+        expect(wasDeleted).toBe(true);
 
         expect(activitiesBeforeDeletion).toHaveLength(1);
         expect(activitiesBeforeDeletion[0].arn).toBe(activityArn);
         expect(activitiesBeforeDeletion[0].name).toBe(activityName);
 
         expect(activitiesAfterDeletion).toHaveLength(0);
+    });
+
+    it('should do nothing if the activity to delete does not exists', async () => {
+        expect.assertions(3);
+
+        const activitiesBeforeDeletion = await retrieveAllActivities();
+        const wasDeleted = await ActivityModel.deleteActivityByArn('999999999999:unexistingActivity');
+        const activitiesAfterDeletion = await retrieveAllActivities();
+
+        expect(wasDeleted).toBe(false);
+        expect(activitiesBeforeDeletion).toHaveLength(1);
+        expect(activitiesAfterDeletion).toHaveLength(1);
     });
 });
