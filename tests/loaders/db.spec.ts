@@ -9,7 +9,7 @@ describe('ensuring that the setted up database is correct', () => {
     beforeEach(async () => {
         await setupDatabaseForTests();
     });
-
+ 
     it('create the activity table', async () => {
         expect.assertions(5);
         await setupDatabase();
@@ -29,18 +29,19 @@ describe('ensuring that the setted up database is correct', () => {
     });
 
     it('create the users table', async () => {
-        expect.assertions(4);
+        expect.assertions(5);
         await setupDatabase();
         
         const usersTableExists = await db.schema.hasTable(UserTable.tableName);
         const hasIdColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.idColumn);
         const hasUsernameColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.usernameColumn);
         const hasSecretColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.secretColumn);
+        const hasSubColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.subColumn);
 
         expect(usersTableExists).toBe(true);
         expect(hasIdColumn).toBe(true);
         expect(hasUsernameColumn).toBe(true);
         expect(hasSecretColumn).toBe(true);
-
+        expect(hasSubColumn).toBe(true);
     });
 });

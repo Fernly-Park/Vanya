@@ -12,7 +12,7 @@ describe('arn helper function', () => {
         expect(splittedResult[0]).toHaveLength(12);
         expect(splittedResult[1]).toBe(resourceName);
     }); 
-
+ 
     it('correctly retrieve a name through an arn', () => {
         expect.assertions(1);
 

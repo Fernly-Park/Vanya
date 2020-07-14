@@ -1,4 +1,5 @@
 import * as logger from '../../modules/logging';
+import db from '../../modules/database/db';
 import { InvalidNameError, ResourceAlreadyExistsError } from '../../errors/customErrors';
 import * as ActivityModel from '@App/components/activity/activityDAL';
 import { IActivity } from '@App/components/activity/activity.interfaces';
@@ -13,6 +14,8 @@ export const createActivity = async (activityName: string): Promise<IActivity> =
     EnsureActivityNameIsValid(activityName);
     logger.logDebug(`Activity name '${activityName}' is valid`);
 
+    // const tmp = await db.transaction();
+    
     await EnsureActivityNameIsNotTaken(activityName);
 
     const activityArn = ArnHelper.generateArn(activityName);
@@ -27,7 +30,7 @@ export const createActivity = async (activityName: string): Promise<IActivity> =
     return toReturn;
 };
 
-const EnsureActivityNameIsNotTaken = async (activityName: string): Promise<void> => {
+const EnsureActivityNameIsNotTaken = async (activityName: string, transaction?: any): Promise<void> => {
     const activityAlreadyExisting = await ActivityModel.selectActivityByName(activityName);
     if (activityAlreadyExisting) {
         throw new ResourceAlreadyExistsError(`activity '${activityName}' already exists`);

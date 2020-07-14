@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as logger from '../../modules/logging'
 import Joi from '@hapi/joi';
-import { InvalidRequestInputError } from "@App/errors/customErrors";
+import { InvalidInputError } from "@App/errors/customErrors";
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
 import * as ActivityService from "@App/components/activity/activityService";
 import { CreateActivityReq, CreateActivityResp, DeleteActivityReq } from "./activity.interfaces";
@@ -36,7 +36,7 @@ const ensureCreateActivityReqBodyIsValid = (activityReq: CreateActivityReq): voi
 
     const result = schema.validate(activityReq);
     if (result.error) {
-        throw new InvalidRequestInputError(result.error.message);
+        throw new InvalidInputError(result.error.message);
     }
 };
 
@@ -61,7 +61,7 @@ const ensureDeleteActivityReqBodyIsValid = (deleteReq: DeleteActivityReq): void 
 
     const result = schema.validate(deleteReq);
     if (result.error) {
-        throw new InvalidRequestInputError(result.error.message);
+        throw new InvalidInputError(result.error.message);
     }
 }
 export default router;

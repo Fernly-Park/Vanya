@@ -45,7 +45,8 @@ const setupUserTable = async(): Promise<void> => {
         await db.schema.createTable(UserTable.tableName, (tableBuilder): void => {
             tableBuilder.bigInteger(UserTable.idColumn).primary().index();
             tableBuilder.string(UserTable.usernameColumn).notNullable().unique().index();
-            tableBuilder.string(UserTable.secretColumn);
+            tableBuilder.string(UserTable.subColumn).nullable().unique()
+            tableBuilder.string(UserTable.secretColumn).nullable();
         });
     }
 };
