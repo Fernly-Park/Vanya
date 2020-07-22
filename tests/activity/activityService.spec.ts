@@ -2,7 +2,7 @@ import { InvalidNameError, ResourceAlreadyExistsError } from '../../src/errors/c
 import { setupDatabaseForTests } from '@Tests/fixtures/db';
 import { createActivity } from '@App/components/activity/activityService';
 import { selectActivityByName } from '@App/components/activity/activityDAL';
-
+import db from '@App/modules/database/db';
 
 describe('create activities service', () => {
 
@@ -15,7 +15,7 @@ describe('create activities service', () => {
         const activityName = 'name';
 
         const createdActivity = await createActivity(activityName);
-        const activityFromDb = await selectActivityByName(activityName);
+        const activityFromDb = await selectActivityByName(db, activityName);
 
         expect(createdActivity.name).toBe(activityName);
         expect(activityFromDb.name).toBe(activityName);

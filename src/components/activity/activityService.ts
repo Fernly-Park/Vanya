@@ -1,5 +1,5 @@
 import * as logger from '../../modules/logging';
-import db from '../../modules/database/db';
+import db, { DbOrTransaction } from '../../modules/database/db'; 
 import { InvalidNameError, ResourceAlreadyExistsError } from '../../errors/customErrors';
 import * as ActivityModel from '@App/components/activity/activityDAL';
 import { IActivity } from '@App/components/activity/activity.interfaces';
@@ -14,24 +14,27 @@ export const createActivity = async (activityName: string): Promise<IActivity> =
     EnsureActivityNameIsValid(activityName);
     logger.logDebug(`Activity name '${activityName}' is valid`);
 
-    // const tmp = await db.transaction();
-    
-    await EnsureActivityNameIsNotTaken(activityName);
+    const result = await db.transaction(async (trx) => {
+        await EnsureActivityNameIsNotTaken(trx, activityName);
 
-    const activityArn = ArnHelper.generateArn(activityName);
-    logger.logInfo(`activity '${activityName}' was given the arn '${activityArn}'`);
-
-    await ActivityModel.insertActivity(activityArn, activityName);
-    const toReturn = await ActivityModel.selectActivityByArn(activityArn);
-    if (!toReturn) {
-        throw new Error(`activity '${activityName}' should have been created.`);
-    }
+        const activityArn = ArnHelper.generateArn(activityName);
+        logger.logInfo(`activity '${activityName}' was given the arn '${activityArn}'`);
     
-    return toReturn;
+        await ActivityModel.insertActivity(trx, activityArn, activityName);
+        const toReturn = await ActivityModel.selectActivityByArn(trx, activityArn);
+        if (!toReturn) {
+            throw new Error(`activity '${activityName}' should have been created.`);
+        }
+        
+        return toReturn;
+    });
+    
+    return result;
+    
 };
 
-const EnsureActivityNameIsNotTaken = async (activityName: string, transaction?: any): Promise<void> => {
-    const activityAlreadyExisting = await ActivityModel.selectActivityByName(activityName);
+const EnsureActivityNameIsNotTaken = async (db: DbOrTransaction, activityName: string): Promise<void> => {
+    const activityAlreadyExisting = await ActivityModel.selectActivityByName(db, activityName);
     if (activityAlreadyExisting) {
         throw new ResourceAlreadyExistsError(`activity '${activityName}' already exists`);
     }

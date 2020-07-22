@@ -1,8 +1,8 @@
 import { setupDatabase } from '../../src/modules/database/db';
 import db from '../../src/modules/database/db';
 import { setupDatabaseForTests } from '../fixtures/db';
-import { ActivityTable } from '@App/modules/database/activityTable.model';
-import { UserTable } from '@App/modules/database/userTable.model';
+import { ActivityTable } from '@App/components/activity/activity.interfaces';
+import { UserTable } from '@App/components/user/user.interfaces';
 
 describe('ensuring that the setted up database is correct', () => {
 
@@ -34,7 +34,7 @@ describe('ensuring that the setted up database is correct', () => {
         
         const usersTableExists = await db.schema.hasTable(UserTable.tableName);
         const hasIdColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.idColumn);
-        const hasUsernameColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.usernameColumn);
+        const hasUsernameColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.emailColumn);
         const hasSecretColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.secretColumn);
         const hasSubColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.subColumn);
 

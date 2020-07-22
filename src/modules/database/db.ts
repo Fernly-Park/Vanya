@@ -1,8 +1,9 @@
 import knex from 'knex';
 import config from '../../config/index';
 import * as Logger from '../logging';
-import { ActivityTable } from './activityTable.model';
-import { UserTable } from './userTable.model';
+import { ActivityTable } from '../../components/activity/activity.interfaces';
+import { UserTable } from '../../components/user/user.interfaces';
+import Knex from 'knex';
 
 
 const db = knex({
@@ -20,6 +21,9 @@ export const setupDatabase = async (): Promise<void> => {
     await setupActivityTable();
     await setupUserTable();
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DbOrTransaction = Knex.Transaction | Knex<any, unknown[]>;
 
 const setupActivityTable = async(): Promise<void> => {
     Logger.logDebug('Creating activity table');
@@ -44,7 +48,7 @@ const setupUserTable = async(): Promise<void> => {
     if (!usersTableExists) {
         await db.schema.createTable(UserTable.tableName, (tableBuilder): void => {
             tableBuilder.bigInteger(UserTable.idColumn).primary().index();
-            tableBuilder.string(UserTable.usernameColumn).notNullable().unique().index();
+            tableBuilder.string(UserTable.emailColumn).notNullable().unique().index();
             tableBuilder.string(UserTable.subColumn).nullable().unique()
             tableBuilder.string(UserTable.secretColumn).nullable();
         });

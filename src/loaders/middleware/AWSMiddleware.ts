@@ -2,7 +2,6 @@ import * as express from "express";
 import { isAString } from "@App/utils/stringUtils";
 import { AWSConstant } from "@App/utils/constants";
 import { MissingHeaderError, UnsupportedOperationError } from "@App/errors/AWSErrors";
-
 export const AWSRequestFilterMiddleware =   (req: express.Request, resp: express.Response, next: express.NextFunction): void => {
     const contentType = req.headers['content-type'];
     if (!isAString(contentType) || contentType !== AWSConstant.headers.CONTENT_TYPE) {

@@ -31,7 +31,7 @@ describe('create activities api', () => {
         server.close(done);
     })
 
-    it('works using the amazon sdk', async () => {
+    it.only('works using the amazon sdk', async () => {
         expect.assertions(3);
 
         const result = await stepFunctions.createActivity({name: 'caca'}).promise();

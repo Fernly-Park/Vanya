@@ -1,6 +1,6 @@
 import * as dbModule from '../../src/modules/database/db';
-import { ActivityTable } from '../../src/modules/database/activityTable.model';
-import { UserTable } from '@App/modules/database/userTable.model';
+import { ActivityTable } from '../../src/components/activity/activity.interfaces';
+import { UserTable } from '@App/components/user/user.interfaces';
 
 export const setupDatabaseForTests = async (): Promise<void> => {
     await clearDatabase();

@@ -1,4 +1,4 @@
-import { isAString, containsWhiteSpace } from "@App/utils/stringUtils";
+import { isAString, containsWhiteSpace, trimAll } from "@App/utils/stringUtils";
 
 describe('testing isAString function', () => {
     it('should detect that the argument is indeed a string', () => {
@@ -38,4 +38,21 @@ describe('testing containsWhiteSpace function', () => {
 
         expect(result).toBe(false);
     });
+});
+
+describe('testing trilAll function', () => {
+    it('should remove all the spaces', () => {
+        expect.assertions(8);
+
+        const result = trimAll([' a ', 'b ', ' c', 'd', 'ab cd', ' ab cd ', '']);
+
+        expect(result).toHaveLength(7);
+        expect(result[0]).toBe('a');
+        expect(result[1]).toBe('b');
+        expect(result[2]).toBe('c');
+        expect(result[3]).toBe('d');
+        expect(result[4]).toBe('ab cd');
+        expect(result[5]).toBe('ab cd');
+        expect(result[6]).toBe('');
+    })
 });

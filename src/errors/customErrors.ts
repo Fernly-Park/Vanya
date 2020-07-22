@@ -27,6 +27,13 @@ export class ResourceAlreadyExistsError extends BaseError {
     }
 }
 
+export class UnexistingResourceError extends BaseError {
+    constructor(description: string) {
+        super("Unexisting Resource", description, true);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
 export class InvalidInputError extends BaseError {
     constructor(description: string) {
         super("Invalid Request Input", description, true);
