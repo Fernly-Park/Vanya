@@ -1,5 +1,7 @@
+// https://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html
 import crypto from 'crypto';
-
+import * as UserService from '@App/components/user/userService';
+import { IUser } from '@App/components/user/user.interfaces';
 
 const signingAlgorithm = 'sha256';
 const serviceName = 'states';
@@ -7,13 +9,28 @@ const v4Identifier = 'aws4_request';
 
 type Header = {[headerName: string]: string};
 
-export const generateAWSSignature = (userSecretKey: string, headers: Header): string => {
+export const checkAWSSignature = async (headers: Header): Promise<IUser> => {
+    console.log('helloo');
+    if (!headers['authorization']) {
+        return null;
+    }
+
+    const authorizationDatas = parseAuthorizationHeader(headers['authorization'])
+    const user = await UserService.retrieveUserById(authorizationDatas.userId);
+    if (!user || !user.secret) {
+        return null;
+    }
+    const generatedSignature = generateAWSSignature(user.secret, headers);
+    return authorizationDatas.signature === generatedSignature ? user : null;
+}
+
+const generateAWSSignature = (userSecretKey: string, headers: Header): string => {
     const date = headers['x-amz-date'];
-    const authorization = parseAuthorizationHeader(headers['authorization'])
+    const authorizationDatas = parseAuthorizationHeader(headers['authorization'])
     
-    const signedHeaders = retrieveSignedHeaders(authorization.signedHeaders, headers);
-    const signingKey = generateSigningKey(userSecretKey, date.substr(0, 8), authorization.region);
-    const stringToSign = generateStringToSign(date, authorization.region, authorization.signedHeaders, signedHeaders);
+    const signedHeaders = retrieveSignedHeaders(authorizationDatas.signedHeadersConcatenated, headers);
+    const signingKey = generateSigningKey(userSecretKey, date.substr(0, 8), authorizationDatas.region);
+    const stringToSign = generateStringToSign(date, authorizationDatas.region, authorizationDatas.signedHeadersConcatenated, signedHeaders);
 
     return crypto.createHmac(signingAlgorithm, signingKey).update(stringToSign).digest('hex');
 }
@@ -27,9 +44,10 @@ const parseAuthorizationHeader = (authorization: string) => {
 
     return {
         signature: signaturePart.split('=')[1],
-        signedHeaders: signedHeadersPart.split('=')[1],
-        region: credentials[2]
-    }
+        signedHeadersConcatenated: signedHeadersPart.split('=')[1],
+        region: credentials[2],
+        userId: credentials[0]
+    };
 }
 
 const retrieveSignedHeaders = (signedHeaders: string, headers: Header): Header => {
@@ -50,8 +68,8 @@ const generateSigningKey = (secretKey: string, date: string, region: string): Bu
     return signingKey;
 };
 
-const generateStringToSign = (datetime: string, region: string, signedHeadersInString: string, signedHeaders: Header) => {
-    const canonicalString = generateCanoncialString(signedHeadersInString, signedHeaders);
+const generateStringToSign = (datetime: string, region: string, concatenatedSignedHeader: string, signedHeaders: Header) => {
+    const canonicalString = generateCanoncialString(concatenatedSignedHeader, signedHeaders);
     const sha256Hash = crypto.createHash('sha256');
     const parts: string[] = [];
     parts.push('AWS4-HMAC-SHA256');
@@ -70,14 +88,14 @@ const generateCredentialString = (region: string, datetime: string) => {
     ].join('/');
 }
 
-const generateCanoncialString = (signedHeaderInString: string, signedHeaders: Header): string => {
+const generateCanoncialString = (concatenatedSignedHeader: string, signedHeaders: Header): string => {
     const parts: string[] = [];
 
     parts.push('POST');
     parts.push('/');
     parts.push('')
     parts.push(`${constructCanonicalHeaders(signedHeaders)}\n`);
-    parts.push(signedHeaderInString)
+    parts.push(concatenatedSignedHeader)
     parts.push(signedHeaders['x-amz-content-sha256'].toString());
     return parts.join('\n');
 }

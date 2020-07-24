@@ -1,4 +1,4 @@
-import { randomIntFromInterval } from "@App/utils/numberUtils";
+import { randomIntFromInterval, isANumber } from "@App/utils/numberUtils";
 import validator from 'validator';
 import { InvalidInputError, ResourceAlreadyExistsError } from "@App/errors/customErrors";
 import { isAnEmptyString, isAString } from "@App/utils/stringUtils";
@@ -8,7 +8,7 @@ import db from '@App/modules/database/db';
 import { IUser } from "./user.interfaces";
 import * as Logger from '@App/modules/logging';
 
-export const createUser = async (sub: string, email: string): Promise<void> => {
+export const createUser = async (sub: string, email: string): Promise<IUser> => {
     if (!isAString(sub) || isAnEmptyString(sub)) {
         throw new InvalidInputError(`the sub '${sub}' must be a non empty string !`);
     }
@@ -17,7 +17,7 @@ export const createUser = async (sub: string, email: string): Promise<void> => {
     }
 
     
-    await db.transaction(async (trx) => {
+    return await db.transaction(async (trx) => {
         const alreadyExistingUser = await UserDAL.selectUserByEmail(trx, email);
         if (alreadyExistingUser) {
             throw new ResourceAlreadyExistsError(`The user '${email}' already exists`)
@@ -30,6 +30,11 @@ export const createUser = async (sub: string, email: string): Promise<void> => {
             email: email
         }
         await UserDAL.insertUser(trx, userToInsert);
+        const createdUser = await UserDAL.selectUserByEmail(trx, userToInsert.email);
+        if (!createdUser) {
+            throw new Error(`User '${userToInsert.id}' with email '${userToInsert.email}' should have been created`);
+        }
+        return createdUser;
     });
     
 };
@@ -48,6 +53,29 @@ export const retrieveUserByEmail = async (email: string): Promise<IUser> => {
     if (!validator.isEmail(email)) {
         throw new InvalidInputError(`email '${email}' is invalid`);
     }
-    const toReturn = await UserDAL.selectUserByEmail(db, email);
-    return toReturn;
+    return await UserDAL.selectUserByEmail(db, email);
 } 
+
+export const retrieveUserById = async(id: string): Promise<IUser> => {
+    EnsureUserIdIsWellFormed(id);
+    Logger.logDebug(`retrieving user '${id}'`);
+    
+    return await UserDAL.selectUserById(db, id);
+};
+
+export const setUserSecret = async(id: string, secret: string): Promise<void> => {
+    EnsureUserIdIsWellFormed(id);
+    await db.transaction(async (trx) => {
+        const user = await UserDAL.selectUserById(trx, id);
+        if (!user) {
+            throw new InvalidInputError(`user with id '${id}' does not exists`)
+        }
+        await UserDAL.updateUserSecret(trx, id, secret);
+    });
+};
+
+const EnsureUserIdIsWellFormed = (id: string): void => {
+    if (id.length != 12 || !isANumber(id)) {
+        throw new InvalidInputError(`'${id}' is not a valid user id`);
+    }
+}

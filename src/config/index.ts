@@ -18,5 +18,6 @@ export default {
         }
     },
     connection_string: process.env.PG_CONNECTION_STRING,
-    region: process.env.REGION
+    region: process.env.REGION,
+    encryptUserSecret: process.env.ENCRYPT_USER_SECRET
 }; 

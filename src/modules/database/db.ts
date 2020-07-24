@@ -47,7 +47,7 @@ const setupUserTable = async(): Promise<void> => {
     Logger.logDebug(`The users table exists ? : ${usersTableExists.toString()}`)
     if (!usersTableExists) {
         await db.schema.createTable(UserTable.tableName, (tableBuilder): void => {
-            tableBuilder.bigInteger(UserTable.idColumn).primary().index();
+            tableBuilder.string(UserTable.idColumn).primary().index();
             tableBuilder.string(UserTable.emailColumn).notNullable().unique().index();
             tableBuilder.string(UserTable.subColumn).nullable().unique()
             tableBuilder.string(UserTable.secretColumn).nullable();

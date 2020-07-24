@@ -9,7 +9,7 @@ import {AWSRequestFilterMiddleware} from './middleware/AWSMiddleware'
 import { errorHandlerMiddleware } from './middleware/errorHandlerMiddleware';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
-import { initializeAuthentication } from './authentication/authentication';
+import { initializeAuthentication, AWSStrategyName } from './authentication/authentication';
 
 export default async (app: express.Express): Promise<void> => {
   app.use(cookieParser())
@@ -24,7 +24,7 @@ export default async (app: express.Express): Promise<void> => {
 
   app.use(AWSRequestFilterMiddleware);
   
-  app.use('/', passport.authenticate('jwt', {session: false}), awsRouter);
+  app.use('/', passport.authenticate(AWSStrategyName, {session: false}), awsRouter);
   app.use(errorHandlerMiddleware);
   await loadDatabase();
 

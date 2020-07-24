@@ -50,6 +50,7 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.1",
     "passport": "^0.4.1",
+    "passport-custom": "^1.1.1",
     "passport-google-oauth": "^2.0.0",
     "passport-jwt": "^4.0.0",
     "pg": "^8.2.1",

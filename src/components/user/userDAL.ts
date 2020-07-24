@@ -14,9 +14,13 @@ export const insertUser = async (db: DbOrTransaction, user: IUser): Promise<void
 };
 
 export const selectUserById = async (db: DbOrTransaction, id: string): Promise<IUser> => {
-    return db<IUser>(UserTable.tableName).where(UserTable.idColumn, id).first();
+    return await db<IUser>(UserTable.tableName).where(UserTable.idColumn, id).first();
 };
 
 export const selectUserByEmail = async (db: DbOrTransaction, email: string): Promise<IUser> => {
-    return db<IUser>(UserTable.tableName).where(UserTable.emailColumn, email).first();
+    return await db<IUser>(UserTable.tableName).where(UserTable.emailColumn, email).first();
+}
+
+export const updateUserSecret = async (db: DbOrTransaction, id: string, secret: string): Promise<void> => {
+    await db(UserTable.tableName).where(UserTable.idColumn, id).update(UserTable.secretColumn, secret);
 }

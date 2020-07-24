@@ -11,13 +11,15 @@ describe('create user', () => {
     });
 
     it('should correctly create a user', async () => {
-        expect.assertions(4);
+        expect.assertions(6);
 
         const email = "test@gmail.com";
         const sub = "sub";
-        await UserService.createUser(sub, email);
+        const result = await UserService.createUser(sub, email);
         const createdUser = await UserDAL.selectUserByEmail(db, email);
 
+        expect(result.id).toBeDefined()
+        expect(result.email).toBe(email);
         expect(createdUser).toBeDefined();
         expect(createdUser.id).toBeDefined();
         expect(createdUser.sub).toBe(sub);
@@ -46,3 +48,76 @@ describe('create user', () => {
         await expect(UserService.createUser(sub, email)).rejects.toThrow(ResourceAlreadyExistsError);
     });
 });
+
+describe('retrieve user', () => {
+    beforeEach(async () => {
+        await setupDatabaseForTests();
+    });
+
+    it('should correctly retrieve the user by id', async () => {
+        expect.assertions(1);
+        
+        const email = "test@gmail.com";
+        const sub = "sub";
+        const createdUser = await UserService.createUser(sub, email);
+        const result = await UserService.retrieveUserById(createdUser.id);
+
+        expect(result.email).toBe(email);
+    });
+
+    it('should return undefined if the user id does not exists', async () => {
+        expect.assertions(1);
+        const result = await UserService.retrieveUserById('999999999999');
+        expect(result).toBeUndefined();
+    });
+
+    it('should throw if the id is badly formed', async () => {
+        expect.assertions(1);
+
+        await expect(UserService.retrieveUserById('badlyFormedId')).rejects.toThrow(InvalidInputError);
+    })
+
+    it('should correctly retrieve an user by email', async () => {
+        expect.assertions(2);
+        
+        const email = "test@gmail.com";
+        await UserService.createUser('sub', email);
+        const result = await UserService.retrieveUserByEmail(email);
+
+        expect(result).toBeDefined();
+        expect(result.email).toBe(email);
+    });
+
+    it('should return undefined if the user email does not exists', async () => {
+        expect.assertions(1);
+
+        const result = await UserService.retrieveUserByEmail('unexistingEmail@example.com');
+        
+        expect(result).toBeUndefined();
+    });
+
+    it('should throw if the email is badly formed', async () => {
+        expect.assertions(1);
+
+        await expect(UserService.retrieveUserByEmail('badlyFormedEmail')).rejects.toThrow(InvalidInputError);
+    });
+});
+
+describe('update user secret', () => {
+    beforeEach(async () => {
+        await setupDatabaseForTests();
+    });
+
+    it('should correctly update the user secret', async () => {
+        expect.assertions(1);
+
+        const email = "test@gmail.com";
+        const secret = 'secret';
+
+        const userBeforeSecretWasSet = await UserService.createUser("sub", email);
+        await UserService.setUserSecret(userBeforeSecretWasSet.id, secret);
+        const userAfterSecretWasSet = await UserDAL.selectUserByEmail(db, email);
+
+        expect(userAfterSecretWasSet.secret).toBe(secret);
+    });
+})

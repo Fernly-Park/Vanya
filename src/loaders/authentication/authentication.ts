@@ -4,17 +4,21 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { IUser } from '@App/components/user/user.interfaces';
 import passport from 'passport';
+import {Strategy as CustomStrategy} from 'passport-custom';
 import {Strategy as JwtStrategy, StrategyOptions, VerifyCallbackWithRequest} from 'passport-jwt';
 import { OAuth2Strategy as GoogleStrategy, VerifyFunction } from 'passport-google-oauth';
 import * as UserService from '@App/components/user/userService';
 import config from '../../config/index'
+import { checkAWSSignature } from './AWSAuthentication';
 
 const jwtKeyInCookie = 'jwt';
+export const AWSStrategyName = 'AWS-local';
 
 export const initializeAuthentication = (app: express.Express): void => {
     app.use(passport.initialize());
 
     initializeJWTStrategy();
+    initializeAWSAuthentication();
     initializeGoogleAuthentication(app);
 }
 
@@ -33,6 +37,15 @@ const initializeJWTStrategy = (): void => {
     passport.use(new JwtStrategy(option, verifyCallback));
 }
 
+const initializeAWSAuthentication = (): void => {
+  console.log('tea')
+  passport.use(AWSStrategyName, new CustomStrategy((req, done) => {
+    console.log('hellocaca')
+    checkAWSSignature(req.headers as {[headerName: string]: string})
+      .then(user => done(null, user))
+      .catch(err => done(err))
+  }));
+};
 
 const initializeGoogleAuthentication = (app: express.Express): void => {
     const googleConfig = config.authentication.google;
@@ -77,6 +90,7 @@ const setGoogleRoutes = (app: express.Express): void => {
         .redirect(config.authentication.redirectURL);
     });
 }
+
 const generateAccessToken = (user: IUser): string => {
     const secret = config.authentication.jwtSecret;
     const token = jwt.sign({}, secret, {
