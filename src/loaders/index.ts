@@ -1,7 +1,7 @@
 import express from 'express';
 import loadDatabase from './loadDatabase';
 import loadLogging from './loadLogging';
-import awsRouter from '../components/aws/awsController';
+import awsRouter from './middleware/awsRoutes';
 import * as logger from '../modules/logging';
 import cors from 'cors';
 import { AWSConstant } from '@App/utils/constants';
@@ -11,7 +11,7 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import { initializeAuthentication, AWSStrategyName } from './authentication/authentication';
 
-export default async (app: express.Express): Promise<void> => {
+export default async (app: express.Express): Promise<express.Express> => {
   app.use(cookieParser())
   loadLogging(app);
 
@@ -24,9 +24,11 @@ export default async (app: express.Express): Promise<void> => {
 
   app.use(AWSRequestFilterMiddleware);
   
-  app.use('/', passport.authenticate(AWSStrategyName, {session: false}), awsRouter);
+  app.use('/', passport.authenticate(['jwt', AWSStrategyName], {session: false}), awsRouter);
   app.use(errorHandlerMiddleware);
   await loadDatabase();
 
   logger.logInfo('App init complete');
+
+  return app;
 }

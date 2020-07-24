@@ -25,7 +25,7 @@ describe('create user', () => {
         expect(createdUser.sub).toBe(sub);
         expect(createdUser.secret).toBeNull();
     });
-
+    
     it.each(['notAnEmail', '', 1, null, undefined])('should throw if the user email is %p', async (email: string) => {
         expect.assertions(1);
 
@@ -71,10 +71,10 @@ describe('retrieve user', () => {
         expect(result).toBeUndefined();
     });
 
-    it('should throw if the id is badly formed', async () => {
+    it.each([null, undefined, '', 'badlyFormedId'])('should throw if the id is %p', async (userId: string) => {
         expect.assertions(1);
 
-        await expect(UserService.retrieveUserById('badlyFormedId')).rejects.toThrow(InvalidInputError);
+        await expect(UserService.retrieveUserById(userId)).rejects.toThrow(InvalidInputError);
     })
 
     it('should correctly retrieve an user by email', async () => {
@@ -96,10 +96,10 @@ describe('retrieve user', () => {
         expect(result).toBeUndefined();
     });
 
-    it('should throw if the email is badly formed', async () => {
+    it.each([null, undefined, '',  'badlyFormedEmail'])('should throw if the email is %p', async (userEmail: string) => {
         expect.assertions(1);
 
-        await expect(UserService.retrieveUserByEmail('badlyFormedEmail')).rejects.toThrow(InvalidInputError);
+        await expect(UserService.retrieveUserByEmail(userEmail)).rejects.toThrow(InvalidInputError);
     });
 });
 

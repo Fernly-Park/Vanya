@@ -1,6 +1,6 @@
 import { randomIntFromInterval, isANumber } from "@App/utils/numberUtils";
 import validator from 'validator';
-import { InvalidInputError, ResourceAlreadyExistsError } from "@App/errors/customErrors";
+import { InvalidInputError, ResourceAlreadyExistsError, UnexistingResourceError } from "@App/errors/customErrors";
 import { isAnEmptyString, isAString } from "@App/utils/stringUtils";
 import * as UserDAL from "./userDAL";
 import { DbOrTransaction } from "@App/modules/database/db";
@@ -43,14 +43,14 @@ const generateUniqueId = async (trx: DbOrTransaction): Promise<string> => {
     let id: string;
 
     do {
-        id = randomIntFromInterval(1, 999999999999).toString();
+        id = randomIntFromInterval(1, 999999999999).toString().padStart(12, '0');
     }while (await UserDAL.selectUserById(trx, id) !== undefined);
 
     return id;
 };
 
 export const retrieveUserByEmail = async (email: string): Promise<IUser> => {
-    if (!validator.isEmail(email)) {
+    if (typeof email !== 'string' || !validator.isEmail(email)) {
         throw new InvalidInputError(`email '${email}' is invalid`);
     }
     return await UserDAL.selectUserByEmail(db, email);
@@ -74,8 +74,14 @@ export const setUserSecret = async(id: string, secret: string): Promise<void> =>
     });
 };
 
+export const EnsureUserExists = async (id: string): Promise<void> => {
+    if (!await retrieveUserById(id)) {
+        throw new UnexistingResourceError(`user with id '${id}' does not exists`);
+    }
+};
+
 const EnsureUserIdIsWellFormed = (id: string): void => {
-    if (id.length != 12 || !isANumber(id)) {
+    if (typeof id !== 'string' || id.length != 12 || !isANumber(id)) {
         throw new InvalidInputError(`'${id}' is not a valid user id`);
     }
 }

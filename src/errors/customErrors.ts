@@ -13,12 +13,6 @@ export class BaseError extends Error {
     }
    }
 
-export class InvalidNameError extends BaseError {
-    constructor(description: string) {
-        super("Invalid Name Error", description, true);
-        this.stack = `${this.message}\n${new Error().stack}`;
-    }
-}
 
 export class ResourceAlreadyExistsError extends BaseError {
     constructor(description: string) {

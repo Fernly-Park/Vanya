@@ -17,6 +17,6 @@ process.on('uncaughtException', (error: Error) => {
 
 const app = express();
 
-void init(app).then();
-
-export default app;
+export default async (): Promise<express.Express> =>  {
+  return await init(app);
+}

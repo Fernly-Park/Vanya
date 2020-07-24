@@ -1,27 +1,29 @@
-import * as logger from '../../modules/logging';
+import * as Logger from '../../modules/logging';
 import db, { DbOrTransaction } from '../../modules/database/db'; 
-import { InvalidNameError, ResourceAlreadyExistsError } from '../../errors/customErrors';
-import * as ActivityModel from '@App/components/activity/activityDAL';
+import { InvalidInputError, ResourceAlreadyExistsError } from '../../errors/customErrors';
+import * as ActivityDAL from '@App/components/activity/activityDAL';
 import { IActivity } from '@App/components/activity/activity.interfaces';
 import Joi from '@hapi/joi';
 import * as ArnHelper from '../../utils/ArnHelper';
-import { isAString } from '@App/utils/stringUtils';
+import * as UserService from '@App/components/user/userService';
+import { ACTIVITY_RESOURCE_NAME } from '@App/utils/constants';
 
 const maxActivityNameLength = 80;
 
-export const createActivity = async (activityName: string): Promise<IActivity> => {
-    logger.logDebug(`Creating an activity named '${activityName}'`);
+export const createActivity = async (userId: string, activityName: string): Promise<IActivity> => {
+    Logger.logDebug(`Creating an activity named '${activityName}' by the user '${userId}'`);
     EnsureActivityNameIsValid(activityName);
-    logger.logDebug(`Activity name '${activityName}' is valid`);
+    Logger.logDebug(`Activity name '${activityName}' is valid`);
 
+    await UserService.EnsureUserExists(userId);
+    const activityArn = ArnHelper.generateActivityArn(userId, activityName);
     const result = await db.transaction(async (trx) => {
         await EnsureActivityNameIsNotTaken(trx, activityName);
 
-        const activityArn = ArnHelper.generateArn(activityName);
-        logger.logInfo(`activity '${activityName}' was given the arn '${activityArn}'`);
+        Logger.logInfo(`activity '${activityName}' was given the arn '${activityArn}'`);
     
-        await ActivityModel.insertActivity(trx, activityArn, activityName);
-        const toReturn = await ActivityModel.selectActivityByArn(trx, activityArn);
+        await ActivityDAL.insertActivity(trx, activityArn, activityName);
+        const toReturn = await ActivityDAL.selectActivityByArn(trx, activityArn);
         if (!toReturn) {
             throw new Error(`activity '${activityName}' should have been created.`);
         }
@@ -34,7 +36,7 @@ export const createActivity = async (activityName: string): Promise<IActivity> =
 };
 
 const EnsureActivityNameIsNotTaken = async (db: DbOrTransaction, activityName: string): Promise<void> => {
-    const activityAlreadyExisting = await ActivityModel.selectActivityByName(db, activityName);
+    const activityAlreadyExisting = await ActivityDAL.selectActivityByName(db, activityName);
     if (activityAlreadyExisting) {
         throw new ResourceAlreadyExistsError(`activity '${activityName}' already exists`);
     }
@@ -51,13 +53,18 @@ const EnsureActivityNameIsValid = (activityName: string): void => {
     const result = activityNameValidator.validate(activityName);
 
     if (result.error) {
-        logger.logInfo(`Activity Name '${activityName}' is invalid`);
-        throw new InvalidNameError(result.error.message);
+        Logger.logInfo(`Activity Name '${activityName}' is invalid`);
+        throw new InvalidInputError(result.error.message);
     }
 };
 
-export const deleteActivity = async (activityArn: string): Promise<void> => {
-    isAString(activityArn);
-    // const wasDeleted = ActivityModel.deleteActivityByArn(activityArn);
-    // logger.logInfo(`activity '${ActivityModel}'`)
+export const deleteActivity = async (activityArn: string): Promise<boolean> => {
+    const arn = ArnHelper.parseArn(activityArn);
+    if (arn.resourceType !== ACTIVITY_RESOURCE_NAME) {
+        throw new InvalidInputError(`arn '${activityArn}' is not an activity arn`);
+    }
+
+    const result = await ActivityDAL.deleteActivityByArn(db, activityArn);
+    Logger.logInfo(`activity '${activityArn}' was deleted ? : '${result.toString()}'`);
+    return result;
 }

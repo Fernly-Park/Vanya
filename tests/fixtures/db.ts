@@ -13,3 +13,8 @@ const clearDatabase = async (): Promise<void> => {
     await db.schema.dropTableIfExists(ActivityTable.tableName);
     await db.schema.dropTableIfExists(UserTable.tableName);
 };
+
+export const emptyActivityTable = async(): Promise<void> => {
+    const db = dbModule.default;
+    await db(ActivityTable.tableName).del();
+}

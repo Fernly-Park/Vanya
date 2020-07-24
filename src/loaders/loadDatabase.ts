@@ -14,6 +14,7 @@ export default async (): Promise<void> => {
     }
 
     try {
+
         await setupDatabase();
         logger.logInfo('Database Correctly setup')
     } catch (err) {

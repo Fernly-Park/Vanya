@@ -38,9 +38,7 @@ const initializeJWTStrategy = (): void => {
 }
 
 const initializeAWSAuthentication = (): void => {
-  console.log('tea')
   passport.use(AWSStrategyName, new CustomStrategy((req, done) => {
-    console.log('hellocaca')
     checkAWSSignature(req.headers as {[headerName: string]: string})
       .then(user => done(null, user))
       .catch(err => done(err))

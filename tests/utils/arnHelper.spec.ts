@@ -1,23 +1,25 @@
 import * as ArnHelper from "@App/utils/ArnHelper";
-
+import config from '@App/config';
 
 describe('arn helper function', () => {
-    it('correctly create an arn', () => {
-        expect.assertions(2);
-        const resourceName = 'test';
-
-        const result = ArnHelper.generateArn(resourceName);
-        const splittedResult = result.split(':');
-
-        expect(splittedResult[0]).toHaveLength(12);
-        expect(splittedResult[1]).toBe(resourceName);
-    }); 
- 
-    it('correctly retrieve a name through an arn', () => {
+    it('correctly create an activity ARN', () => {
         expect.assertions(1);
 
-        const result = ArnHelper.retrieveNameFromArn('999999999999:test')
+        const userId = '123456789012';
+        const activityName = 'name';
+        const result = ArnHelper.generateActivityArn(userId, activityName);
 
-        expect(result).toBe('test');
+        expect(result).toBe(`arn:aws:states:${config.region}:123456789012:activity:name`)
+    });
+
+    it('correctly parse an ARN', () => {
+        expect.assertions(3)
+
+        const userId = '123456789012'
+        const arn = ArnHelper.parseArn(`arn:aws:states:us-east-1:${userId}:activity:name`);
+        
+        expect(arn.resourceName).toBe('name');
+        expect(arn.resourceType).toBe('activity');
+        expect(arn.userId).toBe(userId)
     });
 });

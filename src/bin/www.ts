@@ -1,4 +1,4 @@
-import app from '../app';
+import initApp from '../app';
 import http from 'http';
 import config from '../config/index'
 /**
@@ -23,8 +23,10 @@ function normalizePort(val:any) {
   
 // Get port from environment and store in Express.
 const port = normalizePort(config.port || '3000');
-app.set('port', port);
+initApp().then(app => {
+  app.set('port', port);
 
-app.listen(port, () => {
-  console.log('Server is up on port ' + port)
-})
+  app.listen(port, () => {
+    console.log('Server is up on port ' + port)
+  })
+});

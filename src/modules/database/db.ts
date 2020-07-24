@@ -42,7 +42,6 @@ const setupActivityTable = async(): Promise<void> => {
 
 const setupUserTable = async(): Promise<void> => {
     Logger.logDebug('Creating users table');
-
     const usersTableExists = await db.schema.hasTable(UserTable.tableName);
     Logger.logDebug(`The users table exists ? : ${usersTableExists.toString()}`)
     if (!usersTableExists) {

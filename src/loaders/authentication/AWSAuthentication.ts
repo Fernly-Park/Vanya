@@ -2,15 +2,14 @@
 import crypto from 'crypto';
 import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
+import { AWSConstant } from '@App/utils/constants';
 
 const signingAlgorithm = 'sha256';
-const serviceName = 'states';
 const v4Identifier = 'aws4_request';
 
 type Header = {[headerName: string]: string};
 
 export const checkAWSSignature = async (headers: Header): Promise<IUser> => {
-    console.log('helloo');
     if (!headers['authorization']) {
         return null;
     }
@@ -62,7 +61,7 @@ const retrieveSignedHeaders = (signedHeaders: string, headers: Header): Header =
 const generateSigningKey = (secretKey: string, date: string, region: string): Buffer => {
     const hashedDate = crypto.createHmac(signingAlgorithm, 'AWS4' + secretKey).update(date).digest();
     const hashedRegion = crypto.createHmac(signingAlgorithm, hashedDate).update(region).digest();
-    const hashedService = crypto.createHmac(signingAlgorithm, hashedRegion).update(serviceName).digest();
+    const hashedService = crypto.createHmac(signingAlgorithm, hashedRegion).update(AWSConstant.serviceName).digest();
     const signingKey = crypto.createHmac(signingAlgorithm, hashedService).update(v4Identifier).digest();
     
     return signingKey;
@@ -83,7 +82,7 @@ const generateCredentialString = (region: string, datetime: string) => {
     return [
         datetime.substr(0, 8),
         region,
-        serviceName,
+        AWSConstant.serviceName,
         v4Identifier
     ].join('/');
 }

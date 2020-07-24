@@ -17,5 +17,5 @@ const requestFactory = (action: string) => {
 
 export const createActivityRequest = requestFactory(AWSConstant.actions.CREATE_ACTIVITY);
 
-
+export const dummyId = '999999999999';
 

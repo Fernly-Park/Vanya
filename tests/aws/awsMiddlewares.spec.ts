@@ -1,5 +1,6 @@
-import request from 'supertest'
-import app from '@App/app';
+import request from 'supertest';
+import express from 'express';
+import initApp from '@App/app';
 import { HttpStatusCode } from '@App/utils/httpStatusCode';
 import http from 'http';
 import { CreateActivityReq } from '@App/components/activity/activity.interfaces';
@@ -8,8 +9,9 @@ import { AWSConstant } from '@App/utils/constants';
 
 describe('error are sent if aws header is not correctly set', () => {
     let server: http.Server;
-
-    beforeAll(done => {
+    let app: express.Express
+    beforeAll(async done => {
+        app = await initApp();
         server = http.createServer(app);
         server.listen(3000, 'localhost', 511, done);
     });

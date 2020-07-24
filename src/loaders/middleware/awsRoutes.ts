@@ -1,5 +1,5 @@
 import * as express from "express";
-import * as ActivityController from "../activity/activityController";
+import * as ActivityController from "../../components/activity/activityController";
 import { AWSConstant } from "@App/utils/constants";
 import { UnsupportedOperationError } from "@App/errors/AWSErrors";
 
@@ -12,7 +12,10 @@ router.post('/', async (req, res, next) => {
         const action = targetHeader.split('.')[1];
         switch(action) {
             case AWSConstant.actions.CREATE_ACTIVITY :
-                await ActivityController.createActivity(req, res, next);
+                await ActivityController.createActivity(req, res);
+                break;
+            case AWSConstant.actions.DELETE_ACTIVITY: 
+                await ActivityController.deleteActivity(req, res);
                 break;
             default :
                 throw new UnsupportedOperationError(`Unsupported Operation: '${action}'`);

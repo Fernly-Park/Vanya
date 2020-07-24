@@ -5,8 +5,10 @@ export  const AWSConstant = {
         STEP_FUNCTION_PREFIX: 'AWSStepFunctions'
     },
     actions: {
-        CREATE_ACTIVITY: 'CreateActivity'
-    }
+        CREATE_ACTIVITY: 'CreateActivity',
+        DELETE_ACTIVITY: 'DeleteActivity'
+    },
+    serviceName: 'states'
 }
-
+export const ACTIVITY_RESOURCE_NAME = 'activity';
 export const REQUEST_ID_HEADER = 'x-request-id';
