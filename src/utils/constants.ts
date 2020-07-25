@@ -6,7 +6,8 @@ export  const AWSConstant = {
     },
     actions: {
         CREATE_ACTIVITY: 'CreateActivity',
-        DELETE_ACTIVITY: 'DeleteActivity'
+        DELETE_ACTIVITY: 'DeleteActivity',
+        DESCRIBE_ACTIVITY: 'DescribeActivity',
     },
     serviceName: 'states'
 }

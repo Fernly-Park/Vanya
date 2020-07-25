@@ -6,7 +6,6 @@ import { IActivity } from '@App/components/activity/activity.interfaces';
 import Joi from '@hapi/joi';
 import * as ArnHelper from '../../utils/ArnHelper';
 import * as UserService from '@App/components/user/userService';
-import { ACTIVITY_RESOURCE_NAME } from '@App/utils/constants';
 
 const maxActivityNameLength = 80;
 
@@ -59,12 +58,15 @@ const EnsureActivityNameIsValid = (activityName: string): void => {
 };
 
 export const deleteActivity = async (activityArn: string): Promise<boolean> => {
-    const arn = ArnHelper.parseArn(activityArn);
-    if (arn.resourceType !== ACTIVITY_RESOURCE_NAME) {
-        throw new InvalidInputError(`arn '${activityArn}' is not an activity arn`);
-    }
-
+    ArnHelper.ensureIsActivityArn(activityArn);
     const result = await ActivityDAL.deleteActivityByArn(db, activityArn);
     Logger.logInfo(`activity '${activityArn}' was deleted ? : '${result.toString()}'`);
     return result;
 }
+
+export const getActivity = async (activityArn: string): Promise<IActivity> => {
+    ArnHelper.ensureIsActivityArn(activityArn);
+    const activity = await ActivityDAL.selectActivityByArn(db, activityArn);
+    Logger.logInfo(`activity '${activityArn}' retrieved: '${activity?.arn}'`);
+    return activity;
+};

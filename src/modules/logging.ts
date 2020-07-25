@@ -6,7 +6,7 @@ import { REQUEST_ID_HEADER } from '@App/utils/constants';
 
 export const logger = pino({
     level: config.log.level || 'info',
-});
+}, pino.destination());
     
 export const logInfo = (message: string): void =>  {
     logger.info(retrieveRequestId(), message);

@@ -1,3 +1,5 @@
+import {StepFunctions} from 'aws-sdk';
+
 export enum ActivityTable {
     tableName = 'activities',
     idColumn = 'id',
@@ -11,17 +13,4 @@ export interface IActivity {
     arn: string;
     name: string;
     creationDate: Date;
-}
-
-export interface CreateActivityReq {
-    name: string
-}
-
-export interface DeleteActivityReq {
-    activityArn: string
-}
-
-export interface CreateActivityResp {
-    activityArn: string,
-    creationDate: Date
 }

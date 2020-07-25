@@ -3,7 +3,7 @@ import express from 'express';
 import initApp from '@App/app';
 import { HttpStatusCode } from '@App/utils/httpStatusCode';
 import http from 'http';
-import { CreateActivityReq } from '@App/components/activity/activity.interfaces';
+import { CreateActivityInput } from '@App/components/activity/activity.interfaces';
 import { setupDatabaseForTests } from '@Tests/fixtures/db';
 import { AWSConstant } from '@App/utils/constants';
 
@@ -29,7 +29,7 @@ describe('error are sent if aws header is not correctly set', () => {
         const headers = {
             'content-type':  'application/x-amz-json-1.0'
         };
-        const requestBody: CreateActivityReq = {
+        const requestBody: CreateActivityInput = {
             name: 'test'
         };
         const response = await request(app)
@@ -46,7 +46,7 @@ describe('error are sent if aws header is not correctly set', () => {
             [AWSConstant.headers.TARGET_HEADER]: `${AWSConstant.headers.STEP_FUNCTION_PREFIX}.${AWSConstant.actions.CREATE_ACTIVITY}`,
             'content-type':  'application/dummy'
         };
-        const requestBody: CreateActivityReq = {
+        const requestBody: CreateActivityInput = {
             name: 'test'
         };
         const response = await request(app)

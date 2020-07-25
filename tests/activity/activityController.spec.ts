@@ -90,4 +90,33 @@ describe('activity api tests', () => {
             await expect(stepFunctions.deleteActivity({activityArn: 'badlyFormedArn'}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
         });
     });
+
+    describe('get activity', () => {
+        it('should correctly retrieve an existing activity', async () => {
+            expect.assertions(4);
+            const activityName = 'name';
+            const createdActivity = await stepFunctions.createActivity({name: activityName}).promise();
+            const result = await stepFunctions.describeActivity({activityArn: createdActivity.activityArn}).promise();
+
+            expect(result).toBeDefined();
+            expect(result.activityArn).toBeDefined();
+            expect(result.name).toBe(activityName);
+            expect(result.creationDate).toBeDefined();
+        });
+
+        it('should send a bad request if the activity does not exists', async () => {
+            expect.assertions(1);
+
+            const activityArn = ArnHelper.generateActivityArn(dummyId, 'randomName');
+
+            await expect(stepFunctions.describeActivity({activityArn}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
+
+        });
+
+        it('should send a bad request if the arn is invalid', async () => {
+            expect.assertions(1);
+
+            await expect(stepFunctions.describeActivity({activityArn: 'badArn'}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
+        });
+    });
 })

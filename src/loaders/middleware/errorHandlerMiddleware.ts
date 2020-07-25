@@ -7,7 +7,7 @@ import * as logger from '@App/modules/logging';
 
 export const errorHandlerMiddleware =  (error: Error, request: express.Request, response: express.Response, next: express.NextFunction): void => {
     const isOperationalError = handleError(error);
-
+    
     if (isOperationalError) {
       if (error instanceof ResourceAlreadyExistsError) {
         response.status(HttpStatusCode.CONFLICT);

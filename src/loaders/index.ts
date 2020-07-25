@@ -1,7 +1,7 @@
 import express from 'express';
 import loadDatabase from './loadDatabase';
 import loadLogging from './loadLogging';
-import awsRouter from './middleware/awsRoutes';
+import awsRouter from './middleware/awsRoute';
 import * as logger from '../modules/logging';
 import cors from 'cors';
 import { AWSConstant } from '@App/utils/constants';
