@@ -12,17 +12,10 @@
         },
         
         {
-            "type": "node",
-            "name": "vscode-jest-tests",
+            "command": "npm run test",
+            "name": "test",
             "request": "launch",
-            "args": [
-                "--runInBand"
-            ],
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true,
-            "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            "type": "node-terminal"
         },
         {
             "type": "node",

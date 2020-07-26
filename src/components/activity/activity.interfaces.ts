@@ -4,13 +4,12 @@ export enum ActivityTable {
     tableName = 'activities',
     idColumn = 'id',
     nameColumn = 'name',
-    arnColumn = 'arn',
+    arnColumn = 'activityArn',
     creationDateColumn = 'creationDate'
 }
 
 export interface IActivity {
-    id: number
-    arn: string;
+    activityArn: string;
     name: string;
     creationDate: Date;
 }

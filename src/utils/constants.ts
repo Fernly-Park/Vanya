@@ -8,8 +8,17 @@ export  const AWSConstant = {
         CREATE_ACTIVITY: 'CreateActivity',
         DELETE_ACTIVITY: 'DeleteActivity',
         DESCRIBE_ACTIVITY: 'DescribeActivity',
+        LIST_ACTIVITIES: 'ListActivities'
     },
     serviceName: 'states'
 }
 export const ACTIVITY_RESOURCE_NAME = 'activity';
 export const REQUEST_ID_HEADER = 'x-request-id';
+
+export const LIST_RESOURCE_MAX_RESULT = 1000;
+export const LIST_RESOURCE_MIN_RESULT = 0;
+export const LIST_RESOURCE_DEFAULT_RESULT = 100;
+
+export const LIST_RESOURCE_NEXT_TOKEN_MIN_LENGTH = 1;
+export const LIST_RESOURCE_NEXT_TOKEN_MAX_LENGTH = 1024;
+

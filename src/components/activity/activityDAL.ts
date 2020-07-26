@@ -37,3 +37,12 @@ const selectActivityBy = async (db: DbOrTransaction, column: ActivityTable, ress
     return await db<IActivity>(ActivityTable.tableName).where(column, ressource).first();
 };
 
+export const selectActivities = async (db: DbOrTransaction, limit:number, offset: number): Promise<IActivity[]> => {
+    return await db<IActivity>(ActivityTable.tableName).orderBy(ActivityTable.nameColumn).limit(limit).offset(offset);
+};
+
+export const countActivities = async (db: DbOrTransaction): Promise<number> => {
+    const result = await db<IActivity>(ActivityTable.tableName).count();
+    return +result[0].count;
+};
+

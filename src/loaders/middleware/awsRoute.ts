@@ -19,7 +19,10 @@ router.post('/', async (req, res, next) => {
                 break;
             case AWSConstant.actions.DESCRIBE_ACTIVITY: 
                 await ActivityController.describeActivity(req, res);
-                break; 
+                break;
+            case AWSConstant.actions.LIST_ACTIVITIES:
+                await ActivityController.listActivities(req, res);
+                break;
             default :
                 throw new UnsupportedOperationError(`Unsupported Operation: '${action}'`);
         }

@@ -119,4 +119,35 @@ describe('activity api tests', () => {
             await expect(stepFunctions.describeActivity({activityArn: 'badArn'}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
         });
     });
+
+    describe('list activities', () => {
+        const createActivities = async (numberOfActivities: number): Promise<void> => {
+            for (let i = 0; i < numberOfActivities; i++) {
+                const activityName = `name${i.toString().padStart(3, "0")}`
+                await stepFunctions.createActivity({name: activityName}).promise();
+            }
+        };
+        it('should correctly retrieve activities', async () => {
+            expect.assertions(4);
+            
+            const numberOfActivities = 10;
+            await createActivities(numberOfActivities);
+            const {activities, nextToken} = await stepFunctions.listActivities().promise();
+            
+            expect(activities).toHaveLength(numberOfActivities);
+            expect(activities[0].name).toBe('name000');
+            expect(activities[9].name).toBe('name009');
+            expect(nextToken).toBeNull();
+        });
+
+        it('should send a bad request if the maxResult is invalid', async () => {
+            expect.assertions(1);
+            await expect(stepFunctions.listActivities({maxResults: -1}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
+        });
+
+        it('should send a bad request if the token is invalid', async () => {
+            expect.assertions(1);
+            await expect(stepFunctions.listActivities({nextToken: 'test'}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
+        });
+    });
 })

@@ -4,7 +4,7 @@ import { InvalidInputError, UnexistingResourceError } from "@App/errors/customEr
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
 import * as ActivityService from "@App/components/activity/activityService";
 import { IUser } from "../user/user.interfaces";
-import { CreateActivityOutput, DescribeActivityOutput, CreateActivityInput, DeleteActivityInput, DescribeActivityInput } from "aws-sdk/clients/stepfunctions";
+import { CreateActivityOutput, DescribeActivityOutput, CreateActivityInput, DeleteActivityInput, DescribeActivityInput, ListActivitiesInput, ListActivitiesOutput } from "aws-sdk/clients/stepfunctions";
 
 const router = express.Router();
 
@@ -18,10 +18,10 @@ export const createActivity =  async (req: express.Request, resp: express.Respon
     }
     const activity = await ActivityService.createActivity(user.id, body.name);
 
-    logger.logInfo(`Activity '${activity.arn}' has been created and attributed the id '${activity.id}'`);
+    logger.logInfo(`Activity '${activity.activityArn}' has been created`);
 
     const response: CreateActivityOutput = {
-        "activityArn": activity.arn,
+        "activityArn": activity.activityArn,
         'creationDate': activity.creationDate
     }
     resp.status(HttpStatusCode.OK).send(response);
@@ -43,13 +43,21 @@ export const describeActivity = async (req: express.Request, resp: express.Respo
     if (!activity) {
         throw new UnexistingResourceError(`activity '${body.activityArn}' does not exists`);
     }
-    const response: DescribeActivityOutput = {
-        activityArn: activity.arn,
-        creationDate: activity.creationDate,
-        name: activity.name
-    };
+    const response: DescribeActivityOutput = activity;
     resp.status(HttpStatusCode.OK).send(response);
 };
 
+export const listActivities = async (req: express.Request, resp: express.Response): Promise<void> => {
+    logger.logDebug('Entering list Activities');
+    
+    const {activities, nextToken} = await ActivityService.listActivities(req.body);
+
+    const response: ListActivitiesOutput = {
+        activities,
+        nextToken
+    }
+
+    resp.status(HttpStatusCode.OK).send(response);
+};
 
 export default router;

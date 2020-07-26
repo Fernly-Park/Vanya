@@ -3,8 +3,9 @@ import { AWSConstant, ACTIVITY_RESOURCE_NAME } from "./constants";
 import { InvalidInputError } from '@App/errors/customErrors';
 
 export const arnSeparator = ':';
+const arnMaxLength = 256;
 
-export const ensureIsActivityArn = (activityArn: string): void => {
+export const ensureIsValidActivityArn = (activityArn: string): void => {
     const arn = parseArn(activityArn);
     if (arn.resourceType !== ACTIVITY_RESOURCE_NAME) {
         throw new InvalidInputError(`arn '${activityArn}' is not an activity arn`);
@@ -12,7 +13,7 @@ export const ensureIsActivityArn = (activityArn: string): void => {
 }
 
 export const parseArn = (arn: string) => {
-    if (!arn || typeof arn !== 'string') {
+    if (!arn || typeof arn !== 'string' || arn.length > arnMaxLength) {
         throw new InvalidInputError(`'${arn}' is not a valid arn`);
     }
 

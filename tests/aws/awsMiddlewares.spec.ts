@@ -3,9 +3,9 @@ import express from 'express';
 import initApp from '@App/app';
 import { HttpStatusCode } from '@App/utils/httpStatusCode';
 import http from 'http';
-import { CreateActivityInput } from '@App/components/activity/activity.interfaces';
 import { setupDatabaseForTests } from '@Tests/fixtures/db';
 import { AWSConstant } from '@App/utils/constants';
+import { CreateActivityInput } from 'aws-sdk/clients/stepfunctions';
 
 describe('error are sent if aws header is not correctly set', () => {
     let server: http.Server;
