@@ -13,6 +13,8 @@ export  const AWSConstant = {
     serviceName: 'states'
 }
 export const ACTIVITY_RESOURCE_NAME = 'activity';
+export const ROLE_RESOURCE_NAME = 'role';
+export const STATE_MACHINE_RESOURCE_NAME = 'stateMachine';
 export const REQUEST_ID_HEADER = 'x-request-id';
 
 export const LIST_RESOURCE_MAX_RESULT = 1000;

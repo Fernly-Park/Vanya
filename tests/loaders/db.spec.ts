@@ -3,45 +3,30 @@ import db from '../../src/modules/database/db';
 import { setupDatabaseForTests } from '../fixtures/db';
 import { ActivityTable } from '@App/components/activity/activity.interfaces';
 import { UserTable } from '@App/components/user/user.interfaces';
+import { StateMachineTable } from '@App/components/stateMachines/stateMachine.interfaces';
 
 describe('ensuring that the setted up database is correct', () => {
 
     beforeEach(async () => {
         await setupDatabaseForTests();
     });
- 
-    it('create the activity table', async () => {
-        expect.assertions(5);
+    const cases = [
+        [ActivityTable.tableName, [ActivityTable.idColumn, ActivityTable.nameColumn, ActivityTable.arnColumn, ActivityTable.creationDateColumn]],
+        [UserTable.tableName, [UserTable.idColumn, UserTable.emailColumn, UserTable.secretColumn, UserTable.subColumn]],
+        [StateMachineTable.tableName, [StateMachineTable.arnColumn, StateMachineTable.createDateColumn, StateMachineTable.definitionColumn]],
+    ];
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    it.each(cases)('should correctly create the table %p', async (tableName: any, columns: any[]) => {
+        expect.assertions(columns.length + 1);
+
         await setupDatabase();
-        const activitiesTableName = ActivityTable.tableName;
-        
-        const activitiesTableExists = await db.schema.hasTable(activitiesTableName);
-        const hasIdColumn = await db.schema.hasColumn(activitiesTableName, ActivityTable.idColumn);
-        const hasNameColumn = await db.schema.hasColumn(activitiesTableName, ActivityTable.nameColumn);
-        const hasArnColumn = await db.schema.hasColumn(activitiesTableName, ActivityTable.arnColumn);
-        const hasCreationDateColumn = await db.schema.hasColumn(activitiesTableName, ActivityTable.creationDateColumn)
-
-        expect(activitiesTableExists).toBe(true);
-        expect(hasIdColumn).toBe(true);
-        expect(hasNameColumn).toBe(true);
-        expect(hasArnColumn).toBe(true);
-        expect(hasCreationDateColumn).toBe(true);
-    });
-
-    it('create the users table', async () => {
-        expect.assertions(5);
-        await setupDatabase();
-        
-        const usersTableExists = await db.schema.hasTable(UserTable.tableName);
-        const hasIdColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.idColumn);
-        const hasUsernameColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.emailColumn);
-        const hasSecretColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.secretColumn);
-        const hasSubColumn = await db.schema.hasColumn(UserTable.tableName, UserTable.subColumn);
-
-        expect(usersTableExists).toBe(true);
-        expect(hasIdColumn).toBe(true);
-        expect(hasUsernameColumn).toBe(true);
-        expect(hasSecretColumn).toBe(true);
-        expect(hasSubColumn).toBe(true);
+    
+        const tableExists = await db.schema.hasTable(tableName);
+        expect(tableExists).toBe(true);
+        for (let i = 0; i < columns.length; i++) {
+            const columnExists = await db.schema.hasColumn(tableName, columns[i]);
+            expect(columnExists).toBe(true);
+        }
     });
 });

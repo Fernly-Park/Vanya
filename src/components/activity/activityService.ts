@@ -6,14 +6,13 @@ import { IActivity } from '@App/components/activity/activity.interfaces';
 import Joi from '@hapi/joi';
 import * as ArnHelper from '../../utils/ArnHelper';
 import * as UserService from '@App/components/user/userService';
-import { ensureListResourceInputAreValid } from '@App/utils/validationHelper';
+import { ensureListResourceInputAreValid, ensureResourceNameIsValid } from '@App/utils/validationHelper';
 import { LIST_RESOURCE_DEFAULT_RESULT } from '@App/utils/constants';
 
-const maxActivityNameLength = 80;
 
 export const createActivity = async (userId: string, activityName: string): Promise<IActivity> => {
     Logger.logDebug(`Creating an activity named '${activityName}' by the user '${userId}'`);
-    EnsureActivityNameIsValid(activityName);
+    ensureResourceNameIsValid(activityName);
     Logger.logDebug(`Activity name '${activityName}' is valid`);
 
     await UserService.EnsureUserExists(userId);
@@ -42,22 +41,6 @@ const EnsureActivityNameIsNotTaken = async (db: DbOrTransaction, activityName: s
         throw new ResourceAlreadyExistsError(`activity '${activityName}' already exists`);
     }
 }
-
-const EnsureActivityNameIsValid = (activityName: string): void => {
-    const activityNameValidator = Joi
-        .string()
-        .required()
-        .max(maxActivityNameLength)
-        .regex(/^[^\s<>{}[\]*?"#%\\^|~`$&,;:/\u0000-\u0020\u007F-\u009F]+$/)
-        .message("The activity has invalid characters");
-    
-    const result = activityNameValidator.validate(activityName);
-
-    if (result.error) {
-        Logger.logInfo(`Activity Name '${activityName}' is invalid`);
-        throw new InvalidInputError(result.error.message);
-    }
-};
 
 export const deleteActivity = async (activityArn: string): Promise<boolean> => {
     ArnHelper.ensureIsValidActivityArn(activityArn);

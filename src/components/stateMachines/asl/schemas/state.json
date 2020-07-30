@@ -1,0 +1,30 @@
+{
+  "$id": "#state",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "oneOf": [{
+      "$ref": "#choice"
+    },
+    {
+      "$ref": "#fail"
+    },
+    {
+      "$ref": "#parallel"
+    },
+    {
+      "$ref": "#pass"
+    },
+    {
+      "$ref": "#succeed"
+    },
+    {
+      "$ref": "#task"
+    },
+    {
+      "$ref": "#wait"
+    },
+    {
+      "$ref": "#map"
+    }
+  ]
+}

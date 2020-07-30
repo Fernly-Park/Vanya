@@ -1,16 +1,9 @@
 import config from '@App/config';
-import { AWSConstant, ACTIVITY_RESOURCE_NAME } from "./constants";
+import { AWSConstant, ACTIVITY_RESOURCE_NAME, ROLE_RESOURCE_NAME, STATE_MACHINE_RESOURCE_NAME } from "./constants";
 import { InvalidInputError } from '@App/errors/customErrors';
 
 export const arnSeparator = ':';
 const arnMaxLength = 256;
-
-export const ensureIsValidActivityArn = (activityArn: string): void => {
-    const arn = parseArn(activityArn);
-    if (arn.resourceType !== ACTIVITY_RESOURCE_NAME) {
-        throw new InvalidInputError(`arn '${activityArn}' is not an activity arn`);
-    }
-}
 
 export const parseArn = (arn: string) => {
     if (!arn || typeof arn !== 'string' || arn.length > arnMaxLength) {
@@ -29,6 +22,19 @@ export const parseArn = (arn: string) => {
     }
 };
 
+const ensureIsValidArnFactory = (resourceType: string) => {
+    return (resourceArn: string) => {
+        const arn = parseArn(resourceArn);
+        if (arn.resourceType != resourceType) {
+            throw new InvalidInputError(`arn '${resourceArn}' is not a ${resourceType}arn`);
+        }
+    }
+}
+
+export const ensureIsValidActivityArn = ensureIsValidArnFactory(ACTIVITY_RESOURCE_NAME);
+export const ensureIsValidRoleArn = ensureIsValidArnFactory(ROLE_RESOURCE_NAME);
+
+
 const generateArnFactory = (resourceType: string) => {
     return (userId: string, resourceName: string) => {
         if (typeof userId !== 'string' || typeof resourceName !== 'string') {
@@ -39,3 +45,4 @@ const generateArnFactory = (resourceType: string) => {
 };
 
 export const generateActivityArn = generateArnFactory(ACTIVITY_RESOURCE_NAME);
+export const generateStateMachineArn = generateArnFactory(STATE_MACHINE_RESOURCE_NAME);

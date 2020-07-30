@@ -1,5 +1,3 @@
-import {StepFunctions} from 'aws-sdk';
-
 export enum ActivityTable {
     tableName = 'activities',
     idColumn = 'id',

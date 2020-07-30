@@ -2,6 +2,23 @@ import { LIST_RESOURCE_MIN_RESULT, LIST_RESOURCE_MAX_RESULT, LIST_RESOURCE_NEXT_
 import Joi from "@hapi/joi";
 import { InvalidInputError } from "@App/errors/customErrors";
 
+const maxResourceNameLength = 80;
+
+export const ensureResourceNameIsValid = (resourceName: string): void => {
+    const activityNameValidator = Joi
+        .string()
+        .required()
+        .max(maxResourceNameLength)
+        .regex(/^[^\s<>{}[\]*?"#%\\^|~`$&,;:/\u0000-\u0020\u007F-\u009F]+$/)
+        .message("The resource has invalid characters");
+    
+    const result = activityNameValidator.validate(resourceName);
+
+    if (result.error) {
+        throw new InvalidInputError(result.error.message);
+    }
+};
+
 export const ensureListResourceInputAreValid = (req?: {maxResults?: number, nextToken?: string}): void => {
     const { maxResults, nextToken } = req || {};
     ensureMaxResultsIsValid(maxResults);
