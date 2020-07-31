@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-      "module": "commonjs",
+      "module": "CommonJS",
       "esModuleInterop": true,
       "resolveJsonModule": true,
+      
       "target": "es6",
       "noImplicitAny": true,
       "moduleResolution": "node",
@@ -11,16 +12,13 @@
       "baseUrl": ".",
       "paths": {
           "@App/*": ["src/*"],
-          "@Tests/*": ["tests/*"],
-          "*": [
-              "node_modules/*"
-          ]
+          "@Tests/*": ["tests/*"]
       }
   },
   "include": [
-      "src/**/*",
-      "tests/**/*"
-  ]
+    "src/**/*",
+    "tests/**/*"
+]
 }
 
 // {
