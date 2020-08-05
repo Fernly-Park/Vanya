@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "env-cmd -f ./config/dev.env nodemon -e js,msj,json,ts --watch src/**/*.ts --exec  ts-node  -r tsconfig-paths/register src/bin/www   | pino-pretty",
+    "dev": "env-cmd -f ./config/dev.env ts-node-dev  --no-notify -r tsconfig-paths/register src/bin/www   | pino-pretty",
     "test": "env-cmd -f ./config/test.env jest -i "
   },
   "jest": {
@@ -24,6 +24,7 @@
     "@types/passport-google-oauth20": "^2.0.3",
     "@types/passport-jwt": "^3.0.3",
     "@types/pino-http": "^5.0.3",
+    "@types/redis": "^2.8.25",
     "@types/supertest": "^2.0.10",
     "@types/uuid": "^8.0.0",
     "@types/validator": "^13.1.0",
@@ -39,6 +40,7 @@
     "supertest": "^4.0.2",
     "ts-jest": "^26.1.4",
     "ts-node": "^8.10.2",
+    "ts-node-dev": "^1.0.0-pre.56",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.9.7"
   },

@@ -53,15 +53,16 @@ describe('activity api tests', () => {
             await expect(stepFunctions.createActivity({name: activityName}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.BAD_REQUEST}));
         });
     
-        it('should return a 409 error code if trying to use an already existing activity name', async () => {
+        it('should return the same activity if called twice with the same name', async () => {
             expect.assertions(2);
             
             const name = 'name';
     
             const response1 = await stepFunctions.createActivity({name}).promise();
-    
+            const response2 = await stepFunctions.createActivity({name}).promise();
+
             expect(response1).toBeDefined();
-            await expect(stepFunctions.createActivity({name}).promise()).rejects.toThrow(expect.objectContaining({statusCode: HttpStatusCode.CONFLICT}));
+            expect(response2).toStrictEqual(response1);
     
         });
     })

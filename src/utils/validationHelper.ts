@@ -1,6 +1,7 @@
 import { LIST_RESOURCE_MIN_RESULT, LIST_RESOURCE_MAX_RESULT, LIST_RESOURCE_NEXT_TOKEN_MIN_LENGTH, LIST_RESOURCE_NEXT_TOKEN_MAX_LENGTH } from "./constants";
 import Joi from "@hapi/joi";
 import { InvalidInputError } from "@App/errors/customErrors";
+import { InvalidNameError } from "@App/errors/AWSErrors";
 
 const maxResourceNameLength = 80;
 
@@ -15,7 +16,7 @@ export const ensureResourceNameIsValid = (resourceName: string): void => {
     const result = activityNameValidator.validate(resourceName);
 
     if (result.error) {
-        throw new InvalidInputError(result.error.message);
+        throw new InvalidNameError(`'${resourceName}'`);
     }
 };
 

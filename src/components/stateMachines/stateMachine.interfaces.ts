@@ -1,8 +1,32 @@
 export enum StateMachineTable {
     tableName = 'stateMachines',
     arnColumn = 'arn',
+    nameColumn = 'name',
     definitionColumn = 'definition',
-    createDateColumn = 'creationDate'
+    createDateColumn = 'creationDate',
+    roleArnColumn = 'roleArn',
+    statusColumn = 'status',
+    typeColumn = 'type'
+}
+
+export interface IStateMachine {
+    name: string,
+    arn: string,
+    definition: IStateMachineDefinition
+    creationDate: Date
+    roleArn: string
+    status: StateMachineStatus,
+    type: StateMachineTypes
+}
+
+export enum StateMachineStatus {
+    active = 'ACTIVE',
+    deleting = 'DELETING'
+}
+
+export enum StateMachineTypes {
+    standard = 'STANDARD',
+    express = 'EXPRESS'
 }
 
 export interface IStateMachineDefinition {

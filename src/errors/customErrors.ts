@@ -28,6 +28,13 @@ export class UnexistingResourceError extends BaseError {
     }
 }
 
+export class UserDoesNotExistsError extends BaseError {
+    constructor(description: string) {
+        super("User Does Not Exists", description, true);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
 export class InvalidInputError extends BaseError {
     constructor(description: string) {
         super("Invalid Request Input", description, true);

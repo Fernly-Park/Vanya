@@ -1,32 +1,53 @@
 import config from '@App/config';
 import { AWSConstant, ACTIVITY_RESOURCE_NAME, ROLE_RESOURCE_NAME, STATE_MACHINE_RESOURCE_NAME } from "./constants";
 import { InvalidInputError } from '@App/errors/customErrors';
+import { InvalidArnError } from '@App/errors/AWSErrors';
 
 export const arnSeparator = ':';
 const arnMaxLength = 256;
 
-export const parseArn = (arn: string) => {
+type ParsedARN = {
+    userId: string,
+    resourceType?: string,
+    resourceId: string
+}
+
+export const parseArn = (arn: string): ParsedARN => {
     if (!arn || typeof arn !== 'string' || arn.length > arnMaxLength) {
-        throw new InvalidInputError(`'${arn}' is not a valid arn`);
+        throw new InvalidArnError(`'${arn}' is not a valid arn`);
     }
 
     const parts = arn.split(":");
-    if (parts.length !== 7) {
-        throw new InvalidInputError(`'${arn}' is not a valid arn`);
+    if (parts.length !== 6 && parts.length !== 7) {
+        throw new InvalidArnError(`'${arn}' is not a valid arn`);
     }
-
-    return {
-        userId: parts[4],
-        resourceType: parts[5],
-        resourceName: parts[6]
+    if (parts.length === 7) {
+        return {
+            userId: parts[4],
+            resourceType: parts[5],
+            resourceId: parts[6]
+        }
+    } else if (parts[5].includes('/')) {
+        const lastParts = parts[5].split('/');
+        return {
+            userId: parts[4],
+            resourceType: lastParts[0],
+            resourceId: lastParts[1]
+        }
+    } else {
+        return {
+            userId: parts[4],
+            resourceId: parts[6]
+        }
     }
+    
 };
 
 const ensureIsValidArnFactory = (resourceType: string) => {
     return (resourceArn: string) => {
         const arn = parseArn(resourceArn);
         if (arn.resourceType != resourceType) {
-            throw new InvalidInputError(`arn '${resourceArn}' is not a ${resourceType}arn`);
+            throw new InvalidArnError(`${resourceArn}`);
         }
     }
 }

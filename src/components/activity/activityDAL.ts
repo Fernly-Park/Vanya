@@ -1,21 +1,21 @@
-import * as logger from '../../modules/logging';
+import * as Logger from '../../modules/logging';
 import { IActivity } from './activity.interfaces';
 import { ActivityTable } from './activity.interfaces';
 import { DbOrTransaction } from '@App/modules/database/db';
 
 
 export const insertActivity = async (db: DbOrTransaction, activityArn: string, activityName: string): Promise<void> => {
-    logger.logDebug(`registering activity '${activityArn}'`);
+    Logger.logDebug(`registering activity '${activityArn}'`);
     await db(ActivityTable.tableName).insert({
         [ActivityTable.arnColumn]: activityArn,
         [ActivityTable.nameColumn]: activityName
     });
-    logger.logInfo(`activity '${activityArn}' registered`);
+    Logger.logInfo(`activity '${activityArn}' registered`);
 
 };
 
 export const deleteActivityByArn = async (db: DbOrTransaction, activityArn: string): Promise<boolean> => {
-    logger.logDebug(`deleting activity '${activityArn}'`);
+    Logger.logDebug(`deleting activity '${activityArn}'`);
     const result = await db(ActivityTable.tableName)
     .where(ActivityTable.arnColumn, activityArn)
     .delete();

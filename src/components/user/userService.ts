@@ -1,6 +1,6 @@
 import { randomIntFromInterval, isANumber } from "@App/utils/numberUtils";
 import validator from 'validator';
-import { InvalidInputError, ResourceAlreadyExistsError, UnexistingResourceError } from "@App/errors/customErrors";
+import { InvalidInputError, ResourceAlreadyExistsError, UserDoesNotExistsError } from "@App/errors/customErrors";
 import { isAnEmptyString, isAString } from "@App/utils/stringUtils";
 import * as UserDAL from "./userDAL";
 import { DbOrTransaction } from "@App/modules/database/db";
@@ -75,13 +75,13 @@ export const setUserSecret = async(id: string, secret: string): Promise<void> =>
 };
 
 export const EnsureUserExists = async (id: string): Promise<void> => {
-    if (!await retrieveUserById(id)) {
-        throw new UnexistingResourceError(`user with id '${id}' does not exists`);
+    if (!id || typeof(id) !== 'string' || !await retrieveUserById(id)) {
+        throw new UserDoesNotExistsError(`user with id '${id}' does not exists`);
     }
 };
 
 const EnsureUserIdIsWellFormed = (id: string): void => {
     if (typeof id !== 'string' || id.length != 12 || !isANumber(id)) {
-        throw new InvalidInputError(`'${id}' is not a valid user id`);
+        throw new UserDoesNotExistsError(`'${id}' is not a valid user id`);
     }
 }

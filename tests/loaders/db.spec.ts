@@ -4,6 +4,7 @@ import { setupDatabaseForTests } from '../fixtures/db';
 import { ActivityTable } from '@App/components/activity/activity.interfaces';
 import { UserTable } from '@App/components/user/user.interfaces';
 import { StateMachineTable } from '@App/components/stateMachines/stateMachine.interfaces';
+import * as StateMachineDAL from '@App/components/stateMachines/stateMachineDAL';
 
 describe('ensuring that the setted up database is correct', () => {
 
@@ -13,7 +14,8 @@ describe('ensuring that the setted up database is correct', () => {
     const cases = [
         [ActivityTable.tableName, [ActivityTable.idColumn, ActivityTable.nameColumn, ActivityTable.arnColumn, ActivityTable.creationDateColumn]],
         [UserTable.tableName, [UserTable.idColumn, UserTable.emailColumn, UserTable.secretColumn, UserTable.subColumn]],
-        [StateMachineTable.tableName, [StateMachineTable.arnColumn, StateMachineTable.createDateColumn, StateMachineTable.definitionColumn]],
+        [StateMachineTable.tableName, [StateMachineTable.arnColumn, StateMachineTable.createDateColumn, StateMachineTable.definitionColumn, 
+            StateMachineTable.roleArnColumn, StateMachineTable.statusColumn, StateMachineTable.typeColumn, StateMachineTable.nameColumn]],
     ];
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

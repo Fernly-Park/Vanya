@@ -1,4 +1,4 @@
-import { ResourceAlreadyExistsError, InvalidInputError } from '../../src/errors/customErrors';
+import { ResourceAlreadyExistsError, InvalidInputError, UserDoesNotExistsError } from '../../src/errors/customErrors';
 import { setupDatabaseForTests, emptyActivityTable } from '@Tests/fixtures/db';
 import * as ActivityService from '@App/components/activity/activityService';
 import * as ActivityDAL from '@App/components/activity/activityDAL';
@@ -6,7 +6,8 @@ import db from '@App/modules/database/db';
 import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
 import { dummyActivityArn } from '@Tests/testHelper';
-import { IActivity } from '@App/components/activity/activity.interfaces';
+import { IActivity, ActivityTable } from '@App/components/activity/activity.interfaces';
+import { InvalidNameError, InvalidArnError } from '@App/errors/AWSErrors';
 
 describe('activity service', () => {
     let user: IUser;
@@ -33,31 +34,35 @@ describe('activity service', () => {
             expect(activityFromDb.name).toBe(activityName);
             expect(createdActivity.creationDate).toStrictEqual(activityFromDb.creationDate);
         });
-    
+     
         it.each([undefined, null, '', 'salut'])("should throw if the user id is %p", async(userId: string) => { 
             expect.assertions(1);
-            await expect(ActivityService.createActivity(userId, 'name')).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.createActivity(userId, 'name')).rejects.toThrow(UserDoesNotExistsError);
         });
     
         const badActivityNameCases = ["", " ", "   ", "<", ">", "{", "}", "[", "]", "*", "?", "\"", "#", "%", "\\", "^", "|", "~", "`", "$", "&", ",", ";", ":", "/"]
         it.each(badActivityNameCases)("expects '%p' to be an activity name with an invalid character", async (activityName: string) => {
             expect.assertions(1);
-            await expect(ActivityService.createActivity(user.id, activityName)).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.createActivity(user.id, activityName)).rejects.toThrow(InvalidNameError);
         });
     
         it.each([0, 81, 100])("expects that an activity name with a length of '%p' is invalid", async (activityNameLength: number) => {
             expect.assertions(1);
             const activityName = "a".repeat(activityNameLength);
-            await expect(ActivityService.createActivity(user.id, activityName)).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.createActivity(user.id, activityName)).rejects.toThrow(InvalidNameError);
         });
     
         it("should not create an activity if the name is already taken", async () => {
-            expect.assertions(2);
+            expect.assertions(3);
+
             const activityName = 'name';
-            const activity = await ActivityService.createActivity(user.id, activityName);
-    
-            expect(activity).toBeDefined();
-            await expect(ActivityService.createActivity(user.id, activityName)).rejects.toThrow(ResourceAlreadyExistsError);
+            const firstActivity = await ActivityService.createActivity(user.id, activityName);
+            const secondActivity = await ActivityService.createActivity(user.id, activityName)
+            const numberOfActivitiesInDb = await db(ActivityTable.tableName).count();
+
+            expect(firstActivity).toBeDefined();
+            expect(secondActivity).toStrictEqual(firstActivity);
+            expect(numberOfActivitiesInDb[0]['count']).toBe('1');
         });
     })
     
@@ -86,7 +91,7 @@ describe('activity service', () => {
         it.each(badlyFormedArnCases)('should throw if the arn is %p', async (activityArn: string) => {
             expect.assertions(1);
     
-            await expect(ActivityService.deleteActivity(activityArn)).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.deleteActivity(activityArn)).rejects.toThrow(InvalidArnError);
         });
     });
 
@@ -104,10 +109,10 @@ describe('activity service', () => {
             expect(retrieveActivity.creationDate).toBeDefined();
         });
 
-        it.each(badlyFormedArnCases)('should throw if the input is %p', async (activityArn: string) => {
+        it.each(badlyFormedArnCases)('should throw if the arn is %p', async (activityArn: string) => {
             expect.assertions(1);
 
-            await expect(ActivityService.getActivity(activityArn)).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.getActivity(activityArn)).rejects.toThrow(InvalidArnError);
         });
 
         it('shoud send undefined if the activity is well formed but does not exists', async () => {

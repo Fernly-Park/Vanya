@@ -14,17 +14,26 @@ import succeed from './schemas/succeed.json';
 import task from './schemas/task.json';
 import wait from './schemas/wait.json';
 import map from './schemas/map.json';
-import { IStateMachineDefinition } from '@App/components/stateMachines/stateMachine.interfaces';
+import { IStateMachineDefinition, StateMachineState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { InvalidInputError } from '@App/errors/customErrors';
 import { JSONPath } from 'jsonpath-plus';
+import { STATE_MACHINE_DEFINITION_MAX_LENGTH } from '@App/utils/constants';
+import { InvalidDefinitionError } from '@App/errors/AWSErrors';
+
+
+export const retrieveAllStates = (def: IStateMachineDefinition): StateMachineState[]  => {
+  return JSONPath({json: def, path: '$..[States]'});
+};
 
 export const ensureStateMachineDefinitionIsValid = (definition: string): void => {
-
+  if (typeof definition !== 'string' || definition.length < 1 || definition.length > STATE_MACHINE_DEFINITION_MAX_LENGTH) {
+    throw new InvalidDefinitionError('the state machine definition is invalid');
+  }
   let sm: IStateMachineDefinition; 
   try {
     sm = JSON.parse(definition)
   }catch (err) {
-    throw new InvalidInputError(`State machine is not a valid JSON`);
+    throw new InvalidDefinitionError(`State machine is not a valid JSON`);
   }
 
   const ajv = new Ajv({
@@ -33,7 +42,7 @@ export const ensureStateMachineDefinitionIsValid = (definition: string): void =>
   
   const result = ajv.validate(stateMachineSchema, sm) as boolean;
   if (!result) {
-    throw new InvalidInputError(`Invalid State Machine Definition : ${ajv.errors[0].message}`);
+    throw new InvalidDefinitionError(`Invalid State Machine Definition : ${ajv.errors[0].message}`);
   }
 
   ensureAllStatesAreReachable(sm);
@@ -51,7 +60,7 @@ const ensureAllStatesAreReachable = (sm: IStateMachineDefinition) => {
   .filter((path: string, pos: number, array: string[]) => array.indexOf(path) === pos);
 
   if (allStates.length != reachableStates.length) {
-    throw new InvalidInputError(`All the state are not reachable, or a referenced state does not exists`);
+    throw new InvalidDefinitionError(`MISSING_TRANSITION_TARGET: not all states are reachable`);
   }
 }
 
@@ -62,7 +71,7 @@ const ensureJsonPathAreCorrects = (sm: IStateMachineDefinition) => {
     try {
       JSONPath({path: el, json: {}}) 
     } catch (err) {
-      throw new InvalidInputError(`incorrect definition`);
+      throw new InvalidDefinitionError(`SCHEMA_VALIDATION_FAILED: Value is not a Reference Path`);
     }
   });
 };

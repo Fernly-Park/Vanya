@@ -1,4 +1,4 @@
-import express = require('express');
+import express from 'express';
 import pino from 'pino-http';
 import { v4 as uuid } from 'uuid'
 

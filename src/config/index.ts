@@ -8,6 +8,7 @@ export default {
         path: process.env.LOG_PATH
     },
     authentication: {
+        useAWSSigning: process.env.USE_AWS_SIGNING,
         methods: isAnEmptyString(process.env.AUTHENTICATION_METHODS) ? [] : process.env.AUTHENTICATION_METHODS.split(' '),
         jwtSecret: process.env.JWT_SECRET,
         redirectURL: process.env.REDIRECT_URL,

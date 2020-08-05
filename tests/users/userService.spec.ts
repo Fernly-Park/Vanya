@@ -2,7 +2,7 @@ import { setupDatabaseForTests } from "@Tests/fixtures/db";
 import * as UserService from "@App/components/user/userService";
 import * as UserDAL from "@App/components/user/userDAL";
 import db from '@App/modules/database/db';
-import { InvalidInputError, ResourceAlreadyExistsError } from "@App/errors/customErrors";
+import { InvalidInputError, ResourceAlreadyExistsError, UserDoesNotExistsError } from "@App/errors/customErrors";
 
 describe('create user', () => {
 
@@ -74,7 +74,7 @@ describe('retrieve user', () => {
     it.each([null, undefined, '', 'badlyFormedId'])('should throw if the id is %p', async (userId: string) => {
         expect.assertions(1);
 
-        await expect(UserService.retrieveUserById(userId)).rejects.toThrow(InvalidInputError);
+        await expect(UserService.retrieveUserById(userId)).rejects.toThrow(UserDoesNotExistsError);
     })
 
     it('should correctly retrieve an user by email', async () => {

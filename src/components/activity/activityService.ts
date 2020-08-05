@@ -3,7 +3,6 @@ import db, { DbOrTransaction } from '../../modules/database/db';
 import { InvalidInputError, ResourceAlreadyExistsError } from '../../errors/customErrors';
 import * as ActivityDAL from '@App/components/activity/activityDAL';
 import { IActivity } from '@App/components/activity/activity.interfaces';
-import Joi from '@hapi/joi';
 import * as ArnHelper from '../../utils/ArnHelper';
 import * as UserService from '@App/components/user/userService';
 import { ensureListResourceInputAreValid, ensureResourceNameIsValid } from '@App/utils/validationHelper';
@@ -18,7 +17,10 @@ export const createActivity = async (userId: string, activityName: string): Prom
     await UserService.EnsureUserExists(userId);
     const activityArn = ArnHelper.generateActivityArn(userId, activityName);
     const result = await db.transaction(async (trx) => {
-        await EnsureActivityNameIsNotTaken(trx, activityName);
+        const existingActivity = await ActivityDAL.selectActivityByName(trx, activityName)
+        if (existingActivity) {
+            return existingActivity;
+        }
 
         Logger.logInfo(`activity '${activityName}' was given the arn '${activityArn}'`);
     
@@ -34,13 +36,6 @@ export const createActivity = async (userId: string, activityName: string): Prom
     return result;
     
 };
-
-const EnsureActivityNameIsNotTaken = async (db: DbOrTransaction, activityName: string): Promise<void> => {
-    const activityAlreadyExisting = await ActivityDAL.selectActivityByName(db, activityName);
-    if (activityAlreadyExisting) {
-        throw new ResourceAlreadyExistsError(`activity '${activityName}' already exists`);
-    }
-}
 
 export const deleteActivity = async (activityArn: string): Promise<boolean> => {
     ArnHelper.ensureIsValidActivityArn(activityArn);

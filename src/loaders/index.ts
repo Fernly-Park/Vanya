@@ -1,5 +1,4 @@
 import express from 'express';
-import loadDatabase from './loadDatabase';
 import loadLogging from './loadLogging';
 import awsRouter from './middleware/awsRoute';
 import * as logger from '../modules/logging';
@@ -10,6 +9,8 @@ import { errorHandlerMiddleware } from './middleware/errorHandlerMiddleware';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import { initializeAuthentication, AWSStrategyName } from './authentication/authentication';
+import { setupDatabases } from '@App/modules/database';
+import config from '@App/config';
 
 export default async (app: express.Express): Promise<express.Express> => {
   app.use(cookieParser())
@@ -23,10 +24,12 @@ export default async (app: express.Express): Promise<express.Express> => {
   initializeAuthentication(app);
 
   app.use(AWSRequestFilterMiddleware);
-  
-  app.use('/', passport.authenticate(['jwt', AWSStrategyName], {session: false}), awsRouter);
+
+  app.use('/', 
+    passport.authenticate(['jwt', AWSStrategyName], {session: false}), 
+    awsRouter);
   app.use(errorHandlerMiddleware);
-  await loadDatabase();
+  await setupDatabases();
 
   logger.logInfo('App init complete');
 

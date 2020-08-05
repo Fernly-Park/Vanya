@@ -1,15 +1,55 @@
 import { BaseError } from "./customErrors";
 
-export class MissingHeaderError extends BaseError {
-    constructor(description: string) {
-        super("Invalid Request Input", description, true);
+
+
+export class AWSError extends BaseError {
+    type: string;
+
+    constructor(name: string, description: string, type: string) {
+        super(name, description, true);
+        this.type = type;
         this.stack = `${this.message}\n${new Error().stack}`;
     }
 }
 
-export class UnsupportedOperationError extends BaseError {
+export class MissingHeaderError extends AWSError {
     constructor(description: string) {
-        super("Unsupported Operation", description, true);
-        this.stack = `${this.message}\n${new Error().stack}`;
+        super("Missing Required Header: ", description, 'com.amazonaws.swf.service.v2.model#MissingRequiredHeader');
+    }
+}
+
+export class UnsupportedOperationError extends AWSError {
+    constructor(description: string) {
+        super("Unsupported Operation: ", description, "com.amazonaws.swf.service.v2.model#UnsupportedOperation");
+    }
+}
+
+export class InvalidDefinitionError extends AWSError {
+    constructor(description: string) {
+        super("Invalid State Machine Definition: ", description, 'com.amazonaws.swf.service.v2.model#InvalidDefinition');
+    }
+}
+
+export class InvalidNameError extends AWSError {
+    constructor(description: string) {
+        super("Invalid Name: ", description, "com.amazonaws.swf.service.v2.model#InvalidName");
+    }
+}
+
+export class InvalidArnError extends AWSError {
+    constructor(description: string) {
+        super("Invalid Role Arn: ", description, "com.amazonaws.swf.service.v2.model#InvalidArn");
+    }
+}
+
+export class StateMachineAlreadyExists extends AWSError {
+    constructor(description: string) {
+        super("State Machine Already Exists:", description, "com.amazonaws.swf.service.v2.model#StateMachineAlreadyExists");
+    }
+}
+
+export class StateMachineTypeNotSupported extends AWSError {
+    constructor(description: string) {
+        super("State Machine Type Not Supported:", description, "com.amazonaws.swf.service.v2.model#StateMachineTypeNotSupported");
     }
 }

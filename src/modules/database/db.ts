@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import knex from 'knex';
 import config from '../../config/index';
 import * as Logger from '../logging';
@@ -7,7 +5,7 @@ import { ActivityTable } from '../../components/activity/activity.interfaces';
 import { UserTable } from '../../components/user/user.interfaces';
 import Knex from 'knex';
 
-import { StateMachineTable } from '@App/components/stateMachines/stateMachine.interfaces';
+import { StateMachineTable, StateMachineStatus, StateMachineTypes } from '@App/components/stateMachines/stateMachine.interfaces';
 
 
 const db = knex({
@@ -31,7 +29,7 @@ export const setupDatabase = async (): Promise<void> => {
 export type DbOrTransaction = Knex.Transaction | Knex<any, unknown[]>;
 
 const setupActivityTable = async(): Promise<void> => {
-    await createTableIfNotExists(ActivityTable.tableName, (tableBuilder: any): void => {
+    await createTableIfNotExists(ActivityTable.tableName, (tableBuilder): void => {
         tableBuilder.increments();
         tableBuilder.string(ActivityTable.arnColumn).notNullable().unique().index();
         tableBuilder.string(ActivityTable.nameColumn).notNullable().unique().index();
@@ -40,7 +38,7 @@ const setupActivityTable = async(): Promise<void> => {
 };
 
 const setupUserTable = async(): Promise<void> => {
-    await createTableIfNotExists(UserTable.tableName, (tableBuilder: Knex.CreateTableBuilder): void => {
+    await createTableIfNotExists(UserTable.tableName, (tableBuilder): void => {
         tableBuilder.string(UserTable.idColumn).primary().index();
         tableBuilder.string(UserTable.emailColumn).notNullable().unique().index();
         tableBuilder.string(UserTable.subColumn).nullable().unique()
@@ -49,20 +47,23 @@ const setupUserTable = async(): Promise<void> => {
 };
 
 const setupStateMachineTable = async(): Promise<void> => {
-    // return null;
     await createTableIfNotExists(StateMachineTable.tableName, (tableBuilder) => {
         tableBuilder.string(StateMachineTable.arnColumn).primary().index();
         tableBuilder.jsonb(StateMachineTable.definitionColumn).notNullable();
         tableBuilder.timestamp(StateMachineTable.createDateColumn).notNullable().defaultTo(db.fn.now());
+        tableBuilder.string(StateMachineTable.roleArnColumn).notNullable();
+        tableBuilder.string(StateMachineTable.statusColumn).notNullable().defaultTo(StateMachineStatus.active);
+        tableBuilder.string(StateMachineTable.typeColumn).notNullable().defaultTo(StateMachineTypes.standard);
+        tableBuilder.string(StateMachineTable.nameColumn).notNullable();
     });
 }
 
-const createTableIfNotExists = async (tableName: string, createTableCallback: (tableBuilder: any) => void): Promise<void> => {
+const createTableIfNotExists = async (tableName: string, createTableCallback: (tableBuilder: Knex.CreateTableBuilder) => void): Promise<void> => {
     Logger.logDebug(`Creating '${tableName}' table`);
     const tableExists = await db.schema.hasTable(tableName);
     Logger.logDebug(`The '${tableName}' table exists ? : ${tableExists.toString()}`);
 
-    if (tableExists) {
+    if (!tableExists) {
         await db.schema.createTable(tableName, createTableCallback);
     }
 }
