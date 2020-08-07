@@ -14,12 +14,12 @@ type ParsedARN = {
 
 export const parseArn = (arn: string): ParsedARN => {
     if (!arn || typeof arn !== 'string' || arn.length > arnMaxLength) {
-        throw new InvalidArnError(`'${arn}' is not a valid arn`);
+        throw new InvalidArnError(arn);
     }
 
     const parts = arn.split(":");
     if (parts.length !== 6 && parts.length !== 7) {
-        throw new InvalidArnError(`'${arn}' is not a valid arn`);
+        throw new InvalidArnError(arn);
     }
     if (parts.length === 7) {
         return {
@@ -47,14 +47,14 @@ const ensureIsValidArnFactory = (resourceType: string) => {
     return (resourceArn: string) => {
         const arn = parseArn(resourceArn);
         if (arn.resourceType != resourceType) {
-            throw new InvalidArnError(`${resourceArn}`);
+            throw new InvalidArnError(resourceArn);
         }
     }
 }
 
 export const ensureIsValidActivityArn = ensureIsValidArnFactory(ACTIVITY_RESOURCE_NAME);
 export const ensureIsValidRoleArn = ensureIsValidArnFactory(ROLE_RESOURCE_NAME);
-
+export const ensureStateMachineArnIsValid = ensureIsValidArnFactory(STATE_MACHINE_RESOURCE_NAME);
 
 const generateArnFactory = (resourceType: string) => {
     return (userId: string, resourceName: string) => {

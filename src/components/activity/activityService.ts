@@ -1,12 +1,11 @@
 import * as Logger from '../../modules/logging';
-import db, { DbOrTransaction } from '../../modules/database/db'; 
-import { InvalidInputError, ResourceAlreadyExistsError } from '../../errors/customErrors';
+import db from '../../modules/database/db'; 
 import * as ActivityDAL from '@App/components/activity/activityDAL';
 import { IActivity } from '@App/components/activity/activity.interfaces';
 import * as ArnHelper from '../../utils/ArnHelper';
 import * as UserService from '@App/components/user/userService';
-import { ensureListResourceInputAreValid, ensureResourceNameIsValid } from '@App/utils/validationHelper';
-import { LIST_RESOURCE_DEFAULT_RESULT } from '@App/utils/constants';
+import { ensureResourceNameIsValid } from '@App/utils/validationHelper';
+import { listResourcesFactory } from '../ListResourceFactory';
 
 
 export const createActivity = async (userId: string, activityName: string): Promise<IActivity> => {
@@ -51,28 +50,6 @@ export const getActivity = async (activityArn: string): Promise<IActivity> => {
     return activity;
 };
 
-export const listActivities = async (req?: {maxResults?: number, nextToken?: string}): Promise<{activities: IActivity[], nextToken: string}> => {
-    ensureListResourceInputAreValid(req);
-    const { maxResults, nextToken } = req || {};
+export const listActivities = listResourcesFactory(ActivityDAL.countActivities, ActivityDAL.selectActivities);
 
-    const limit = maxResults ?? LIST_RESOURCE_DEFAULT_RESULT;
-    const offset = nextToken ? +nextToken : 0;
 
-    const numberOfRecord = await ActivityDAL.countActivities(db);
-
-    if (nextToken && offset >= numberOfRecord) {
-        throw new InvalidInputError(`Invalid token : '${nextToken}'`);
-    }
-
-    const result = await ActivityDAL.selectActivities(db, limit, offset);
-    
-
-    const nextTokenToReturn: string = limit + offset >= numberOfRecord ? null: (limit + offset).toString();
-    
-    Logger.logDebug(`sending '${result.length}' activities`);
-
-    return {
-        activities: result,
-        nextToken: nextTokenToReturn
-    };
-};

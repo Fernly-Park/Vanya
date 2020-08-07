@@ -1,5 +1,5 @@
-import * as express from "express";
-import * as logger from '../../modules/logging'
+import express from "express";
+import * as Logger from '../../modules/logging'
 import { InvalidInputError, UnexistingResourceError } from "@App/errors/customErrors";
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
 import * as ActivityService from "@App/components/activity/activityService";
@@ -9,7 +9,7 @@ import { CreateActivityOutput, DescribeActivityOutput, CreateActivityInput, Dele
 const router = express.Router();
 
 export const createActivity =  async (req: express.Request, resp: express.Response): Promise<void> => {
-    logger.logDebug('Entering create activity controller');
+    Logger.logDebug('Entering create activity controller');
     
     const body: CreateActivityInput = req.body;
     const user = req.user as IUser;
@@ -18,7 +18,7 @@ export const createActivity =  async (req: express.Request, resp: express.Respon
     }
     const activity = await ActivityService.createActivity(user.id, body.name);
 
-    logger.logInfo(`Activity '${activity.activityArn}' has been created`);
+    Logger.logInfo(`Activity '${activity.activityArn}' has been created`);
 
     const response: CreateActivityOutput = {
         "activityArn": activity.activityArn,
@@ -28,7 +28,7 @@ export const createActivity =  async (req: express.Request, resp: express.Respon
 };
 
 export const deleteActivity = async (req: express.Request, resp: express.Response): Promise<void> => {
-    logger.logDebug('Entering delete activity controller');
+    Logger.logDebug('Entering delete activity controller');
     
     const body: DeleteActivityInput = req.body;
     await ActivityService.deleteActivity(body.activityArn);
@@ -37,7 +37,7 @@ export const deleteActivity = async (req: express.Request, resp: express.Respons
 }
 
 export const describeActivity = async (req: express.Request, resp: express.Response): Promise<void> => {
-    logger.logDebug('Entering describe activity');
+    Logger.logDebug('Entering describe activity');
     const body: DescribeActivityInput = req.body;
     const activity = await ActivityService.getActivity(body.activityArn);
     if (!activity) {
@@ -48,9 +48,9 @@ export const describeActivity = async (req: express.Request, resp: express.Respo
 };
 
 export const listActivities = async (req: express.Request, resp: express.Response): Promise<void> => {
-    logger.logDebug('Entering list Activities');
+    Logger.logDebug('Entering list Activities');
     
-    const {activities, nextToken} = await ActivityService.listActivities(req.body);
+    const {resources: activities, nextToken} = await ActivityService.listActivities(req.body);
 
     const response: ListActivitiesOutput = {
         activities,

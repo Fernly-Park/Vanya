@@ -1,4 +1,5 @@
 import * as Logger from '../../modules/logging';
+import * as DALFactory from '@App/components/DALFactory';
 import { IActivity } from './activity.interfaces';
 import { ActivityTable } from './activity.interfaces';
 import { DbOrTransaction } from '@App/modules/database/db';
@@ -14,35 +15,9 @@ export const insertActivity = async (db: DbOrTransaction, activityArn: string, a
 
 };
 
-export const deleteActivityByArn = async (db: DbOrTransaction, activityArn: string): Promise<boolean> => {
-    Logger.logDebug(`deleting activity '${activityArn}'`);
-    const result = await db(ActivityTable.tableName)
-    .where(ActivityTable.arnColumn, activityArn)
-    .delete();
-
-    return result === 1;
-
-}
-
-export const selectActivityByName = 
-async(db: DbOrTransaction, activityName: string): Promise<IActivity> => {
-    return await selectActivityBy(db, ActivityTable.nameColumn, activityName);
-};
-
-export const selectActivityByArn = async(db: DbOrTransaction, activityArn: string): Promise<IActivity> => {
-    return await selectActivityBy(db, ActivityTable.arnColumn, activityArn);
-};
-
-const selectActivityBy = async (db: DbOrTransaction, column: ActivityTable, ressource: string): Promise<IActivity> => {
-    return await db<IActivity>(ActivityTable.tableName).where(column, ressource).first();
-};
-
-export const selectActivities = async (db: DbOrTransaction, limit:number, offset: number): Promise<IActivity[]> => {
-    return await db<IActivity>(ActivityTable.tableName).orderBy(ActivityTable.nameColumn).limit(limit).offset(offset);
-};
-
-export const countActivities = async (db: DbOrTransaction): Promise<number> => {
-    const result = await db<IActivity>(ActivityTable.tableName).count();
-    return +result[0].count;
-};
+export const deleteActivityByArn = DALFactory.deleteResourceFactory(ActivityTable.tableName, ActivityTable.arnColumn);
+export const selectActivityByName = DALFactory.selectResourceFactory<IActivity>(ActivityTable.tableName, ActivityTable.nameColumn);
+export const selectActivityByArn = DALFactory.selectResourceFactory<IActivity>(ActivityTable.tableName, ActivityTable.arnColumn);
+export const selectActivities = DALFactory.selectArrayOfResourcesFactory<IActivity>(ActivityTable.tableName, ActivityTable.nameColumn);
+export const countActivities = DALFactory.countResourceFactory(ActivityTable.tableName);
 

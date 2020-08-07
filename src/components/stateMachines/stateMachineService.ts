@@ -1,4 +1,4 @@
-import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
+import { CreateStateMachineInput, DescribeStateMachineInput, DeleteStateMachineInput, ListStateMachinesInput } from "aws-sdk/clients/stepfunctions";
 import * as ValidationHelper from "@App/utils/validationHelper";
 import * as ArnHelper from "@App/utils/ArnHelper";
 import * as ASLHelper from "./asl/ASLHelper";
@@ -6,9 +6,10 @@ import { IStateMachineDefinition, IStateMachine, StateMachineTypes } from "./sta
 import * as UserService from '@App/components/user/userService';
 import db from '../../modules/database/db'; 
 import * as StateMachineDAL from './stateMachineDAL';
-import { StateMachineAlreadyExists, StateMachineTypeNotSupported } from "@App/errors/AWSErrors";
+import { StateMachineAlreadyExistsError, StateMachineTypeNotSupported, StateMachineDoesNotExistsError } from "@App/errors/AWSErrors";
 import {areObjectsEquals} from '@App/utils/objectUtils';
 import * as Logger from '@App/modules/logging';
+import { listResourcesFactory } from "../ListResourceFactory";
 
 export const createStateMachine = async (userId: string, req: CreateStateMachineInput): Promise<IStateMachine> => {
     validateCreateStateMachineInput(req);
@@ -22,7 +23,7 @@ export const createStateMachine = async (userId: string, req: CreateStateMachine
         const existingSM = await StateMachineDAL.selectStateMachineByArn(trx, arn);
         
         if (existingSM && (!areObjectsEquals(existingSM.definition, stateMachineDef) || existingSM.roleArn !== req.roleArn)) {
-            throw new StateMachineAlreadyExists(existingSM.arn);
+            throw new StateMachineAlreadyExistsError(existingSM.arn);
         } else if (existingSM) {
             Logger.logDebug(`state machine '${arn}' already exists`)
             return existingSM;
@@ -41,8 +42,27 @@ const validateCreateStateMachineInput = (req: CreateStateMachineInput): void => 
     ASLHelper.ensureStateMachineDefinitionIsValid(req.definition);
 
     if (req.type && req.type !== StateMachineTypes.standard && req.type !== StateMachineTypes.express) {
-        throw new StateMachineTypeNotSupported(`'${req.type}'`);
+        throw new StateMachineTypeNotSupported(req.type);
     }
 
     // todo types optionnels
 };
+
+export const deleteStateMachine = async (req: DeleteStateMachineInput): Promise<boolean> => {
+    ArnHelper.ensureStateMachineArnIsValid(req?.stateMachineArn);
+    // todo, si il y a des executions, mettre le status a deleting
+    return await StateMachineDAL.deleteStateMachineByArn(db, req.stateMachineArn);
+}
+
+export const describeStateMachine = async (req: DescribeStateMachineInput): Promise<IStateMachine> => {
+    ArnHelper.ensureStateMachineArnIsValid(req?.stateMachineArn);
+
+    const toReturn = await StateMachineDAL.selectStateMachineByArn(db, req.stateMachineArn);
+    if (!toReturn) {
+        throw new StateMachineDoesNotExistsError(req.stateMachineArn);
+    }
+
+    return toReturn;
+};
+
+export const listStateMachines = listResourcesFactory<IStateMachine>(StateMachineDAL.countStateMachines, StateMachineDAL.selectStateMachines);

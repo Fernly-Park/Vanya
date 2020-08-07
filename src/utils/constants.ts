@@ -8,7 +8,11 @@ export  const AWSConstant = {
         CREATE_ACTIVITY: 'CreateActivity',
         DELETE_ACTIVITY: 'DeleteActivity',
         DESCRIBE_ACTIVITY: 'DescribeActivity',
-        LIST_ACTIVITIES: 'ListActivities'
+        LIST_ACTIVITIES: 'ListActivities',
+        CREATE_STATE_MACHINE: 'CreateStateMachine',
+        DESCRIBE_STATE_MACHINE: 'DescribeStateMachine',
+        DELETE_STATE_MACHINE: 'DeleteStateMachine',
+        LIST_STATE_MACHINES: 'ListStateMachines',
     },
     serviceName: 'states'
 }

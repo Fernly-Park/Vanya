@@ -2,6 +2,7 @@ import * as Logger from '../../modules/logging';
 import { DbOrTransaction } from '@App/modules/database/db';
 import { StateMachineTable, IStateMachine } from './stateMachine.interfaces';
 import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
+import * as DALFactory from '@App/components/DALFactory';
 
 export const createStateMachine = async (db: DbOrTransaction, arn: string, req: CreateStateMachineInput): Promise<void> => {
     Logger.logDebug(`Insterting state machine '${arn}'`);
@@ -14,18 +15,7 @@ export const createStateMachine = async (db: DbOrTransaction, arn: string, req: 
     });
 }
 
-export const deleteStateMachineByArn = async (db: DbOrTransaction, arn: string): Promise<boolean> => {
-    Logger.logDebug(`deleting state machine '${arn}'`);
-    const result = await db(StateMachineTable.tableName)
-        .where(StateMachineTable.arnColumn, arn)
-        .delete();
-    return result === 1;
-}
-
-export const selectStateMachineByArn = async (db: DbOrTransaction, arn: string): Promise<IStateMachine> => {
-    return await selectStateMachineBy(db, StateMachineTable.arnColumn, arn);
-}
-
-const selectStateMachineBy = async (db: DbOrTransaction, column: StateMachineTable, ressource: string): Promise<IStateMachine> => {
-    return await db<IStateMachine>(StateMachineTable.tableName).where(column, ressource).first();
-};
+export const deleteStateMachineByArn = DALFactory.deleteResourceFactory(StateMachineTable.tableName, StateMachineTable.arnColumn);
+export const selectStateMachineByArn = DALFactory.selectResourceFactory<IStateMachine>(StateMachineTable.tableName, StateMachineTable.arnColumn);
+export const selectStateMachines = DALFactory.selectArrayOfResourcesFactory<IStateMachine>(StateMachineTable.tableName, StateMachineTable.nameColumn);
+export const countStateMachines = DALFactory.countResourceFactory(StateMachineTable.tableName);

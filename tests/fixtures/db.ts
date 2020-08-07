@@ -25,3 +25,10 @@ export const emptyStateMachineTable = async(): Promise<void> => {
     const db = dbModule.default;
     await db(StateMachineTable.tableName).del();
 }
+
+
+export const countRowInTable = async(tableName: string): Promise<number> => {
+    const db = dbModule.default;
+    const numberOfRows = await db(tableName).count();
+    return +numberOfRows[0]['count']
+};

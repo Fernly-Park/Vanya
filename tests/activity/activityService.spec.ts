@@ -1,4 +1,4 @@
-import { ResourceAlreadyExistsError, InvalidInputError, UserDoesNotExistsError } from '../../src/errors/customErrors';
+import { InvalidInputError, UserDoesNotExistsError } from '../../src/errors/customErrors';
 import { setupDatabaseForTests, emptyActivityTable } from '@Tests/fixtures/db';
 import * as ActivityService from '@App/components/activity/activityService';
 import * as ActivityDAL from '@App/components/activity/activityDAL';
@@ -7,7 +7,7 @@ import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
 import { dummyActivityArn } from '@Tests/testHelper';
 import { IActivity, ActivityTable } from '@App/components/activity/activity.interfaces';
-import { InvalidNameError, InvalidArnError } from '@App/errors/AWSErrors';
+import { InvalidNameError, InvalidArnError, InvalidTokenError } from '@App/errors/AWSErrors';
 
 describe('activity service', () => {
     let user: IUser;
@@ -125,7 +125,7 @@ describe('activity service', () => {
     });
 
     describe('list activities', () => {
-        const createActivities = async(numberOfActivitesToCreate: number): Promise<IActivity[]> => {
+        const createActivitiesHelper = async(numberOfActivitesToCreate: number): Promise<IActivity[]> => {
             const toReturn: IActivity[] = [];
             for (let i = 0; i < numberOfActivitesToCreate; i++) {
                 const activityName = `name${i.toString().padStart(3, "0")}`
@@ -138,8 +138,8 @@ describe('activity service', () => {
             expect.assertions(4);
 
             const numberOfActivities = 10;
-            await createActivities(numberOfActivities);
-            const {activities, nextToken} = await ActivityService.listActivities();
+            await createActivitiesHelper(numberOfActivities);
+            const {resources: activities, nextToken} = await ActivityService.listActivities();
 
             expect(activities).toHaveLength(numberOfActivities);
             expect(activities[0].name).toBe('name000');
@@ -151,8 +151,8 @@ describe('activity service', () => {
             expect.assertions(4);
 
             const maxResults = 5;
-            await createActivities(100);
-            const {activities, nextToken} = await ActivityService.listActivities({maxResults});
+            await createActivitiesHelper(100);
+            const {resources: activities, nextToken} = await ActivityService.listActivities({maxResults});
 
             expect(activities).toHaveLength(maxResults);
             expect(activities[0].name).toBe('name000');
@@ -163,8 +163,8 @@ describe('activity service', () => {
         it('should correctly retrieve the last activities', async () => {
             expect.assertions(4);
 
-            await createActivities(100);
-            const {activities, nextToken} = await ActivityService.listActivities({maxResults: 70, nextToken: '50'});
+            await createActivitiesHelper(100);
+            const {resources: activities, nextToken} = await ActivityService.listActivities({maxResults: 70, nextToken: '50'});
 
             expect(activities).toHaveLength(50);
             expect(activities[0].name).toBe('name050');
@@ -181,30 +181,30 @@ describe('activity service', () => {
         it.each([10, '', '1'.repeat(1025), 'a'])('should throw if nextToken has a value of %p', async (nextToken: string) => {
             expect.assertions(1)
 
-            await expect(ActivityService.listActivities({nextToken})).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.listActivities({nextToken})).rejects.toThrow(InvalidTokenError);
         });
         
         it('should send an empty array and a null nextToken if there is no activities', async () => {
             expect.assertions(2);
 
-            const {activities, nextToken} = await ActivityService.listActivities();
+            const {resources: activities, nextToken} = await ActivityService.listActivities();
 
             expect(activities).toHaveLength(0);
             expect(nextToken).toBeNull();
         });
 
         it('should throw if the nextToken is too high', async () => {
-            expect.assertions(1);
+            expect.assertions(1); 
 
-            await expect(ActivityService.listActivities({nextToken: '100'})).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.listActivities({nextToken: '100'})).rejects.toThrow(InvalidTokenError);
         });
 
         it('shoud throw if the nextToken has the same value as the number of activities', async () => {
             expect.assertions(1);
 
-            await createActivities(10);
+            await createActivitiesHelper(10);
 
-            await expect(ActivityService.listActivities({nextToken: '10'})).rejects.toThrow(InvalidInputError);
+            await expect(ActivityService.listActivities({nextToken: '10'})).rejects.toThrow(InvalidTokenError);
 
         });
     });

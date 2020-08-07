@@ -63,4 +63,5 @@ export const stateMachinesForTests = {
 }
 
 export const dummyRoleARN = 'arn:aws:iam::012345678901:role/DummyRole';
+export const dummyStateMachineArn = 'arn:aws:states:us-east-1:123456789012:stateMachine:dummySmArn';
 

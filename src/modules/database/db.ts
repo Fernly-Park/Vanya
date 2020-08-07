@@ -64,6 +64,7 @@ const createTableIfNotExists = async (tableName: string, createTableCallback: (t
     Logger.logDebug(`The '${tableName}' table exists ? : ${tableExists.toString()}`);
 
     if (!tableExists) {
+        Logger.logDebug(`Creating '${tableName}' table`);
         await db.schema.createTable(tableName, createTableCallback);
     }
 }
