@@ -36,6 +36,9 @@ router.post('/', async (req, res, next) => {
             case AWSConstant.actions.LIST_STATE_MACHINES:
                 await StateMachineController.listStateMachines(req, res);
                 break;
+            case AWSConstant.actions.UPDATE_STATE_MACHINE: 
+                await StateMachineController.updateStateMachine(req, res);
+                break;
             default :
                 throw new UnsupportedOperationError(`Unsupported Operation: '${action}'`);
         }

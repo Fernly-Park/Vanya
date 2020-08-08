@@ -22,6 +22,7 @@ export const createActivityRequest = requestFactory(AWSConstant.actions.CREATE_A
 
 export const dummyId = '999999999999';
 export const dummyActivityArn = ArnHelper.generateActivityArn(dummyId, 'randomName');
+export const badlyFormedArnCases = [null, undefined, '', 10, 'badlyFormedArn', 'arn:aws:states:us-east-1:999999999999:activity:' + 'a'.repeat(210)];
 
 const getStateMachineDef = (smName: string, valid = true): string => {
     return readFileSync(join(__dirname, 'stateMachine', 'definitions', valid ? 'valid': 'invalid', smName), 'utf8');

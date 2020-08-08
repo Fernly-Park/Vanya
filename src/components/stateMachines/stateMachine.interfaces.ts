@@ -9,6 +9,14 @@ export enum StateMachineTable {
     typeColumn = 'type'
 }
 
+export enum StateMachineVersionTable {
+    tableName = 'stateMachineVersions',
+    updateDateColumn = 'updateDate',
+    stateMachineArnColumn = 'arn',
+    definitionColumn = 'definition',
+    roleArnColumn = 'roleArn'
+}
+
 export interface IStateMachine {
     name: string,
     arn: string,
@@ -21,6 +29,7 @@ export interface IStateMachine {
 
 export enum StateMachineStatus {
     active = 'ACTIVE',
+
     deleting = 'DELETING'
 }
 

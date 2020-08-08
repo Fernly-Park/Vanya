@@ -3,8 +3,7 @@ import db from '../../src/modules/database/db';
 import { setupDatabaseForTests } from '../fixtures/db';
 import { ActivityTable } from '@App/components/activity/activity.interfaces';
 import { UserTable } from '@App/components/user/user.interfaces';
-import { StateMachineTable } from '@App/components/stateMachines/stateMachine.interfaces';
-import * as StateMachineDAL from '@App/components/stateMachines/stateMachineDAL';
+import { StateMachineTable, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
 
 describe('ensuring that the setted up database is correct', () => {
 
@@ -16,6 +15,8 @@ describe('ensuring that the setted up database is correct', () => {
         [UserTable.tableName, [UserTable.idColumn, UserTable.emailColumn, UserTable.secretColumn, UserTable.subColumn]],
         [StateMachineTable.tableName, [StateMachineTable.arnColumn, StateMachineTable.createDateColumn, StateMachineTable.definitionColumn, 
             StateMachineTable.roleArnColumn, StateMachineTable.statusColumn, StateMachineTable.typeColumn, StateMachineTable.nameColumn]],
+        [StateMachineVersionTable.tableName, [StateMachineVersionTable.definitionColumn, StateMachineVersionTable.roleArnColumn, 
+            StateMachineVersionTable.stateMachineArnColumn, StateMachineVersionTable.updateDateColumn]]
     ];
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

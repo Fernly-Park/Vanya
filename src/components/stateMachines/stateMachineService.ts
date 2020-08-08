@@ -1,18 +1,18 @@
-import { CreateStateMachineInput, DescribeStateMachineInput, DeleteStateMachineInput, ListStateMachinesInput } from "aws-sdk/clients/stepfunctions";
+import { CreateStateMachineInput, DescribeStateMachineInput, DeleteStateMachineInput, ListStateMachinesInput, UpdateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import * as ValidationHelper from "@App/utils/validationHelper";
 import * as ArnHelper from "@App/utils/ArnHelper";
 import * as ASLHelper from "./asl/ASLHelper";
-import { IStateMachineDefinition, IStateMachine, StateMachineTypes } from "./stateMachine.interfaces";
+import { IStateMachineDefinition, IStateMachine, StateMachineTypes, StateMachineStatus } from "./stateMachine.interfaces";
 import * as UserService from '@App/components/user/userService';
 import db from '../../modules/database/db'; 
 import * as StateMachineDAL from './stateMachineDAL';
-import { StateMachineAlreadyExistsError, StateMachineTypeNotSupported, StateMachineDoesNotExistsError } from "@App/errors/AWSErrors";
+import { StateMachineAlreadyExistsError, StateMachineTypeNotSupportedError, StateMachineDoesNotExistsError, MissingRequiredParameterError, StateMachineDeletingError } from "@App/errors/AWSErrors";
 import {areObjectsEquals} from '@App/utils/objectUtils';
 import * as Logger from '@App/modules/logging';
 import { listResourcesFactory } from "../ListResourceFactory";
 
 export const createStateMachine = async (userId: string, req: CreateStateMachineInput): Promise<IStateMachine> => {
-    validateCreateStateMachineInput(req);
+    ensureCreateStateMachineInputIsValid(req);
     await UserService.EnsureUserExists(userId);
     Logger.logDebug(`Inputs are valid, creating state machine '${req.name}'`);
 
@@ -36,13 +36,13 @@ export const createStateMachine = async (userId: string, req: CreateStateMachine
     return result;
 };
 
-const validateCreateStateMachineInput = (req: CreateStateMachineInput): void => {
+const ensureCreateStateMachineInputIsValid = (req: CreateStateMachineInput): void => {
     ValidationHelper.ensureResourceNameIsValid(req.name);
     ArnHelper.ensureIsValidRoleArn(req.roleArn);
     ASLHelper.ensureStateMachineDefinitionIsValid(req.definition);
 
     if (req.type && req.type !== StateMachineTypes.standard && req.type !== StateMachineTypes.express) {
-        throw new StateMachineTypeNotSupported(req.type);
+        throw new StateMachineTypeNotSupportedError(req.type);
     }
 
     // todo types optionnels
@@ -51,7 +51,7 @@ const validateCreateStateMachineInput = (req: CreateStateMachineInput): void => 
 export const deleteStateMachine = async (req: DeleteStateMachineInput): Promise<boolean> => {
     ArnHelper.ensureStateMachineArnIsValid(req?.stateMachineArn);
     // todo, si il y a des executions, mettre le status a deleting
-    return await StateMachineDAL.deleteStateMachineByArn(db, req.stateMachineArn);
+    return await StateMachineDAL.deleteStateMachine(db, req.stateMachineArn);
 }
 
 export const describeStateMachine = async (req: DescribeStateMachineInput): Promise<IStateMachine> => {
@@ -65,4 +65,35 @@ export const describeStateMachine = async (req: DescribeStateMachineInput): Prom
     return toReturn;
 };
 
+
 export const listStateMachines = listResourcesFactory<IStateMachine>(StateMachineDAL.countStateMachines, StateMachineDAL.selectStateMachines);
+
+export const updateStateMachine = async (req: UpdateStateMachineInput): Promise<Date> => {
+    ensureUpdateStateMachineInputIsValid(req);
+    const stateMachineToUpdate = await StateMachineDAL.selectStateMachineByArn(db, req.stateMachineArn);
+
+    if (!stateMachineToUpdate) {
+        throw new StateMachineDoesNotExistsError(req.stateMachineArn);
+    }
+
+    if (stateMachineToUpdate.status === StateMachineStatus.deleting) {
+        throw new StateMachineDeletingError(req.stateMachineArn);
+    }
+
+    return await StateMachineDAL.updateStateMachine(db, {
+        stateMachineArn: req.stateMachineArn,
+        definition: req.definition ?? JSON.stringify(stateMachineToUpdate.definition),
+        roleArn: req.roleArn ?? stateMachineToUpdate.roleArn
+    });
+}
+
+const ensureUpdateStateMachineInputIsValid = (req: UpdateStateMachineInput): void => {
+    if (!req?.stateMachineArn || (!req.definition && !req.roleArn)) {
+        throw new MissingRequiredParameterError('required parameters missing');
+    }
+
+    ArnHelper.ensureStateMachineArnIsValid(req.stateMachineArn);
+    req.roleArn && ArnHelper.ensureIsValidRoleArn(req.roleArn)
+    req.definition && ASLHelper.ensureStateMachineDefinitionIsValid(req.definition);
+    // todo log configuration
+}

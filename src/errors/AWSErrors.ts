@@ -60,8 +60,20 @@ export class StateMachineDoesNotExistsError extends AWSError {
     }
 }
 
-export class StateMachineTypeNotSupported extends AWSError {
+export class StateMachineTypeNotSupportedError extends AWSError {
     constructor(description: string) {
         super("State Machine Type Not Supported", description, "com.amazonaws.swf.service.v2.model#StateMachineTypeNotSupported");
+    }
+}
+
+export class MissingRequiredParameterError extends AWSError {
+    constructor(description: string) {
+        super("Missing Required Parameter", description, "com.amazonaws.swf.service.v2.model#MissingRequiredParameter");
+    }
+}
+
+export class StateMachineDeletingError extends AWSError {
+    constructor(description: string) {
+        super("State Machine Deleting", description, "com.amazonaws.swf.service.v2.model#StateMachineDeleting");
     }
 }

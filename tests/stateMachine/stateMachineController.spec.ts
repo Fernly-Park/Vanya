@@ -260,5 +260,64 @@ describe('state machine tests', () => {
         })
     });
 
+    describe('update state machines', () => {
+        it('should correctly update a state machine', async () => {
+            expect.assertions(2);
 
+            const req: CreateStateMachineInput = {
+                name: 'name',
+                definition: stateMachinesForTests.valid.validPassState,
+                roleArn: dummyRoleARN
+            };
+            const createdStateMachine = await stepFunctions.createStateMachine(req).promise();
+            const newDefinition = stateMachinesForTests.valid.validParallel;
+            const updateDate = await stepFunctions.updateStateMachine({stateMachineArn: createdStateMachine.stateMachineArn,definition: newDefinition}).promise();
+            const updatedStateMachine = await stepFunctions.describeStateMachine({stateMachineArn: createdStateMachine.stateMachineArn}).promise();
+
+            expect(updateDate).toBeDefined();
+            expect(JSON.parse(updatedStateMachine.definition)).toStrictEqual(JSON.parse(newDefinition));
+        });
+
+        it('should throw an invalid arn if the arn is invalid', async () => {
+            expect.assertions(1);
+
+            const createSMInput: CreateStateMachineInput = {
+                name: 'name',
+                definition: stateMachinesForTests.valid.validPassState,
+                roleArn: dummyRoleARN
+            };
+            const createdStateMachine = await stepFunctions.createStateMachine(createSMInput).promise();
+
+            const updateRequest = stepFunctions.updateStateMachine({stateMachineArn: createdStateMachine.stateMachineArn, roleArn: 'badArn'}).promise()
+            await expect(updateRequest).rejects.toThrow(expect.objectContaining({
+                statusCode: HttpStatusCode.BAD_REQUEST,
+                code: 'InvalidArn',
+            }));
+        });
+
+        it('should throw if the state machine does not exists', async () => {
+            expect.assertions(1);
+
+            await expect(stepFunctions.updateStateMachine({stateMachineArn: dummyStateMachineArn, roleArn: dummyRoleARN}).promise()).rejects.toThrow(expect.objectContaining({
+                statusCode: HttpStatusCode.BAD_REQUEST,
+                code: 'StateMachineDoesNotExist',
+            }));
+        });
+
+        it('should throw if the definition is incorrect', async () => {
+            expect.assertions(1);
+
+            const createSMInput: CreateStateMachineInput = {
+                name: 'name',
+                definition: stateMachinesForTests.valid.validPassState,
+                roleArn: dummyRoleARN
+            };
+            const createdStateMachine = await stepFunctions.createStateMachine(createSMInput).promise();
+
+            await expect(stepFunctions.updateStateMachine({stateMachineArn: createdStateMachine.stateMachineArn, definition: '{'}).promise()).rejects.toThrow(expect.objectContaining({
+                statusCode: HttpStatusCode.BAD_REQUEST, 
+                code: 'InvalidDefinition',
+            }));
+        });
+    })
 })

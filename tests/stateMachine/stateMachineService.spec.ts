@@ -2,11 +2,11 @@ import * as StateMachineService from '@App/components/stateMachines/stateMachine
 import { setupDatabaseForTests, emptyStateMachineTable, countRowInTable } from '@Tests/fixtures/db';
 import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
-import { InvalidNameError, InvalidArnError, StateMachineTypeNotSupported, StateMachineAlreadyExistsError, StateMachineDoesNotExistsError, InvalidTokenError } from '@App/errors/AWSErrors';
-import { stateMachinesForTests, dummyRoleARN, dummyId, dummyStateMachineArn } from '@Tests/testHelper';
+import { InvalidNameError, InvalidArnError, StateMachineTypeNotSupportedError, StateMachineAlreadyExistsError, StateMachineDoesNotExistsError, InvalidTokenError, MissingRequiredParameterError, InvalidDefinitionError } from '@App/errors/AWSErrors';
+import { stateMachinesForTests, dummyRoleARN, dummyId, dummyStateMachineArn, badlyFormedArnCases } from '@Tests/testHelper';
 import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import { UserDoesNotExistsError, InvalidInputError } from '@App/errors/customErrors';
-import { StateMachineTypes, StateMachineTable, IStateMachine } from '@App/components/stateMachines/stateMachine.interfaces';
+import { StateMachineTypes, StateMachineTable, IStateMachine, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
 
 describe('state machines', () => {
 
@@ -36,7 +36,7 @@ describe('state machines', () => {
 
     describe('create', () => {
         it('should correctly create a state machine', async () => {
-            expect.assertions(8);
+            expect.assertions(9);
     
             const name = 'name';
             const definition = stateMachinesForTests.valid.validHelloWorld;
@@ -54,6 +54,7 @@ describe('state machines', () => {
             expect(createdStateMachine.roleArn).toBe(dummyRoleARN);
             expect(createdStateMachine.status).toBe('ACTIVE');
             expect(createdStateMachine.type).toBe('STANDARD');
+            expect(await countRowInTable(StateMachineVersionTable.tableName)).toBe(1);
         });
     
         it('should corretly create a state machine with an EXPRESS type', async () => {
@@ -136,7 +137,7 @@ describe('state machines', () => {
                 type: 'badType'
             };
     
-            await expect(StateMachineService.createStateMachine(user.id, req)).rejects.toThrow(StateMachineTypeNotSupported);
+            await expect(StateMachineService.createStateMachine(user.id, req)).rejects.toThrow(StateMachineTypeNotSupportedError);
         });
     
         const badSMNameCases = ["", " ", "   ", "<", ">", "{", "}", "[", "]", "*", "?", "\"", "#", "%", "\\", "^", "|", "~", "`", "$", "&", ",", ";", ":", "/"]
@@ -146,7 +147,6 @@ describe('state machines', () => {
             await expect(StateMachineService.createStateMachine(user.id, {name,definition,roleArn: dummyRoleARN})).rejects.toThrow(InvalidNameError);
         });
     
-        const badlyFormedArnCases = [null, undefined, '', 10, 'badlyFormedArn', 'arn:aws:states:us-east-1:999999999999:activity:' + 'a'.repeat(210)];
         it.each([badlyFormedArnCases])('should throw if the state machine role arn is %p', async (roleArn: string) => {
             const definition = stateMachinesForTests.valid.validHelloWorld;
             await expect(StateMachineService.createStateMachine(user.id, {name: 'name',definition,roleArn})).rejects.toThrow(InvalidArnError);
@@ -157,7 +157,7 @@ describe('state machines', () => {
 
     describe('delete', () => {
         it('should correctly delete a state machine', async () => {
-            expect.assertions(3);
+            expect.assertions(4);
 
             const createdStateMachine = (await createStateMachinesHelper(1))[0];
 
@@ -168,6 +168,7 @@ describe('state machines', () => {
             expect(numberOfSmInDbBefore).toBe(1);
             expect(result).toBe(true);
             expect(numberOfSmInDbAfter).toBe(0);
+            expect(await countRowInTable(StateMachineVersionTable.tableName)).toBe(0);
         });
 
         it('should do nothing if the deleted state machine does not exists', async () => {
@@ -290,6 +291,94 @@ describe('state machines', () => {
 
             await expect(StateMachineService.listStateMachines({nextToken: '10'})).rejects.toThrow(InvalidTokenError);
 
+        });
+    });
+
+    describe('update state machine', () => {
+
+        it('should correctly update the state machine definition', async () => {
+            expect.assertions(5);
+
+            const stateMachine = (await createStateMachinesHelper(1))[0];
+            const newDefinition = stateMachinesForTests.valid.validWaitState;
+
+            const updateDate = await StateMachineService.updateStateMachine({
+                stateMachineArn: stateMachine.arn,
+                definition: newDefinition
+            });
+            
+            const updatedStateMachine = await StateMachineService.describeStateMachine({stateMachineArn: stateMachine.arn});
+            const numberOfStateMachine = await countRowInTable(StateMachineTable.tableName);
+            const numberOfUpdate = await countRowInTable(StateMachineVersionTable.tableName);
+
+            expect(stateMachine.definition).toStrictEqual(JSON.parse(stateMachinesForTests.valid.validHelloWorld));
+            expect(updateDate).toBeDefined();
+            expect(updatedStateMachine.definition).toStrictEqual(JSON.parse(newDefinition));
+            expect(numberOfStateMachine).toBe(1);
+            expect(numberOfUpdate).toBe(2);
+        });
+
+        it('should correctly update the state machine arn', async () => {
+            expect.assertions(2);
+
+            const stateMachine = (await createStateMachinesHelper(1))[0];
+            const newRoleArn = 'arn:aws:iam::012345678901:role/newRole';
+
+            const updateDate = await StateMachineService.updateStateMachine({
+                stateMachineArn: stateMachine.arn,
+                roleArn: newRoleArn
+            });
+
+            const updatedStateMachine = await StateMachineService.describeStateMachine({stateMachineArn: stateMachine.arn});
+
+            expect(updateDate).toBeDefined();
+            expect(updatedStateMachine.roleArn).toBe(newRoleArn);
+        });
+
+        it('should correctly update both the state machine definition and role', async () => {
+            expect.assertions(3);
+
+            const stateMachine = (await createStateMachinesHelper(1))[0];
+            const newRoleArn = 'arn:aws:iam::012345678901:role/newRole';
+            const newDefinition = stateMachinesForTests.valid.validWaitState;
+            const updatedDate = await StateMachineService.updateStateMachine({stateMachineArn: stateMachine.arn, roleArn: newRoleArn, definition: newDefinition});
+
+            const updatedStateMachine = await StateMachineService.describeStateMachine({stateMachineArn: stateMachine.arn});
+
+            expect(updatedDate).toBeDefined();
+            expect(updatedStateMachine.definition).toStrictEqual(JSON.parse(newDefinition))
+            expect(updatedStateMachine.roleArn).toBe(newRoleArn);
+        })
+
+        it('should fail if both the roleArn and the definition are undefined', async () => {
+            expect.assertions(1);
+
+            const stateMachine = (await createStateMachinesHelper(1))[0];
+            await expect(StateMachineService.updateStateMachine({stateMachineArn: stateMachine.arn})).rejects.toThrow(MissingRequiredParameterError);
+        });
+
+        it('should throw if the new role arn is not valid', async () => {
+            expect.assertions(1);
+
+            const stateMachine = (await createStateMachinesHelper(1))[0];
+
+            await expect(StateMachineService.updateStateMachine({stateMachineArn: stateMachine.arn, roleArn: 'badArn'})).rejects.toThrow(InvalidArnError);
+        });
+        
+        it('should throw if the definition is %p', async () => {
+            expect.assertions(1);
+
+            const stateMachine = (await createStateMachinesHelper(1))[0];
+
+            await expect(StateMachineService.updateStateMachine({stateMachineArn: stateMachine.arn, definition: '{}'})).rejects.toThrow(InvalidDefinitionError);
+        })
+
+        it('should throw if the state machine does not exists', async () => {
+            expect.assertions(1);
+
+            const definition = stateMachinesForTests.valid.validWaitState;
+
+            await expect(StateMachineService.updateStateMachine({stateMachineArn: dummyStateMachineArn, definition})).rejects.toThrow(StateMachineDoesNotExistsError);
         });
     });
     

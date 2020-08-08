@@ -1,6 +1,6 @@
 import express from "express";
 import * as Logger from '../../modules/logging'
-import { CreateStateMachineInput, CreateStateMachineOutput, DescribeStateMachineInput, DescribeStateMachineOutput, DeleteStateMachineInput, ListStateMachinesInput, ListStateMachinesOutput, StateMachineList } from "aws-sdk/clients/stepfunctions";
+import { CreateStateMachineInput, CreateStateMachineOutput, DescribeStateMachineInput, DescribeStateMachineOutput, DeleteStateMachineInput, ListStateMachinesInput, ListStateMachinesOutput, StateMachineList, UpdateStateMachineInput, UpdateStateMachineOutput } from "aws-sdk/clients/stepfunctions";
 import { IUser } from "../user/user.interfaces";
 import * as StateMachineService from './stateMachineService';
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
@@ -76,3 +76,16 @@ const stateMachinesToStateMachineList = (stateMachines: IStateMachine[]): StateM
     }
     return toReturn;
 }
+
+export const updateStateMachine = async (req: express.Request, resp: express.Response): Promise<void> => {
+    Logger.logDebug('Entering update state machine controller');
+
+    const input: UpdateStateMachineInput = req.body;
+    const result = await StateMachineService.updateStateMachine(input);
+
+    const toReturn: UpdateStateMachineOutput = {
+        updateDate: result
+    };
+
+    resp.status(HttpStatusCode.OK).send(toReturn);
+};
