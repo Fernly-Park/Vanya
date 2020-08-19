@@ -43,7 +43,9 @@ export interface IStateMachineDefinition {
     StartAt: string
     Version: string
     TimeoutSeconds: number
-    States: StateMachineState[]
+    States: {
+        [key: string]: StateMachineState 
+    }
 }
 
 export interface StateMachineState {

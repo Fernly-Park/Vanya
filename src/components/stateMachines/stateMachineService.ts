@@ -1,4 +1,4 @@
-import { CreateStateMachineInput, DescribeStateMachineInput, DeleteStateMachineInput, ListStateMachinesInput, UpdateStateMachineInput } from "aws-sdk/clients/stepfunctions";
+import { CreateStateMachineInput, DescribeStateMachineInput, DeleteStateMachineInput, UpdateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import * as ValidationHelper from "@App/utils/validationHelper";
 import * as ArnHelper from "@App/utils/ArnHelper";
 import * as ASLHelper from "./asl/ASLHelper";

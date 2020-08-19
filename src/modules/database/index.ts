@@ -1,14 +1,15 @@
 import * as RelationalDb from './db';
 import * as Logger from '@App/modules/logging';
+import * as Redis from './redis';
 
 export const setupDatabases = async (): Promise<void> => {
     try {
-        // Redis.onConnectionSuccess(() => {
-        //     Logger.logInfo('successfully connected to redis');
-        // });
-        // Redis.onConnectionError(() => {
-        //     throw new Error('Error with redis connection');
-        // })
+        Redis.onConnectionSuccess(() => {
+            Logger.logInfo('successfully connected to redis');
+        });
+        Redis.onConnectionError(() => {
+            throw new Error('Error with redis connection');
+        })
         await RelationalDb.testDatabaseConnection();
         Logger.logInfo('Database Connection established');
     } catch (err) {

@@ -77,3 +77,9 @@ export class StateMachineDeletingError extends AWSError {
         super("State Machine Deleting", description, "com.amazonaws.swf.service.v2.model#StateMachineDeleting");
     }
 }
+
+export class InvalidExecutionInputError extends AWSError {
+    constructor(description: string) {
+        super("Invalid State Machine Execution Input", description, "com.amazonaws.swf.service.v2.model#InvalidExecutionInput");
+    }
+}
