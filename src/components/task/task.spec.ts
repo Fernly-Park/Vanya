@@ -4,20 +4,17 @@ import * as db from '@App/modules/database';
 
 import { stateMachinesForTests } from '@Tests/testHelper';
 import { IStateMachineDefinition } from '@App/components/stateMachines/stateMachine.interfaces';
-import { startInterpretor } from '@App/components/interpretor/interpretorService';
 import { Task } from '@App/components/task/task.interfaces';
 
 describe('tasks', () => {
     beforeEach(async () => {
         await Redis.flushallAsync();
-        // void startInterpretor().then();
     });
     afterAll(async () => {
         await Redis.quitAsync();
     })
 
     describe('add', () => {
-
         it('should correctly add a task', async () => {
             expect.assertions(2);
             const helloWorldSM: IStateMachineDefinition = JSON.parse(stateMachinesForTests.valid.validHelloWorld);

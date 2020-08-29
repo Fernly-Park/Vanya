@@ -24,9 +24,6 @@ describe('execution', () => {
         await Redis.flushallAsync();
         await emptyExecutionTable();
     });
-    afterAll(async () => {
-        await Redis.quitAsync();
-    });
 
     const createStateMachineHelper = async (name?: string) => {
         return await StateMachineService.createStateMachine(user.id, {

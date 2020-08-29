@@ -1,4 +1,4 @@
-import { InvalidInputError, UserDoesNotExistsError } from '../../src/errors/customErrors';
+import { InvalidInputError, UserDoesNotExistsError } from '../../errors/customErrors';
 import { setupDatabaseForTests, emptyActivityTable } from '@Tests/fixtures/db';
 import * as ActivityService from '@App/components/activity/activityService';
 import * as ActivityDAL from '@App/components/activity/activityDAL';
@@ -21,6 +21,7 @@ describe('activity service', () => {
     beforeEach(async () => {
         await emptyActivityTable();
     });
+    
     describe('create activities', () => {
 
         it("should correctly create an activity", async () => {

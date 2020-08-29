@@ -1,6 +1,6 @@
-import { setupDatabase } from '../../src/modules/database/db';
-import db from '../../src/modules/database/db';
-import { setupDatabaseForTests } from '../fixtures/db';
+import { setupDatabase } from './db';
+import db from './db';
+import { setupDatabaseForTests } from '../../../tests/fixtures/db';
 import { ActivityTable } from '@App/components/activity/activity.interfaces';
 import { UserTable } from '@App/components/user/user.interfaces';
 import { StateMachineTable, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
