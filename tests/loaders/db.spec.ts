@@ -4,6 +4,7 @@ import { setupDatabaseForTests } from '../fixtures/db';
 import { ActivityTable } from '@App/components/activity/activity.interfaces';
 import { UserTable } from '@App/components/user/user.interfaces';
 import { StateMachineTable, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ExecutionTable } from '@App/components/execution/execution.interfaces';
 
 describe('ensuring that the setted up database is correct', () => {
 
@@ -16,7 +17,9 @@ describe('ensuring that the setted up database is correct', () => {
         [StateMachineTable.tableName, [StateMachineTable.arnColumn, StateMachineTable.createDateColumn, StateMachineTable.definitionColumn, 
             StateMachineTable.roleArnColumn, StateMachineTable.statusColumn, StateMachineTable.typeColumn, StateMachineTable.nameColumn]],
         [StateMachineVersionTable.tableName, [StateMachineVersionTable.definitionColumn, StateMachineVersionTable.roleArnColumn, 
-            StateMachineVersionTable.stateMachineArnColumn, StateMachineVersionTable.updateDateColumn]]
+            StateMachineVersionTable.stateMachineArnColumn, StateMachineVersionTable.updateDateColumn]],
+        [ExecutionTable.tableName, [ExecutionTable.executionArnColumn, ExecutionTable.inputColumn, ExecutionTable.nameColumn, ExecutionTable.outputColumn,
+            ExecutionTable.startDateColumn, ExecutionTable.stateMachineArnColumn, ExecutionTable.statusColumn, ExecutionTable.stopDateColumn]]
     ];
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

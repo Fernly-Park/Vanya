@@ -3,7 +3,7 @@ import { setupDatabaseForTests, emptyStateMachineTable, countRowInTable } from '
 import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
 import { InvalidNameError, InvalidArnError, StateMachineTypeNotSupportedError, StateMachineAlreadyExistsError, StateMachineDoesNotExistsError, InvalidTokenError, MissingRequiredParameterError, InvalidDefinitionError } from '@App/errors/AWSErrors';
-import { stateMachinesForTests, dummyRoleARN, dummyId, dummyStateMachineArn, badlyFormedArnCases } from '@Tests/testHelper';
+import { stateMachinesForTests, dummyRoleARN, dummyId, dummyStateMachineArn, badlyFormedArnCases, badResourceNameCases } from '@Tests/testHelper';
 import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import { UserDoesNotExistsError, InvalidInputError } from '@App/errors/customErrors';
 import { StateMachineTypes, StateMachineTable, IStateMachine, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
@@ -140,8 +140,7 @@ describe('state machines', () => {
             await expect(StateMachineService.createStateMachine(user.id, req)).rejects.toThrow(StateMachineTypeNotSupportedError);
         });
     
-        const badSMNameCases = ["", " ", "   ", "<", ">", "{", "}", "[", "]", "*", "?", "\"", "#", "%", "\\", "^", "|", "~", "`", "$", "&", ",", ";", ":", "/"]
-        it.each([badSMNameCases])('should throw if the state machine name is %p', async (name: string) => {
+        it.each([badResourceNameCases])('should throw if the state machine name is %p', async (name: string) => {
             expect.assertions(1);
             const definition = stateMachinesForTests.valid.validHelloWorld;
             await expect(StateMachineService.createStateMachine(user.id, {name,definition,roleArn: dummyRoleARN})).rejects.toThrow(InvalidNameError);

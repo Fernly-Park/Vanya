@@ -11,3 +11,7 @@ export const addTask = async (task: Task): Promise<void> => {
             break;
     }
 }
+
+export const getGeneralTask = async (): Promise<Task> => {
+    return await TaskDAL.popFromGeneralTaskQueue();
+}

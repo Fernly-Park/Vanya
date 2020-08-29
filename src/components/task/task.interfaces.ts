@@ -1,6 +1,7 @@
 import { StateMachineState } from "../stateMachines/stateMachine.interfaces";
 
 export interface Task {
-    execution: string,
-    state: StateMachineState
+    state: StateMachineState,
+    input: string,
+    executionArn: string
 }

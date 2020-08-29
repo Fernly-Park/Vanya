@@ -10,7 +10,6 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import { initializeAuthentication, AWSStrategyName } from './authentication/authentication';
 import { setupDatabases } from '@App/modules/database';
-import config from '@App/config';
 
 export default async (app: express.Express): Promise<express.Express> => {
   app.use(cookieParser())

@@ -8,14 +8,13 @@ import { IStateMachineDefinition } from '@App/components/stateMachines/stateMach
 describe('caca', () => {
     it('should work', async () => {
         expect.assertions(0);
-        await Redis.flushallAsync();
-        await db.setupDatabases();
+        // await Redis.flushallAsync();
+        // await db.setupDatabases();
 
-        const helloWorldSM: IStateMachineDefinition = JSON.parse(stateMachinesForTests.valid.validHelloWorld);
-            const task = {execution: 'tmp', state: helloWorldSM.States[helloWorldSM.StartAt]};
-            await TaskService.addTask(task);
-        const result = await Redis.rpushAsync(Redis.systemTaskKey, JSON.stringify({task: 'caca'}));
-        console.log(result);
-        await Redis.quitAsync();
+        // const helloWorldSM: IStateMachineDefinition = JSON.parse(stateMachinesForTests.valid.validHelloWorld);
+        // const task = {execution: 'tmp', state: helloWorldSM.States[helloWorldSM.StartAt]};
+        // await TaskService.addTask(task);
+
+        // await Redis.quitAsync();
     })
 })

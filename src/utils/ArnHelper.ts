@@ -1,5 +1,5 @@
 import config from '@App/config';
-import { AWSConstant, ACTIVITY_RESOURCE_NAME, ROLE_RESOURCE_NAME, STATE_MACHINE_RESOURCE_NAME } from "./constants";
+import { AWSConstant, ACTIVITY_RESOURCE_NAME, ROLE_RESOURCE_NAME, STATE_MACHINE_RESOURCE_NAME, EXECUTION_RESOURCE_NAME } from "./constants";
 import { InvalidInputError } from '@App/errors/customErrors';
 import { InvalidArnError } from '@App/errors/AWSErrors';
 
@@ -55,6 +55,7 @@ const ensureIsValidArnFactory = (resourceType: string) => {
 export const ensureIsValidActivityArn = ensureIsValidArnFactory(ACTIVITY_RESOURCE_NAME);
 export const ensureIsValidRoleArn = ensureIsValidArnFactory(ROLE_RESOURCE_NAME);
 export const ensureStateMachineArnIsValid = ensureIsValidArnFactory(STATE_MACHINE_RESOURCE_NAME);
+export const ensureIsValidExecutionArn = ensureIsValidArnFactory(EXECUTION_RESOURCE_NAME);
 
 const generateArnFactory = (resourceType: string) => {
     return (userId: string, resourceName: string) => {
@@ -67,3 +68,11 @@ const generateArnFactory = (resourceType: string) => {
 
 export const generateActivityArn = generateArnFactory(ACTIVITY_RESOURCE_NAME);
 export const generateStateMachineArn = generateArnFactory(STATE_MACHINE_RESOURCE_NAME);
+export const generateExecutionArn = (userId: string, stateMachineName: string, executionName: string): string => {
+    return `${generateArnFactory(EXECUTION_RESOURCE_NAME)(userId, stateMachineName)}:${executionName}`;
+}
+
+export const retrieveStateMachineNameFromArn = (arn: string): string => {
+    const parts = arn.split(':');
+    return parts[6];
+}

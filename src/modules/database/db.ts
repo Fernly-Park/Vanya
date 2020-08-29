@@ -6,6 +6,7 @@ import { UserTable } from '../../components/user/user.interfaces';
 import Knex from 'knex';
 
 import { StateMachineTable, StateMachineStatus, StateMachineTypes, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ExecutionTable, ExecutionStatus } from '@App/components/execution/execution.interfaces';
 
 
 const db = knex({
@@ -24,6 +25,7 @@ export const setupDatabase = async (): Promise<void> => {
     await setupUserTable();
     await setupStateMachineTable();
     await setupStateMachineVersionsTable();
+    await setupExecutionTable();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,6 +68,19 @@ const setupStateMachineVersionsTable = async(): Promise<void> => {
         tableBuilder.jsonb(StateMachineVersionTable.definitionColumn).notNullable();
         tableBuilder.string(StateMachineVersionTable.roleArnColumn).notNullable();
         tableBuilder.primary([StateMachineVersionTable.stateMachineArnColumn, StateMachineVersionTable.updateDateColumn]);
+    });
+}
+
+const setupExecutionTable = async (): Promise<void> => {
+    await createTableIfNotExists(ExecutionTable.tableName, tableBuilder => {
+        tableBuilder.string(ExecutionTable.executionArnColumn).primary().index();
+        tableBuilder.jsonb(ExecutionTable.inputColumn).nullable();
+        tableBuilder.string(ExecutionTable.nameColumn).notNullable();
+        tableBuilder.jsonb(ExecutionTable.outputColumn).nullable();
+        tableBuilder.timestamp(ExecutionTable.startDateColumn).notNullable().defaultTo(db.fn.now());
+        tableBuilder.string(ExecutionTable.stateMachineArnColumn).notNullable().references(StateMachineTable.arnColumn).inTable(StateMachineTable.tableName);
+        tableBuilder.string(ExecutionTable.statusColumn).notNullable().defaultTo(ExecutionStatus.running);
+        tableBuilder.timestamp(ExecutionTable.stopDateColumn).nullable();
     });
 }
 

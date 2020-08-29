@@ -32,5 +32,21 @@ describe('arn helper function', () => {
         expect(parsedArn).toBeDefined();
         expect(parsedArn.userId).toBe('012345678901');
         expect(parsedArn.resourceId).toBe('DummyRole');
-    })
+    });
+
+    it('correctly create an execution arn', () => {
+        expect.assertions(1);
+
+        const arn = ArnHelper.generateExecutionArn('123456789012', 'name', '006f371e-4504-46be-ba47-73f88641ad71');
+
+        expect(arn).toBe(`arn:aws:states:${config.region}:123456789012:execution:name:006f371e-4504-46be-ba47-73f88641ad71`);
+    });
+
+    it('correctly retrieve the name from a state machine arn', () => {
+        expect.assertions(1);
+
+        const name = ArnHelper.retrieveStateMachineNameFromArn('arn:aws:states:us-east-1:123456789012:stateMachine:name');
+
+        expect(name).toBe('name');
+    });
 });
