@@ -9,3 +9,7 @@ export const popFromGeneralTaskQueue = async (): Promise<Task> => {
     const result = await Redis.blpopAsync(Redis.systemTaskKey, 0);
     return JSON.parse(result[1]) as Task;
 }
+
+export const lengthOfGeneralTaskQueue = async (): Promise<number> => {
+    return await Redis.llenAsync(Redis.systemTaskKey);
+}

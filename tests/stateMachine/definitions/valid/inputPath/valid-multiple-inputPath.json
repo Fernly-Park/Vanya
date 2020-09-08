@@ -1,0 +1,12 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+    "StartAt": "HelloWorld",
+    "States": {
+        "HelloWorld": {
+            "InputPath": "$.a[0,1]",
+            "Type": "Pass",
+            "End": true
+        }
+    }
+  }
+  

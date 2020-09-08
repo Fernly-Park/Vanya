@@ -25,7 +25,7 @@ describe('state machines', () => {
         const toReturn: IStateMachine[] = []
         for (let i = 0; i < numberOfStateMachinesToCreate; i++) {
             toReturn.push(await StateMachineService.createStateMachine(user.id, {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: `name${i.toString().padStart(3, "0")}`,
                 roleArn: dummyRoleARN,
             }))
@@ -39,7 +39,7 @@ describe('state machines', () => {
             expect.assertions(9);
     
             const name = 'name';
-            const definition = stateMachinesForTests.valid.validHelloWorld;
+            const definition = stateMachinesForTests.valid.validPassWithResult;
             const createdStateMachine = await StateMachineService.createStateMachine(user.id, {
                 definition,
                 name,
@@ -56,13 +56,31 @@ describe('state machines', () => {
             expect(createdStateMachine.type).toBe('STANDARD');
             expect(await countRowInTable(StateMachineVersionTable.tableName)).toBe(1);
         });
+
+        it('should correctly create the state machine state in redis', async () => {
+            expect.assertions(7);
+
+            const createdStateMachine = await StateMachineService.createStateMachine(user.id, {
+                definition: stateMachinesForTests.valid.validParallelNested,
+                name: 'name',
+                roleArn: dummyRoleARN,
+            });
+
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Parallel'})).toBeDefined();
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Final State'})).toBeDefined();
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Wait 20s'})).toBeDefined();
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Pass'})).toBeDefined();
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Wait 10s'})).toBeDefined();
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'NestedParallel'})).toBeDefined();
+            expect(await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'BrancheInNestedParallel'})).toBeDefined();
+        });
     
         it('should corretly create a state machine with an EXPRESS type', async () => {
             expect.assertions(2);
     
             const type = StateMachineTypes.express;
             const createdStateMachine = await StateMachineService.createStateMachine(user.id, {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: 'name',
                 roleArn: dummyRoleARN,
                 type
@@ -76,7 +94,7 @@ describe('state machines', () => {
             expect.assertions(2);
     
             const req: CreateStateMachineInput = {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: 'name',
                 roleArn: dummyRoleARN,
             }
@@ -92,7 +110,7 @@ describe('state machines', () => {
             expect.assertions(1);
     
             const req: CreateStateMachineInput = {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: 'name',
                 roleArn: dummyRoleARN,
             }
@@ -106,7 +124,7 @@ describe('state machines', () => {
             expect.assertions(1);
     
             const req: CreateStateMachineInput = {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: 'name',
                 roleArn: dummyRoleARN,
             }
@@ -119,7 +137,7 @@ describe('state machines', () => {
         it('should throw if the user id is invalid', async () => {
             expect.assertions(1);
             const req: CreateStateMachineInput = {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: 'name',
                 roleArn: dummyRoleARN,
             };
@@ -131,7 +149,7 @@ describe('state machines', () => {
             expect.assertions(1);
     
             const req: CreateStateMachineInput = {
-                definition: stateMachinesForTests.valid.validHelloWorld,
+                definition: stateMachinesForTests.valid.validPassWithResult,
                 name: 'name',
                 roleArn: dummyRoleARN,
                 type: 'badType'
@@ -142,12 +160,12 @@ describe('state machines', () => {
     
         it.each([badResourceNameCases])('should throw if the state machine name is %p', async (name: string) => {
             expect.assertions(1);
-            const definition = stateMachinesForTests.valid.validHelloWorld;
+            const definition = stateMachinesForTests.valid.validPassWithResult;
             await expect(StateMachineService.createStateMachine(user.id, {name,definition,roleArn: dummyRoleARN})).rejects.toThrow(InvalidNameError);
         });
     
         it.each([badlyFormedArnCases])('should throw if the state machine role arn is %p', async (roleArn: string) => {
-            const definition = stateMachinesForTests.valid.validHelloWorld;
+            const definition = stateMachinesForTests.valid.validPassWithResult;
             await expect(StateMachineService.createStateMachine(user.id, {name: 'name',definition,roleArn})).rejects.toThrow(InvalidArnError);
         });
     });
@@ -168,6 +186,22 @@ describe('state machines', () => {
             expect(result).toBe(true);
             expect(numberOfSmInDbAfter).toBe(0);
             expect(await countRowInTable(StateMachineVersionTable.tableName)).toBe(0);
+        });
+
+        it('should remove the states from redis', async () => {
+            expect.assertions(2);
+
+            const createdStateMachine = await StateMachineService.createStateMachine(user.id, {
+                definition: stateMachinesForTests.valid.validParallelNested,
+                name: 'name',
+                roleArn: dummyRoleARN,
+            });
+            const before = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Parallel'})
+            await StateMachineService.deleteStateMachine({stateMachineArn: createdStateMachine.arn});
+            const after = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: 'Parallel'})
+
+            expect(before).not.toBeNull();
+            expect(after).toBeNull();
         });
 
         it('should do nothing if the deleted state machine does not exists', async () => {
@@ -310,7 +344,7 @@ describe('state machines', () => {
             const numberOfStateMachine = await countRowInTable(StateMachineTable.tableName);
             const numberOfUpdate = await countRowInTable(StateMachineVersionTable.tableName);
 
-            expect(stateMachine.definition).toStrictEqual(JSON.parse(stateMachinesForTests.valid.validHelloWorld));
+            expect(stateMachine.definition).toStrictEqual(JSON.parse(stateMachinesForTests.valid.validPassWithResult));
             expect(updateDate).toBeDefined();
             expect(updatedStateMachine.definition).toStrictEqual(JSON.parse(newDefinition));
             expect(numberOfStateMachine).toBe(1);
@@ -381,4 +415,17 @@ describe('state machines', () => {
         });
     });
     
+    describe('retrieve state', () => {
+        it('should correctly retrieve a state', async () => {
+            expect.assertions(1);
+
+            const createdStateMachine = await StateMachineService.createStateMachine(user.id, {
+                definition: stateMachinesForTests.valid.validParallelNested,
+                name: 'name',
+                roleArn: dummyRoleARN,
+            });
+            const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: createdStateMachine.arn, stateName: "Wait 20s"});
+            expect(state).toStrictEqual({Type: 'Wait', Seconds: 20, End: true});
+        })
+    });
 });

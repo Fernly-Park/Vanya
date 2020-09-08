@@ -1,14 +1,15 @@
-import { StartExecutionInput, StartExecutionOutput } from "aws-sdk/clients/stepfunctions";
+import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput } from "aws-sdk/clients/stepfunctions";
 import * as ArnHelper from '@App/utils/ArnHelper';
 import * as ValidationHelper from '@App/utils/validationHelper';
 import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
 import * as TaskService from '@App/components/task/taskService';
 import * as ExecutionDAL from './executionDAL';
 import * as UserService from '@App/components/user/userService';
-import { InvalidExecutionInputError } from "@App/errors/AWSErrors";
+import { InvalidExecutionInputError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from "@App/errors/AWSErrors";
 import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
-import { ExecutionStatus } from "./execution.interfaces";
+import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, ExecutionInput } from "./execution.interfaces";
+import { areObjectsEquals } from "@App/utils/objectUtils";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);
@@ -16,27 +17,46 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
     
     const stateMachine = await StateMachineService.describeStateMachine(req); // TODO verifier si pas necessaire de faire une transaction
     const firstStateName = stateMachine.definition.StartAt;
-    const firstState = stateMachine.definition.States[firstStateName]; 
     const executionName = req.name ?? uuid();
     const executionArn = ArnHelper.generateExecutionArn(userId, stateMachine.name, executionName);
+    const executionInput = req.input || '{}';
 
+    if (req.name) {
+        const existingExecution = await ExecutionDAL.selectExecutionByName(db, req.name);
+        if (existingExecution && (existingExecution?.status != ExecutionStatus.running || !areObjectsEquals(existingExecution.input, JSON.parse(executionInput)))) {
+            throw new ExecutionAlreadyExistsError(existingExecution.executionArn);
+        } else if (existingExecution) {
+            return {
+                executionArn: existingExecution.executionArn,
+                startDate: existingExecution.startDate
+            }
+        }
+    }
+    
     const result = await ExecutionDAL.insertExecution(db, {
         executionArn: executionArn,
-        input: req.input || '{}',
+        input: executionInput,
         name: executionName,
         stateMachineArn: stateMachine.arn
     });
 
-    await TaskService.addTask({
-        state: firstState,
-        input: req.input,
-        executionArn
+    await ExecutionDAL.setContextObject(executionArn, {
+        Execution: {
+            Id: executionArn,
+            Input: result.input,
+            StartTime: result.startDate,
+            Name: executionName,
+            RoleArn: 'todo'
+        }, 
+        StateMachine : {
+            Id: stateMachine.arn,
+            Name: stateMachine.name
+        }
     });
 
-    return {
-        executionArn,
-        startDate: result.startDate    
-    }
+    await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn});
+
+    return { executionArn, startDate: result.startDate }
 }
 
 const ensureStartExecutionInputIsValid = (req: StartExecutionInput): void => {
@@ -55,9 +75,32 @@ const ensureStartExecutionInputIsValid = (req: StartExecutionInput): void => {
     }
 };
 
-export const endExecution = async (executionArn: string): Promise<void> => {
-    ArnHelper.ensureIsValidExecutionArn(executionArn);
+export const describeExecution = async (req: DescribeExecutionInput): Promise<IExecution> => {
+    ArnHelper.ensureIsValidExecutionArn(req?.executionArn);
 
-    await ExecutionDAL.UpdateExecutionStatus(db, {executionArn, newStatus: ExecutionStatus.succeeded});
+    const toReturn = await ExecutionDAL.selectExecutionByArn(db, req.executionArn);
+
+    if (!toReturn) {
+        throw new ExecutionDoesNotExistError(req.executionArn);
+    }
+    return toReturn;
 };
+
+export const endExecution = async (req: {executionArn: string, output?: unknown, status: ExecutionStatus}): Promise<void> => {
+    ArnHelper.ensureIsValidExecutionArn(req?.executionArn);
+    // todo check
+    await ExecutionDAL.updateExecutionStatus(db, {executionArn: req.executionArn, newStatus: req.status, output: req.output});
+    await ExecutionDAL.deleteContextObject(req.executionArn)
+};
+
+export const retrieveExecutionContextObject = async (req: {executionArn: string}): Promise<ContextObject> => {
+    ArnHelper.ensureIsValidExecutionArn(req.executionArn);
+
+    return await ExecutionDAL.getContextObject(req.executionArn);
+}
+
+export const updateContextObjectState = async (req: {executionArn: string, enteredState: ContextObjectEnteredState}) => {
+    // todo check
+    await ExecutionDAL.updateContextObject({executionArn: req.executionArn, path: '.State', update: req.enteredState});
+}
 

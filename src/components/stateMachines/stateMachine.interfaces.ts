@@ -43,27 +43,27 @@ export interface IStateMachineDefinition {
     StartAt: string
     Version: string
     TimeoutSeconds: number
-    States: {
-        [key: string]: StateMachineState 
-    }
+    States: StateMachineStates
 }
 
-export interface StateMachineState {
+export type StateMachineStates = Record<string, StateMachineStateValue>;
+
+export interface StateMachineStateValue {
     Type: string,
     Comment?: string,
 }
 
-export interface PassState extends StateMachineState{
+export interface PassState extends StateMachineStateValue{
     InputPath?: string
     OutputPath?: string
-    Parameters: unknown
+    Parameters: Record<string, unknown>
     ResultPath?: string
     Next?: string
     End?: boolean
-    Result?: unknown
+    Result?: Record<string, unknown>
 }
 
-export interface TaskState extends StateMachineState {
+export interface TaskState extends StateMachineStateValue {
     Resource: string
     TimeoutSeconds?: number,
     HeartbeatSeconds?: number,
@@ -77,13 +77,13 @@ export interface TaskState extends StateMachineState {
     Catch?: Catcher[]
 }
 
-export interface ChoiceState extends StateMachineState {
+export interface ChoiceState extends StateMachineStateValue {
     Choice: unknown[]
     InputPath?: string
     OutputPath?: string
 }
 
-export interface WaitState extends StateMachineState {
+export interface WaitState extends StateMachineStateValue {
     Seconds?: number
     SecondsPath?: string
     Timestamp?: Date
@@ -94,17 +94,17 @@ export interface WaitState extends StateMachineState {
     End?: boolean
 }
 
-export interface SucceedState extends StateMachineState {
+export interface SucceedState extends StateMachineStateValue {
     InputPath?: string
     OutputPath?: string
 }
 
-export interface FailState extends StateMachineState {
+export interface FailState extends StateMachineStateValue {
     Error: string
     Cause: string
 }
 
-export interface ParallelState extends StateMachineState {
+export interface ParallelState extends StateMachineStateValue {
     Branches: IStateMachineDefinition[]
     TimeoutSeconds?: number,
     HeartbeatSeconds?: number,
@@ -118,7 +118,7 @@ export interface ParallelState extends StateMachineState {
     Catch?: Catcher[]
 }
 
-export interface MapState extends StateMachineState {
+export interface MapState extends StateMachineStateValue {
     Iterator: IStateMachineDefinition,
     ItemsPath?: string,
     MaxConcurrency?: number,

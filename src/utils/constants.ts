@@ -14,6 +14,8 @@ export  const AWSConstant = {
         DELETE_STATE_MACHINE: 'DeleteStateMachine',
         LIST_STATE_MACHINES: 'ListStateMachines',
         UPDATE_STATE_MACHINE: 'UpdateStateMachine',
+        START_EXECUTION: 'StartExecution',
+        DESCRIBE_EXECUTION: 'DescribeExecution',
     },
     serviceName: 'states'
 }

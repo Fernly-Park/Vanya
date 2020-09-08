@@ -83,3 +83,15 @@ export class InvalidExecutionInputError extends AWSError {
         super("Invalid State Machine Execution Input", description, "com.amazonaws.swf.service.v2.model#InvalidExecutionInput");
     }
 }
+
+export class ExecutionAlreadyExistsError extends AWSError {
+    constructor(description: string) {
+        super("Execution Already Exists", description, "com.amazonaws.swf.service.v2.model#ExecutionAlreadyExists");
+    }
+}
+
+export class ExecutionDoesNotExistError extends AWSError {
+    constructor(description: string) {
+        super("Execution Does Not Exist", description, "com.amazonaws.swf.service.v2.model#ExecutionDoesNotExist");
+    }
+}

@@ -1,20 +1,25 @@
 import * as Redis from '@App/modules/database/redis';
-import * as db from '@App/modules/database';
-
-import * as TaskService from '@App/components/task/taskService';
-import { stateMachinesForTests } from '@Tests/testHelper';
-import { IStateMachineDefinition } from '@App/components/stateMachines/stateMachine.interfaces';
+import * as UserService from '@App/components/user/userService';
+import * as StateMachineDAL from '@App/components/stateMachines/stateMachineDAL';
+import { IUser } from '@App/components/user/user.interfaces';
+import { setupDatabaseForTests, emptyExecutionTable } from '@Tests/fixtures/db';
 
 describe('caca', () => {
+
+    let user: IUser;
+
+    beforeAll(async () => {
+        await setupDatabaseForTests();
+        user = await UserService.createUser('sub', 'tmp@gmail.com');
+    });
+
+    beforeEach(async () => {
+        await Redis.flushallAsync();
+        await emptyExecutionTable();
+    });
+
     it('should work', async () => {
         expect.assertions(0);
-        // await Redis.flushallAsync();
-        // await db.setupDatabases();
-
-        // const helloWorldSM: IStateMachineDefinition = JSON.parse(stateMachinesForTests.valid.validHelloWorld);
-        // const task = {execution: 'tmp', state: helloWorldSM.States[helloWorldSM.StartAt]};
-        // await TaskService.addTask(task);
-
-        // await Redis.quitAsync();
+        StateMachineDAL.createStateMachine
     })
 })

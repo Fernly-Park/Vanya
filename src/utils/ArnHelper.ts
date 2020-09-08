@@ -18,10 +18,16 @@ export const parseArn = (arn: string): ParsedARN => {
     }
 
     const parts = arn.split(":");
-    if (parts.length !== 6 && parts.length !== 7) {
+    if (parts.length < 6 || parts.length > 8) {
         throw new InvalidArnError(arn);
     }
-    if (parts.length === 7) {
+    if(parts.length === 8) {
+        return {
+            userId: parts[4],
+            resourceType: parts[5],
+            resourceId: parts[7]
+        }
+    }else if (parts.length === 7) {
         return {
             userId: parts[4],
             resourceType: parts[5],

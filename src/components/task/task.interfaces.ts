@@ -1,7 +1,9 @@
-import { StateMachineState } from "../stateMachines/stateMachine.interfaces";
+
+export type TaskInput = unknown;
 
 export interface Task {
-    state: StateMachineState,
-    input: string,
-    executionArn: string
+    stateName: string,
+    input: TaskInput,
+    executionArn: string,
+    stateMachineArn: string,
 }

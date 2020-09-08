@@ -1,10 +1,11 @@
 import * as Logger from '../../modules/logging';
 import { DbOrTransaction } from '@App/modules/database/db';
-import { StateMachineTable, IStateMachine, StateMachineVersionTable } from './stateMachine.interfaces';
-import { CreateStateMachineInput, UpdateStateMachineInput } from "aws-sdk/clients/stepfunctions";
+import { StateMachineTable, IStateMachine, StateMachineVersionTable, StateMachineStates, StateMachineStateValue } from './stateMachine.interfaces';
+import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import * as DALFactory from '@App/components/DALFactory';
+import * as Redis from '@App/modules/database/redis';
 
-export const createStateMachine = async (db: DbOrTransaction, arn: string, req: CreateStateMachineInput): Promise<void> => {
+export const createStateMachine = async (db: DbOrTransaction, arn: string, req: CreateStateMachineInput, states: StateMachineStates): Promise<void> => {
     Logger.logDebug(`Insterting state machine '${arn}'`);
     await db.transaction(async trx => {
         await trx(StateMachineTable.tableName).insert({
@@ -20,11 +21,15 @@ export const createStateMachine = async (db: DbOrTransaction, arn: string, req: 
             [StateMachineVersionTable.roleArnColumn]: req.roleArn,
             [StateMachineVersionTable.stateMachineArnColumn]: arn,
         });
-    })
-    
+    });
+    const redisKey = Redis.getStateMachineStatesKey(arn);
+    for(const [key, val] of Object.entries(states)) {
+        await Redis.hsetAsync(redisKey, key, JSON.stringify(val));
+    }
 }
 
 export const deleteStateMachine = async (db: DbOrTransaction, arn: string): Promise<boolean> => {
+    await Redis.delAsync(Redis.getStateMachineStatesKey(arn));
     return await db.transaction(async trx => {
         await DALFactory.deleteResourceFactory(StateMachineVersionTable.tableName, StateMachineVersionTable.stateMachineArnColumn)(trx, arn);
         return await DALFactory.deleteResourceFactory(StateMachineTable.tableName, StateMachineTable.arnColumn)(trx, arn);
@@ -58,3 +63,8 @@ export const updateStateMachine = async (db: DbOrTransaction, req: UpdateStateMa
             .returning(StateMachineVersionTable.updateDateColumn);
     });
 } 
+
+export const retrieveState = async (req: {stateMachineArn: string, stateName: string}): Promise<StateMachineStateValue> => {
+    const redisKey = Redis.getStateMachineStatesKey(req.stateMachineArn);
+    return JSON.parse(await Redis.hgetAsync(redisKey, req.stateName)) as StateMachineStateValue;
+}

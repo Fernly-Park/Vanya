@@ -1,0 +1,22 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+    "StartAt": "HelloWorld",
+    "States": {
+        "HelloWorld": {
+            "Parameters": {
+                "Numbers.$": "$.numbers",
+                "Input.$": "$",
+                "ContextObj.$": "$$",
+                "CadContextObj": "$$",
+                "ContextObjectSMId.$": "$$.StateMachine.Id",
+                "ContextObjectExecutionId.$": "$$.Execution.Id",
+                "ContextObjectExecutionName.$": "$$.Execution.Name",
+                "ContextObjectStateMachineName.$": "$$.StateMachine.Name",
+                "ContextObjectStateName.$": "$$.State.Name"
+            },
+            "Type": "Pass",
+            "End": true
+        }
+    }
+}
+  

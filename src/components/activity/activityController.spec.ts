@@ -1,14 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
-import { setupDatabaseForTests } from '@Tests/fixtures/db';
 import AWS from 'aws-sdk';
 import initApp from '@App/app';
 import { HttpStatusCode } from '@App/utils/httpStatusCode';
 import http from 'http';
-import config from '@App/config';
-import * as UserService from '@App/components/user/userService';
 import * as ArnHelper from '@App/utils/ArnHelper';
-import { dummyId } from '@Tests/testHelper';
+import { dummyId, setupForTestAgainstServer } from '@Tests/testHelper';
 
 describe('activity api tests', () => {
     let server: http.Server;
@@ -21,15 +17,7 @@ describe('activity api tests', () => {
     });
 
     beforeEach(async () => {
-        await setupDatabaseForTests();
-        const secret = 'secret';
-        const user = await UserService.createUser('sub', 'tmp@gmail.com');
-        await UserService.setUserSecret(user.id, secret);
-        stepFunctions = new AWS.StepFunctions({
-            endpoint: `http://localhost:${config.port}`,
-            region: config.region,
-            credentials: new AWS.Credentials({accessKeyId: user.id, secretAccessKey: secret})
-        });
+        stepFunctions = await setupForTestAgainstServer()
     });
 
     afterAll(done => {

@@ -2,7 +2,7 @@ import { CreateStateMachineInput, DescribeStateMachineInput, DeleteStateMachineI
 import * as ValidationHelper from "@App/utils/validationHelper";
 import * as ArnHelper from "@App/utils/ArnHelper";
 import * as ASLHelper from "./asl/ASLHelper";
-import { IStateMachineDefinition, IStateMachine, StateMachineTypes, StateMachineStatus } from "./stateMachine.interfaces";
+import { IStateMachineDefinition, IStateMachine, StateMachineTypes, StateMachineStatus, StateMachineStateValue } from "./stateMachine.interfaces";
 import * as UserService from '@App/components/user/userService';
 import db from '../../modules/database/db'; 
 import * as StateMachineDAL from './stateMachineDAL';
@@ -18,7 +18,7 @@ export const createStateMachine = async (userId: string, req: CreateStateMachine
 
     const stateMachineDef: IStateMachineDefinition = JSON.parse(req.definition);
     const arn = ArnHelper.generateStateMachineArn(userId, req.name);
-    
+    const states = ASLHelper.retrieveAllStates(stateMachineDef);
     const result = await db.transaction(async (trx) => {
         const existingSM = await StateMachineDAL.selectStateMachineByArn(trx, arn);
         
@@ -28,7 +28,7 @@ export const createStateMachine = async (userId: string, req: CreateStateMachine
             Logger.logDebug(`state machine '${arn}' already exists`)
             return existingSM;
         }
-        await StateMachineDAL.createStateMachine(trx, arn, req);
+        await StateMachineDAL.createStateMachine(trx, arn, req, states);
         Logger.logDebug(`state machine '${arn}' created`);
         return await StateMachineDAL.selectStateMachineByArn(trx, arn);
     });
@@ -87,6 +87,13 @@ export const updateStateMachine = async (req: UpdateStateMachineInput): Promise<
     });
 }
 
+export const retrieveStateFromStateMachine = async (req: {stateMachineArn: string, stateName: string}): Promise<StateMachineStateValue> => {
+    ArnHelper.ensureStateMachineArnIsValid(req?.stateMachineArn);
+    // TODO
+    
+    return await StateMachineDAL.retrieveState(req)
+
+};
 const ensureUpdateStateMachineInputIsValid = (req: UpdateStateMachineInput): void => {
     if (!req?.stateMachineArn || (!req.definition && !req.roleArn)) {
         throw new MissingRequiredParameterError('required parameters missing');

@@ -1,0 +1,15 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+    "StartAt": "HelloWorld",
+    
+    "States": {
+      "HelloWorld": {
+        "Parameters": {
+          "Name.$": "$$"
+        },
+        "Type": "Pass",
+        "End": true
+      }
+    }
+  }
+  

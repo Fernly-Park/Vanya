@@ -1,9 +1,7 @@
 import * as TaskService from '@App/components/task/taskService';
 import * as Redis from '@App/modules/database/redis';
-import * as db from '@App/modules/database';
 
-import { stateMachinesForTests } from '@Tests/testHelper';
-import { IStateMachineDefinition } from '@App/components/stateMachines/stateMachine.interfaces';
+import { dummyStateMachineArn } from '@Tests/testHelper';
 import { Task } from '@App/components/task/task.interfaces';
 
 describe('tasks', () => {
@@ -17,8 +15,7 @@ describe('tasks', () => {
     describe('add', () => {
         it('should correctly add a task', async () => {
             expect.assertions(2);
-            const helloWorldSM: IStateMachineDefinition = JSON.parse(stateMachinesForTests.valid.validHelloWorld);
-            const task: Task = {executionArn: 'tmp', state: helloWorldSM.States[helloWorldSM.StartAt], input: '{}'};
+            const task: Task = {executionArn: 'tmp', stateName: 'tmp', stateMachineArn: dummyStateMachineArn,  input: {}};
             await TaskService.addTask(task);
 
             const numberOfTasks = await Redis.llenAsync(Redis.systemTaskKey);

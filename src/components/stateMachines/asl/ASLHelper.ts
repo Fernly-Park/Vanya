@@ -14,15 +14,20 @@ import succeed from './schemas/succeed.json';
 import task from './schemas/task.json';
 import wait from './schemas/wait.json';
 import map from './schemas/map.json';
-import { IStateMachineDefinition, StateMachineState } from '@App/components/stateMachines/stateMachine.interfaces';
-import { InvalidInputError } from '@App/errors/customErrors';
+import { IStateMachineDefinition, StateMachineStates } from '@App/components/stateMachines/stateMachine.interfaces';
 import { JSONPath } from 'jsonpath-plus';
 import { STATE_MACHINE_DEFINITION_MAX_LENGTH } from '@App/utils/constants';
 import { InvalidDefinitionError } from '@App/errors/AWSErrors';
 
 
-export const retrieveAllStates = (def: IStateMachineDefinition): StateMachineState[]  => {
-  return JSONPath({json: def, path: '$..[States]'});
+export const retrieveAllStates = (def: IStateMachineDefinition): StateMachineStates => {
+  const states: StateMachineStates[] = JSONPath({json: def, path: '$..[States]', flatten: true});
+  const toReturn: StateMachineStates = {} ;
+  states.forEach(state => {
+    Object.assign(toReturn, state)
+  });
+
+  return toReturn;
 };
 
 export const ensureStateMachineDefinitionIsValid = (definition: string): void => {
@@ -67,9 +72,12 @@ const ensureAllStatesAreReachable = (sm: IStateMachineDefinition) => {
 const ensureJsonPathAreCorrects = (sm: IStateMachineDefinition) => {
 
   const result: [] = JSONPath({json: sm, path: '$..[InputPath,OutputPath,ResultPath]'});
-  result.forEach(el => {
+  result.forEach((el: string) => {
     try {
-      JSONPath({path: el, json: {}}) 
+      JSONPath({path: el, json: {},}) 
+      if (el !== el.trim()){
+        throw new Error();
+      }
     } catch (err) {
       throw new InvalidDefinitionError(`SCHEMA_VALIDATION_FAILED: Value is not a Reference Path`);
     }

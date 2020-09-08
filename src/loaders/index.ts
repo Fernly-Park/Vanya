@@ -10,6 +10,7 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import { initializeAuthentication, AWSStrategyName } from './authentication/authentication';
 import { setupDatabases } from '@App/modules/database';
+import { startInterpretor } from '@App/components/interpretor/interpretorService';
 
 export default async (app: express.Express): Promise<express.Express> => {
   app.use(cookieParser())
@@ -30,6 +31,8 @@ export default async (app: express.Express): Promise<express.Express> => {
   app.use(errorHandlerMiddleware);
   await setupDatabases();
 
+  // void startInterpretor().then();
+  
   logger.logInfo('App init complete');
 
   return app;

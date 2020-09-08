@@ -1,6 +1,7 @@
 import * as express from "express";
 import * as ActivityController from "../../components/activity/activityController";
 import * as StateMachineController from '@App/components/stateMachines/stateMachineController';
+import * as ExecutionController from '@App/components/execution/executionController';
 import { AWSConstant } from "@App/utils/constants";
 import { UnsupportedOperationError } from "@App/errors/AWSErrors";
 
@@ -38,6 +39,12 @@ router.post('/', async (req, res, next) => {
                 break;
             case AWSConstant.actions.UPDATE_STATE_MACHINE: 
                 await StateMachineController.updateStateMachine(req, res);
+                break;
+            case AWSConstant.actions.START_EXECUTION:
+                await ExecutionController.startExecution(req, res);
+                break;
+            case AWSConstant.actions.DESCRIBE_EXECUTION:
+                await ExecutionController.describeExecution(req, res);
                 break;
             default :
                 throw new UnsupportedOperationError(`Unsupported Operation: '${action}'`);

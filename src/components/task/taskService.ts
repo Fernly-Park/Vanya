@@ -1,17 +1,15 @@
 import { Task } from "./task.interfaces";
 import * as TaskDAL from "./taskDAL";
-import { StateType } from "../stateMachines/stateMachine.interfaces";
 
 export const addTask = async (task: Task): Promise<void> => {
-    const { state } = task;
-    // todo valider
-    switch (state.Type) {
-        default : 
-            await TaskDAL.addToGeneralTaskQueue(task);
-            break;
-    }
+    // TODO 
+    await TaskDAL.addToGeneralTaskQueue(task);
 }
 
 export const getGeneralTask = async (): Promise<Task> => {
     return await TaskDAL.popFromGeneralTaskQueue();
+}
+
+export const numberOfGeneralTask = async (): Promise<number> => {
+    return await TaskDAL.lengthOfGeneralTaskQueue();
 }

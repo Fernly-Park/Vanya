@@ -34,52 +34,52 @@ export type DbOrTransaction = Knex.Transaction | Knex<any, unknown[]>;
 const setupActivityTable = async(): Promise<void> => {
     await createTableIfNotExists(ActivityTable.tableName, (tableBuilder): void => {
         tableBuilder.increments();
-        tableBuilder.string(ActivityTable.arnColumn).notNullable().unique().index();
-        tableBuilder.string(ActivityTable.nameColumn).notNullable().unique().index();
+        tableBuilder.text(ActivityTable.arnColumn).notNullable().unique().index();
+        tableBuilder.text(ActivityTable.nameColumn).notNullable().unique().index();
         tableBuilder.timestamp(ActivityTable.creationDateColumn).notNullable().defaultTo(db.fn.now());
     });
 };
 
 const setupUserTable = async(): Promise<void> => {
     await createTableIfNotExists(UserTable.tableName, (tableBuilder): void => {
-        tableBuilder.string(UserTable.idColumn).primary().index();
-        tableBuilder.string(UserTable.emailColumn).notNullable().unique().index();
-        tableBuilder.string(UserTable.subColumn).nullable().unique()
-        tableBuilder.string(UserTable.secretColumn).nullable();
+        tableBuilder.text(UserTable.idColumn).primary().index();
+        tableBuilder.text(UserTable.emailColumn).notNullable().unique().index();
+        tableBuilder.text(UserTable.subColumn).nullable().unique()
+        tableBuilder.text(UserTable.secretColumn).nullable();
     });
 };
 
 const setupStateMachineTable = async(): Promise<void> => {
     await createTableIfNotExists(StateMachineTable.tableName, (tableBuilder) => {
-        tableBuilder.string(StateMachineTable.arnColumn).primary().index();
+        tableBuilder.text(StateMachineTable.arnColumn).primary().index();
         tableBuilder.jsonb(StateMachineTable.definitionColumn).notNullable();
         tableBuilder.timestamp(StateMachineTable.createDateColumn).notNullable().defaultTo(db.fn.now());
-        tableBuilder.string(StateMachineTable.roleArnColumn).notNullable();
-        tableBuilder.string(StateMachineTable.statusColumn).notNullable().defaultTo(StateMachineStatus.active);
-        tableBuilder.string(StateMachineTable.typeColumn).notNullable().defaultTo(StateMachineTypes.standard);
-        tableBuilder.string(StateMachineTable.nameColumn).notNullable();
+        tableBuilder.text(StateMachineTable.roleArnColumn).notNullable();
+        tableBuilder.text(StateMachineTable.statusColumn).notNullable().defaultTo(StateMachineStatus.active);
+        tableBuilder.text(StateMachineTable.typeColumn).notNullable().defaultTo(StateMachineTypes.standard);
+        tableBuilder.text(StateMachineTable.nameColumn).notNullable();
     });
 }
 
 const setupStateMachineVersionsTable = async(): Promise<void> => {
     await createTableIfNotExists(StateMachineVersionTable.tableName, tableBuilder => {
-        tableBuilder.string(StateMachineVersionTable.stateMachineArnColumn).notNullable().references(StateMachineTable.arnColumn).inTable(StateMachineTable.tableName);
+        tableBuilder.text(StateMachineVersionTable.stateMachineArnColumn).notNullable().references(StateMachineTable.arnColumn).inTable(StateMachineTable.tableName);
         tableBuilder.timestamp(StateMachineVersionTable.updateDateColumn).notNullable().defaultTo(db.fn.now());
         tableBuilder.jsonb(StateMachineVersionTable.definitionColumn).notNullable();
-        tableBuilder.string(StateMachineVersionTable.roleArnColumn).notNullable();
+        tableBuilder.text(StateMachineVersionTable.roleArnColumn).notNullable();
         tableBuilder.primary([StateMachineVersionTable.stateMachineArnColumn, StateMachineVersionTable.updateDateColumn]);
     });
 }
 
 const setupExecutionTable = async (): Promise<void> => {
     await createTableIfNotExists(ExecutionTable.tableName, tableBuilder => {
-        tableBuilder.string(ExecutionTable.executionArnColumn).primary().index();
-        tableBuilder.jsonb(ExecutionTable.inputColumn).nullable();
-        tableBuilder.string(ExecutionTable.nameColumn).notNullable();
-        tableBuilder.jsonb(ExecutionTable.outputColumn).nullable();
+        tableBuilder.text(ExecutionTable.executionArnColumn).primary().index();
+        tableBuilder.text(ExecutionTable.inputColumn).nullable();
+        tableBuilder.text(ExecutionTable.nameColumn).notNullable();
+        tableBuilder.text(ExecutionTable.outputColumn).nullable();
         tableBuilder.timestamp(ExecutionTable.startDateColumn).notNullable().defaultTo(db.fn.now());
-        tableBuilder.string(ExecutionTable.stateMachineArnColumn).notNullable().references(StateMachineTable.arnColumn).inTable(StateMachineTable.tableName);
-        tableBuilder.string(ExecutionTable.statusColumn).notNullable().defaultTo(ExecutionStatus.running);
+        tableBuilder.text(ExecutionTable.stateMachineArnColumn).notNullable().references(StateMachineTable.arnColumn).inTable(StateMachineTable.tableName);
+        tableBuilder.text(ExecutionTable.statusColumn).notNullable().defaultTo(ExecutionStatus.running);
         tableBuilder.timestamp(ExecutionTable.stopDateColumn).nullable();
     });
 }

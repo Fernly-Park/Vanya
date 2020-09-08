@@ -42,6 +42,14 @@ describe('arn helper function', () => {
         expect(arn).toBe(`arn:aws:states:${config.region}:123456789012:execution:name:006f371e-4504-46be-ba47-73f88641ad71`);
     });
 
+    it('correctly check if an execution arn is valid', () => {
+        expect.assertions(1);
+
+        expect(() => {
+            ArnHelper.ensureIsValidExecutionArn('arn:aws:states:eu-west:828427805192:execution:stateMachineName:98055493-2efe-4cf8-af77-79400d972b39')
+        }).not.toThrow();
+    });
+
     it('correctly retrieve the name from a state machine arn', () => {
         expect.assertions(1);
 

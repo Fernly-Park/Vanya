@@ -3,8 +3,10 @@ import { ActivityTable } from '../../src/components/activity/activity.interfaces
 import { UserTable } from '@App/components/user/user.interfaces';
 import { StateMachineTable, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionTable } from '@App/components/execution/execution.interfaces';
+import * as Redis from '@App/modules/database/redis';
 
 export const setupDatabaseForTests = async (): Promise<void> => {
+    await Redis.flushallAsync()
     await clearDatabase();
     await dbModule.setupDatabase();
 };

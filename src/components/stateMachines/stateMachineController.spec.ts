@@ -1,12 +1,8 @@
-import { setupDatabaseForTests } from '@Tests/fixtures/db';
 import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
-
 import AWS from 'aws-sdk';
 import initApp from '@App/app';
 import http from 'http';
-import config from '@App/config';
-import * as UserService from '@App/components/user/userService';
-import { stateMachinesForTests, dummyRoleARN, dummyStateMachineArn } from '@Tests/testHelper';
+import { stateMachinesForTests, dummyRoleARN, dummyStateMachineArn, setupForTestAgainstServer } from '@Tests/testHelper';
 import { HttpStatusCode } from '@App/utils/httpStatusCode';
 
 
@@ -21,15 +17,7 @@ describe('state machine tests', () => {
     });
 
     beforeEach(async () => {
-        await setupDatabaseForTests();
-        const secret = 'secret';
-        const user = await UserService.createUser('sub', 'tmp@gmail.com');
-        await UserService.setUserSecret(user.id, secret);
-        stepFunctions = new AWS.StepFunctions({
-            endpoint: `http://localhost:${config.port}`,
-            region: config.region,
-            credentials: new AWS.Credentials({accessKeyId: user.id, secretAccessKey: secret})
-        });
+        stepFunctions = await setupForTestAgainstServer()
     });
 
     afterAll(done => {
@@ -108,7 +96,7 @@ describe('state machine tests', () => {
             };
 
             const stateMachine = await stepFunctions.createStateMachine(req).promise();
-            req.definition = stateMachinesForTests.valid.validHelloWorld;
+            req.definition = stateMachinesForTests.valid.validPassWithResult;
             
             await expect(stepFunctions.createStateMachine(req).promise()).rejects.toThrow(expect.objectContaining({
                 statusCode: HttpStatusCode.BAD_REQUEST,

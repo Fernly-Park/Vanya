@@ -54,3 +54,5 @@ const ensureIsValid = (resource: unknown, validator: Joi.Schema, error?: Error):
         throw error ?? new InvalidInputError(result.error.message);
     }
 }
+
+export const ISO8601_REGEX = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$/i
