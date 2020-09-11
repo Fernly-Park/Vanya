@@ -74,9 +74,11 @@ const ensureJsonPathAreCorrects = (sm: IStateMachineDefinition) => {
   const result: [] = JSONPath({json: sm, path: '$..[InputPath,OutputPath,ResultPath]'});
   result.forEach((el: string) => {
     try {
-      JSONPath({path: el, json: {},}) 
-      if (el !== el.trim()){
-        throw new Error();
+      if (el !== null) {
+        JSONPath({path: el, json: {},}) 
+        if (el !== el.trim()){
+          throw new Error();
+        }
       }
     } catch (err) {
       throw new InvalidDefinitionError(`SCHEMA_VALIDATION_FAILED: Value is not a Reference Path`);

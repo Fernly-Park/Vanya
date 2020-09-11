@@ -4,6 +4,7 @@ import * as Redis from './redis';
 
 export const setupDatabases = async (): Promise<void> => {
     try {
+        Redis.startRedis();
         Redis.onConnectionSuccess(() => {
             Logger.logInfo('successfully connected to redis');
         });

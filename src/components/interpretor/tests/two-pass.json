@@ -1,0 +1,26 @@
+{
+    "describe": "simple state machine with a two pass states'", 
+    "tests": [
+        {
+            "input": {"tea": "test"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"tea": "test"},
+            "describe": "should return '{\"tea\": \"test\"}' as the output with the input set as '{\"tea\": \"test\"}'"
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "First",
+        "States": {
+            "First": {
+                "Type": "Pass",
+                "Next": "Second"
+            },
+            "Second": {
+                "Type": "Pass",
+                "End": true
+            }
+        }
+    }           
+}
+

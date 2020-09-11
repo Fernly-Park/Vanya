@@ -2,21 +2,24 @@
 import * as TaskService from '../task/taskService';
 import * as ExecutionService from '@App/components/execution/executionService';
 import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
-import { Task, TaskInput } from '../task/task.interfaces';
-import { PassState, StateMachineStateValue } from '@App/components/stateMachines/stateMachine.interfaces';
+import { Task, TaskInput, TaskOutput } from '../task/task.interfaces';
+import { PassState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { JSONPath } from 'jsonpath-plus';
-import { InvalidInputPathError, InvalidParameterError } from '@App/errors/customErrors';
+import { InvalidPathError, InvalidParameterError } from '@App/errors/customErrors';
 import { ExecutionStatus, ContextObject, ExecutionInput } from '../execution/execution.interfaces';
-import { isAnObject } from '@App/utils/objectUtils';
-import { LexRuntime } from 'aws-sdk';
+import { addProps } from '@App/utils/objectUtils';
 
 let interpretor = true;
 export const startInterpretor = async (): Promise<void> => {
     // eslint-disable-next-line no-constant-condition
+    
     interpretor = true;
     while(interpretor) {
         const task = await TaskService.getGeneralTask();
-        void processTask(task).then();
+        if (task) {
+            void processTask(task).then();
+        }
+        
     }    
 };
 
@@ -53,18 +56,23 @@ const processTask = async (task: Task): Promise<void> => {
 };
 // inputPath -> Parameter
 const processPassTask = async (task: Task, state: PassState): Promise<TaskInput> => {
-    let input = applyInputPath(task.input, state.InputPath);
+    let input = applyPath(task.input, state.InputPath);
     input = await applyParameters(task.executionArn, input, state.Parameters)
-    return state.Result ?? input;
+    const rawOutput = state.Result ?? input;
+    const toReturn = applyResultPath(input, rawOutput, state.ResultPath);
+    return applyPath(toReturn, state.OutputPath);
 }
 
-const applyInputPath = (rawInput: TaskInput, inputPath: string): TaskInput => {
+export const applyPath = (rawInput: TaskInput | TaskOutput, path: string): TaskInput | TaskOutput => {
     let toReturn: ExecutionInput;
-    if (inputPath && inputPath != '$') {
+    if (path === null) {
+        return {};
+    }
+    if (path && path != '$') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        toReturn = JSONPath({json: rawInput as any, path: inputPath, wrap: false});
+        toReturn = JSONPath({json: rawInput as any, path: path, wrap: false});
         if (!toReturn) {
-            throw new InvalidInputPathError(inputPath);
+            throw new InvalidPathError(path);
         }
     }
     return toReturn ?? rawInput;
@@ -95,6 +103,21 @@ const applyParameters = async (executionArn: string, input: TaskInput, parameter
     }
 
     return toReturn;
+}
+
+export const applyResultPath = (input: TaskInput, output: TaskOutput, resultPath: string): TaskOutput => {
+    if (resultPath === null) {
+        return input;
+    }
+    if (resultPath && resultPath != '$') {
+        const resultPathWithoutPrefix = resultPath.substr(2, resultPath.length);
+        return addProps(input as Record<string, unknown>, resultPathWithoutPrefix, output)
+    }
+    return output;
+}
+
+export const applyOutputPath = (output: TaskOutput, outputPath: string): TaskOutput => {
+    
 }
 
 const calculateParameterValue = async (input: TaskInput, value: string, getContextObject: () => Promise<ContextObject>): Promise<Record<string, unknown>> => {

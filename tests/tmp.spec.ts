@@ -3,6 +3,8 @@ import * as UserService from '@App/components/user/userService';
 import * as StateMachineDAL from '@App/components/stateMachines/stateMachineDAL';
 import { IUser } from '@App/components/user/user.interfaces';
 import { setupDatabaseForTests, emptyExecutionTable } from '@Tests/fixtures/db';
+import * as InterpretorService from '@App/components/interpretor/interpretorService';
+import * as TaskService from '@App/components/task/taskService';
 
 describe('caca', () => {
 
@@ -11,15 +13,18 @@ describe('caca', () => {
     beforeAll(async () => {
         await setupDatabaseForTests();
         user = await UserService.createUser('sub', 'tmp@gmail.com');
+        void InterpretorService.startInterpretor().then();
     });
 
-    beforeEach(async () => {
-        await Redis.flushallAsync();
-        await emptyExecutionTable();
-    });
-
+    afterAll(async () => {
+        InterpretorService.stopInterpreter();
+    })
     it('should work', async () => {
         expect.assertions(0);
-        StateMachineDAL.createStateMachine
+        const task = await TaskService.getGeneralTask();
+    })
+
+    it('should also work', () => {
+        expect.assertions(0);
     })
 })

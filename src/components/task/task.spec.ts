@@ -6,6 +6,7 @@ import { Task } from '@App/components/task/task.interfaces';
 
 describe('tasks', () => {
     beforeEach(async () => {
+        Redis.startRedis();
         await Redis.flushallAsync();
     });
     afterAll(async () => {

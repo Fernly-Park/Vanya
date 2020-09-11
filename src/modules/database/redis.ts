@@ -5,27 +5,8 @@ import { promisify } from 'util';
 import config from '@App/config';
 import genericPool from 'generic-pool';
 
-export const client = redis.createClient();
-const connectionPool = genericPool.createPool({
-    create: () => {
-        return (promisify(client.duplicate).bind(client) as () => Promise<redis.RedisClient>)();
-    },
-    destroy: (currentClient: redis.RedisClient) => {
-        return (promisify(currentClient.quit).bind(currentClient) as unknown as () => Promise<void>)()
-    }
-}, {
-    min: 10,
-    max: 10000
-});
-
-export const onConnectionSuccess = (callback: () => void ): void => {
-    client.on('connect', callback);
-}
-
-export const onConnectionError = (callback: () => void ): void => {
-    client.on('error', callback);
-}
-
+let client: redis.RedisClient;
+let connectionPool: genericPool.Pool<redis.RedisClient>;
 // eslint-disable-next-line @typescript-eslint/ban-types
 const pooledFunctionFactory = (func: Function) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,27 +35,72 @@ export const customPooledFunctionFactory = (commandName: string) => {
     }
 }
 
-export const getAsync = pooledFunctionFactory(client.get) as (arg1: string) => Promise<string>;
-export const setAsync = pooledFunctionFactory(client.set) as (key: string, value: string) => Promise<boolean>;
-export const delAsync = pooledFunctionFactory(client.del) as (key: string) => Promise<void>;
-export const rpushAsync = pooledFunctionFactory(client.rpush) as (key: string, ...args: string[]) => Promise<number>;
-export const flushallAsync = pooledFunctionFactory(client.flushall) as () => Promise<unknown>;
-export const llenAsync = pooledFunctionFactory(client.llen) as(key: string) => Promise<number>;
-export const lpopAsync = pooledFunctionFactory(client.lpop) as (key: string) => Promise<string>;
-export const blpopAsync = pooledFunctionFactory(client.blpop) as (key: string, timeout: number) => Promise<[string, string]>;
-export const hsetAsync = pooledFunctionFactory(client.HSET) as (key: string, field: string, value: string) => Promise<void>
-export const hgetAsync = pooledFunctionFactory(client.HGET) as (key: string, field: string) => Promise<string>
-export const hdelAsync = pooledFunctionFactory(client.HDEL) as (key: string, field: string) => Promise<void>
+export let getAsync: (arg1: string) => Promise<string>;
+export let setAsync: (key: string, value: string) => Promise<boolean>;
+export let delAsync: (key: string) => Promise<void>;
+export let rpushAsync: (key: string, ...args: string[]) => Promise<number>;
+export let flushallAsync: () => Promise<unknown>;
+export let llenAsync: (key: string) => Promise<number>;
+export let lpopAsync: (key: string) => Promise<string>;
+export let blpopAsync: (key: string, timeout: number) => Promise<[string, string]>;
+export let hsetAsync: (key: string, field: string, value: string) => Promise<void>
+export let hgetAsync: (key: string, field: string) => Promise<string>
+export let hdelAsync: (key: string, field: string) => Promise<void>
 
-export const jsonsetAsync = customPooledFunctionFactory("JSON.SET") as (key: string, path: string, json: string) => Promise<boolean>;
-export const jsongetAsync = customPooledFunctionFactory("JSON.GET") as (key: string, path?: string) => Promise<string>;
-export const jsondelAsync = customPooledFunctionFactory("JSON.DEL") as (key: string, path?: string) => Promise<void>;
+export let jsonsetAsync: (key: string, path: string, json: string) => Promise<boolean>;
+export let jsongetAsync: (key: string, path?: string) => Promise<string>;
+export let jsondelAsync: (key: string, path?: string) => Promise<void>;
 
 export const quitAsync = async (): Promise<void> => {
-    await connectionPool.drain();
-    await connectionPool.clear();
-    await promisify(client.quit).bind(client)();
+    if (connectionPool) {
+        await connectionPool.drain();
+        await connectionPool.clear();
+    }
+    if (client) {
+        await promisify(client.quit).bind(client)();
+    }
 }
+
+
+export const startRedis = () => {
+    client = redis.createClient();
+    connectionPool = genericPool.createPool({
+        create: () => {
+            return (promisify(client.duplicate).bind(client) as () => Promise<redis.RedisClient>)();
+        },
+        destroy: (currentClient: redis.RedisClient) => {
+            return (promisify(currentClient.quit).bind(currentClient) as unknown as () => Promise<void>)()
+        }
+    }, {
+        min: 10,
+        max: 10000
+    });
+
+    getAsync = pooledFunctionFactory(client.get) as (arg1: string) => Promise<string>;
+    setAsync = pooledFunctionFactory(client.set) as (key: string, value: string) => Promise<boolean>;
+    delAsync = pooledFunctionFactory(client.del) as (key: string) => Promise<void>;
+    rpushAsync = pooledFunctionFactory(client.rpush) as (key: string, ...args: string[]) => Promise<number>;
+    flushallAsync = pooledFunctionFactory(client.flushall) as () => Promise<unknown>;
+    llenAsync = pooledFunctionFactory(client.llen) as(key: string) => Promise<number>;
+    lpopAsync = pooledFunctionFactory(client.lpop) as (key: string) => Promise<string>;
+    blpopAsync = pooledFunctionFactory(client.blpop) as (key: string, timeout: number) => Promise<[string, string]>;
+    hsetAsync = pooledFunctionFactory(client.HSET) as (key: string, field: string, value: string) => Promise<void>
+    hgetAsync = pooledFunctionFactory(client.HGET) as (key: string, field: string) => Promise<string>
+    hdelAsync = pooledFunctionFactory(client.HDEL) as (key: string, field: string) => Promise<void>
+    jsonsetAsync = customPooledFunctionFactory("JSON.SET") as (key: string, path: string, json: string) => Promise<boolean>;
+    jsongetAsync = customPooledFunctionFactory("JSON.GET") as (key: string, path?: string) => Promise<string>;
+    jsondelAsync = customPooledFunctionFactory("JSON.DEL") as (key: string, path?: string) => Promise<void>;
+}
+
+export const onConnectionSuccess = (callback: () => void ): void => {
+    client.on('connect', callback);
+}
+
+export const onConnectionError = (callback: () => void ): void => {
+    client.on('error', callback);
+}
+
+
 
 
 export const systemTaskKey = `${config.redis_prefix}:systemTasks`;

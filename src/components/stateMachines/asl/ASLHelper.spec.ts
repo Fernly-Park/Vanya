@@ -17,5 +17,6 @@ describe('state machine validation', () => {
             expect(() => {ensureStateMachineDefinitionIsValid(smDef)}).toThrow();
         });  
     }
+
 });
  

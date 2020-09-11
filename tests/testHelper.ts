@@ -55,6 +55,10 @@ export const createSMAndStartExecutionHelper = async (req: {
     };
 };
 
+export const sleep = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const getStateMachineDef = (...paths: string[]): string => {
     return readFileSync(join(__dirname, 'stateMachine', 'definitions', ...paths), 'utf8');
 }
@@ -75,14 +79,17 @@ export const stateMachinesForTests = {
         validCatchFailure: getStateMachineDef('valid', 'valid-catch-failure.json'),
         validChoiceState: getStateMachineDef('valid', 'valid-choice-state.json'),
         validPass: getStateMachineDef('valid', 'pass', 'valid-pass.json'),
+        validPassWithResultNull: getStateMachineDef('valid', 'pass', 'valid-pass-with-result-null.json'),
         validPassContextObject: getStateMachineDef('valid', 'pass', 'valid-pass-context-object.json'),
         validPassParameters: getStateMachineDef('valid', 'pass', 'valid-pass-parameters.json'),
         validPassIncorrectParameters: getStateMachineDef('valid', 'pass', 'valid-pass-incorrect-parameter.json'),
         validInputPathMultiple: getStateMachineDef('valid', 'inputPath', 'valid-multiple-inputPath.json'),
         validPassTwoStates: getStateMachineDef('valid', 'pass', 'valid-pass-two-states.json'),
         validPassWithResult: getStateMachineDef('valid', 'pass', 'valid-pass-with-result.json'),
+        validPassInputPathNull: getStateMachineDef('valid', 'pass', 'valid-pass-inputPath-null.json'),
         validInputPathInPass: getStateMachineDef('valid', 'inputPath', 'valid-InputPath-in-pass.json'),
         validInputPathDefault: getStateMachineDef('valid', 'inputPath', 'valid-inputPath-default.json'),
+        validResultPathInPassState: getStateMachineDef('valid', 'resultPath', 'valid-resultPath-in-pass-state.json'),
         validPassResultTwoStates: getStateMachineDef('valid', 'pass', 'valid-pass-result-two-states.json'),
         validJobStatusPoller: getStateMachineDef('valid', 'valid-job-status-poller.json'),
         validMap: getStateMachineDef('valid', 'valid-map.json'),

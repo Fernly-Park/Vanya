@@ -2,10 +2,11 @@
     "Comment": "A Hello World example of the Amazon States Language using a Pass state",
     "StartAt": "HelloWorld",
     "States": {
-        "HelloWorld": {
+      "HelloWorld": {
         "Type": "Pass",
+        "Result": null,
         "End": true
-        }
+      }
     }
-}    
-
+  }
+  

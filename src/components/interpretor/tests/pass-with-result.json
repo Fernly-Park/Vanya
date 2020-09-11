@@ -1,0 +1,42 @@
+{
+    "describe": "simple state machine with a single pass state and the result set as 'Hello World!'", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "Hello World!",
+            "describe": "should return 'Hello World!' as the output with the input set as '{}'"
+        },
+        {
+            "name": "hello",
+            "input": [],
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "Hello World!",
+            "describe": "should return 'Hello World!' as the output with the input set as '[]'"
+        },
+        {
+            "input": {"tea": "test"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "Hello World!",
+            "describe": "should return 'Hello World!' as the output with the input set as '{\"tea\": \"test\"}'"
+        },
+        {
+            "input": [1,2],
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "Hello World!",
+            "describe": "should return 'Hello World!' as the output with the input set as '[1,2]'"
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "HelloWorld",
+        "States": {
+          "HelloWorld": {
+            "Type": "Pass",
+            "Result": "Hello World!",
+            "End": true
+          }
+        }
+      }        
+}
+

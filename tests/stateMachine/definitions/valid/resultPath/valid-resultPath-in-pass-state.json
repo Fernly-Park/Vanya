@@ -3,9 +3,10 @@
     "StartAt": "HelloWorld",
     "States": {
         "HelloWorld": {
+        "ResultPath": "$.master.detail",
+        "Result": "Hello World",
         "Type": "Pass",
         "End": true
         }
     }
-}    
-
+}

@@ -21,5 +21,6 @@ export default {
     connection_string: process.env.PG_CONNECTION_STRING,
     region: process.env.REGION,
     encryptUserSecret: process.env.ENCRYPT_USER_SECRET,
-    redis_prefix: process.env.REDIS_PREFIX
+    redis_prefix: process.env.REDIS_PREFIX,
+    redisBlockingTimeout: process.env.REDIS_BLOCKING_TIMEOUT ? parseInt(process.env.REDIS_BLOCKING_TIMEOUT) : 0
 }; 

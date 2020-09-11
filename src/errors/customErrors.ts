@@ -42,9 +42,9 @@ export class InvalidInputError extends BaseError {
     }
 }
 
-export class InvalidInputPathError extends BaseError {
+export class InvalidPathError extends BaseError {
     constructor(description: string) {
-        super("Invalid Input Path Error", description, true);
+        super("Invalid Path Error", description, true);
         this.stack = `${this.message}\n${new Error().stack}`;
     }
 }

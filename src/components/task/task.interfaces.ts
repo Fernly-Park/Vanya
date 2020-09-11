@@ -1,5 +1,6 @@
 
 export type TaskInput = unknown;
+export type TaskOutput = unknown;
 
 export interface Task {
     stateName: string,

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "env-cmd -f ./config/dev.env ts-node-dev  --no-notify -r tsconfig-paths/register src/bin/www   | pino-pretty",
-    "test": "env-cmd -f ./config/test.env jest -i "
+    "test": "env-cmd -f ./config/test.env jest -i"
   },
   "jest": {
     "testEnvironment": "node"

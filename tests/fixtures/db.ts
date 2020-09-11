@@ -6,7 +6,9 @@ import { ExecutionTable } from '@App/components/execution/execution.interfaces';
 import * as Redis from '@App/modules/database/redis';
 
 export const setupDatabaseForTests = async (): Promise<void> => {
-    await Redis.flushallAsync()
+    await Redis.quitAsync();
+    Redis.startRedis();
+    await Redis.flushallAsync();
     await clearDatabase();
     await dbModule.setupDatabase();
 };
