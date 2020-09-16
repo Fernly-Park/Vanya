@@ -6,7 +6,7 @@ import * as TaskService from '@App/components/task/taskService';
 import { ExecutionStatus, ContextObject } from '../execution/execution.interfaces';
 import { ISO8601_REGEX } from "@App/utils/validationHelper";
 
-generateServiceTest('context object inside parameters', (getUser) => {
+generateServiceTest({describeText: 'context object inside parameters', tests: (getUser) => {
     describe('state machine with single pass and use context object', () => {
         it('should correctly interpret the parameters', async () => {
             expect.assertions(19);
@@ -101,4 +101,4 @@ generateServiceTest('context object inside parameters', (getUser) => {
         });
     });
 
-})
+}})

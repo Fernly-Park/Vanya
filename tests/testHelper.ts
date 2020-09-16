@@ -115,3 +115,4 @@ export const stateMachinesForTests = {
 export const dummyRoleARN = 'arn:aws:iam::012345678901:role/DummyRole';
 export const dummyStateMachineArn = 'arn:aws:states:us-east-1:123456789012:stateMachine:dummySmArn';
 export const dummyExecutionArn = 'arn:aws:states:us-east-1:123456789012:execution:name:006f371e-4504-46be-ba47-73f88641ad71'
+export const mockDateNow = '2020-06-07T00:00:01.000Z'

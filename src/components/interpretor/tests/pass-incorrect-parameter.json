@@ -1,0 +1,59 @@
+{
+    "describe": "simple state machine with a single pass state containing a parameters that does not exists", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail due to the '$$.UnexistingAttribute' parameter",
+            "name": "basic object",
+            "events":[
+                {
+                    "timestamp":"2020-06-07T00:00:01.000Z",
+                    "type":"ExecutionStarted",
+                    "id":1,
+                    "previousEventId":0,
+                    "executionStartedEventDetails":{
+                        "input":"{}",
+                        "roleArn":"todo"
+                    }
+                },
+                {
+                    "timestamp":"2020-06-07T00:00:01.000Z",
+                    "type":"PassStateEntered",
+                    "id":2,
+                    "previousEventId":0,
+                    "stateEnteredEventDetails":{
+                        "name":"HelloWorld",
+                        "input":"{}"
+                    }
+                },
+                {
+                    "timestamp":"2020-06-07T00:00:01.000Z",
+                    "type":"ExecutionFailed",
+                    "id":3,
+                    "previousEventId":0,
+                    "executionFailedEventDetails":{
+                        "error":"States.Runtime",
+                        "cause":"An error occurred while executing the state 'HelloWorld'"
+                    }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "HelloWorld",
+        "States": {
+            "HelloWorld": {
+                "Parameters": {
+                    "ContextObjectStateMachineName.$": "$$.UnexistingAttribute"
+                },
+                "Type": "Pass",
+                "End": true
+            }
+        }
+    }
+          
+}
+

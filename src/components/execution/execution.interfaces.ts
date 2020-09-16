@@ -1,3 +1,5 @@
+import { HistoryEvent, HistoryEventType, ExecutionStartedEventDetails, StateEnteredEventDetails, StateExitedEventDetails, ExecutionSucceededEventDetails } from "aws-sdk/clients/stepfunctions";
+
 export enum ExecutionTable {
     tableName = 'executions',
     executionArnColumn = 'executionArn',
@@ -8,6 +10,15 @@ export enum ExecutionTable {
     stateMachineArnColumn = 'stateMachineArn',
     statusColumn = 'status',
     stopDateColumn = 'stopDate'
+}
+
+export enum ExecutionEventTable {
+    tableName = 'executionEvents',
+    executionArnColumn = 'executionArn',
+    idColumn = 'id',
+    timestampColumn = 'timestamp',
+    typeColumn = 'type',
+    eventColumn = 'event'
 }
 
 export type ExecutionInput = Record<string, unknown> | unknown[];

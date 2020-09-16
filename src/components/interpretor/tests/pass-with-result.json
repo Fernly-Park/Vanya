@@ -24,7 +24,48 @@
             "input": [1,2],
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": "Hello World!",
-            "describe": "should return 'Hello World!' as the output with the input set as '[1,2]'"
+            "describe": "should return 'Hello World!' as the output with the input set as '[1,2]'",
+            "events":[
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"ExecutionStarted",
+                   "id":1,
+                   "previousEventId":0,
+                   "executionStartedEventDetails":{
+                      "input":"[1,2]",
+                      "roleArn":"todo"
+                   }
+                },
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"PassStateEntered",
+                   "id":2,
+                   "previousEventId":0,
+                   "stateEnteredEventDetails":{
+                      "name":"HelloWorld",
+                      "input":"[1,2]"
+                   }
+                },
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"PassStateExited",
+                   "id":3,
+                   "previousEventId":2,
+                   "stateExitedEventDetails":{
+                      "name":"HelloWorld",
+                      "output":"\"Hello World!\""
+                   }
+                },
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"ExecutionSucceeded",
+                   "id":4,
+                   "previousEventId":3,
+                   "executionSucceededEventDetails":{
+                      "output":"\"Hello World!\""
+                   }
+                }
+             ]
         }
     ],
     "definition": {

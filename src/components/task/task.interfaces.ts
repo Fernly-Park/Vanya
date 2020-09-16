@@ -7,4 +7,5 @@ export interface Task {
     input: TaskInput,
     executionArn: string,
     stateMachineArn: string,
+    previousEventId: number
 }

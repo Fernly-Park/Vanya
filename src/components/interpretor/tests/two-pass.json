@@ -5,7 +5,68 @@
             "input": {"tea": "test"},
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {"tea": "test"},
-            "describe": "should return '{\"tea\": \"test\"}' as the output with the input set as '{\"tea\": \"test\"}'"
+            "describe": "should return '{\"tea\": \"test\"}' as the output with the input set as '{\"tea\": \"test\"}'",
+            "events":[
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                   "type":"ExecutionStarted",
+                   "id":1,
+                   "previousEventId":0,
+                   "executionStartedEventDetails":{
+                      "input":"{\"tea\":\"test\"}",
+                      "roleArn":"todo"
+                   }
+                },
+                {
+                   "timestamp": "2020-06-07T00:00:01.000Z",
+                   "type":"PassStateEntered",
+                   "id":2,
+                   "previousEventId":0,
+                   "stateEnteredEventDetails":{
+                      "name":"First",
+                      "input":"{\"tea\":\"test\"}"
+                   }
+                },
+                {
+                   "timestamp": "2020-06-07T00:00:01.000Z", 
+                   "type":"PassStateExited",
+                   "id":3,
+                   "previousEventId":2,
+                   "stateExitedEventDetails":{
+                      "name":"First",
+                      "output":"{\"tea\":\"test\"}"
+                   }
+                },
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                   "type":"PassStateEntered",
+                   "id":4,
+                   "previousEventId":3,
+                   "stateEnteredEventDetails":{
+                      "name":"Second",
+                      "input":"{\"tea\":\"test\"}"
+                   }
+                },
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                   "type":"PassStateExited",
+                   "id":5,
+                   "previousEventId":4,
+                   "stateExitedEventDetails":{
+                      "name":"Second",
+                      "output":"{\"tea\":\"test\"}"
+                   }
+                },
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                   "type":"ExecutionSucceeded",
+                   "id":6,
+                   "previousEventId":5,
+                   "executionSucceededEventDetails":{
+                      "output":"{\"tea\":\"test\"}"
+                   }
+                }
+             ]
         }
     ],
     "definition": {

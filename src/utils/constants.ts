@@ -17,6 +17,9 @@ export  const AWSConstant = {
         START_EXECUTION: 'StartExecution',
         DESCRIBE_EXECUTION: 'DescribeExecution',
     },
+    error: {
+        STATE_RUNTIME: 'States.Runtime'
+    },
     serviceName: 'states'
 }
 export const ACTIVITY_RESOURCE_NAME = 'activity';

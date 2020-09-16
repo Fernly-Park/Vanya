@@ -1,4 +1,4 @@
-import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput } from "aws-sdk/clients/stepfunctions";
+import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, HistoryEvent, GetExecutionHistoryInput, HistoryEventType } from "aws-sdk/clients/stepfunctions";
 import * as ArnHelper from '@App/utils/ArnHelper';
 import * as ValidationHelper from '@App/utils/validationHelper';
 import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
@@ -8,7 +8,7 @@ import * as UserService from '@App/components/user/userService';
 import { InvalidExecutionInputError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from "@App/errors/AWSErrors";
 import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
-import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, ExecutionInput } from "./execution.interfaces";
+import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
@@ -54,7 +54,15 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         }
     });
 
-    await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn});
+    await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
+    await addEvent({executionArn, event: {
+        executionStartedEventDetails: {
+            input: JSON.stringify(result.input),
+            roleArn: 'todo',
+        },
+        type: 'ExecutionStarted',
+        previousEventId: 0
+    }})
 
     return { executionArn, startDate: result.startDate }
 }
@@ -99,8 +107,21 @@ export const retrieveExecutionContextObject = async (req: {executionArn: string}
     return await ExecutionDAL.getContextObject(req.executionArn);
 }
 
-export const updateContextObjectState = async (req: {executionArn: string, enteredState: ContextObjectEnteredState}) => {
+export const updateContextObjectState = async (req: {executionArn: string, enteredState: ContextObjectEnteredState}): Promise<void> => {
     // todo check
     await ExecutionDAL.updateContextObject({executionArn: req.executionArn, path: '.State', update: req.enteredState});
 }
 
+type CustomHistoryEvent = Partial<HistoryEvent> & {type: HistoryEventType, previousEventId: number}
+export const addEvent = async (req: {executionArn: string, event: CustomHistoryEvent}): Promise<number> => {
+    // todo check
+    req.event.timestamp = new Date(Date.now());
+    return await ExecutionDAL.addExecutionEvent(req);
+}
+
+
+export const getExecutionHistory = async (req: GetExecutionHistoryInput): Promise<HistoryEvent[]> => {
+    // todo
+    ArnHelper.ensureIsValidExecutionArn(req.executionArn);
+    return await ExecutionDAL.getExecutionEvent({...req, limit: 1000, offset: 0});
+}

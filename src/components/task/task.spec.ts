@@ -16,7 +16,7 @@ describe('tasks', () => {
     describe('add', () => {
         it('should correctly add a task', async () => {
             expect.assertions(2);
-            const task: Task = {executionArn: 'tmp', stateName: 'tmp', stateMachineArn: dummyStateMachineArn,  input: {}};
+            const task: Task = {executionArn: 'tmp', stateName: 'tmp', stateMachineArn: dummyStateMachineArn,  input: {}, previousEventId: 0};
             await TaskService.addTask(task);
 
             const numberOfTasks = await Redis.llenAsync(Redis.systemTaskKey);

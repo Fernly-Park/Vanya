@@ -1,13 +1,14 @@
 import * as ExecutionService from '@App/components/execution/executionService';
 import * as ExecutionDAL from '@App/components/execution/executionDAL';
 import db from '@App/modules/database/db';
+import * as Redis from '@App/modules/database/redis';
 import * as TestHelper from '@Tests/testHelper';
 import { ExecutionStatus } from '@App/components/execution/execution.interfaces';
 import { UserDoesNotExistsError } from '@App/errors/customErrors';
 import { InvalidExecutionInputError, InvalidNameError, InvalidArnError, StateMachineDoesNotExistsError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 
-generateServiceTest('execution', (getUser) => {
+generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
     const createSMAndStartExecutionHelper = async (req?: { 
         stateMachineName?: string,
@@ -41,6 +42,20 @@ generateServiceTest('execution', (getUser) => {
             expect(retrievedExecution.status).toBe(ExecutionStatus.running);
             expect(retrievedExecution.stopDate).toBeNull();
             expect(retrievedExecution.startDate).toStrictEqual(execution.startDate);
+        });
+
+        it('should correctly create an event when starting an execution', async () => {
+            expect.assertions(6);
+
+            const {execution} = await createSMAndStartExecutionHelper();
+            const result = await ExecutionService.getExecutionHistory(execution);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].type).toBe('ExecutionStarted');
+            expect(result[0].id).toBe(1);
+            expect(result[0].previousEventId).toBe(0);
+            expect(result[0].timestamp).toBeDefined();
+            expect(result[0].executionStartedEventDetails.input).toBe('{}');
         });
 
         it.each([JSON.stringify([]), JSON.stringify([1, 2]), JSON.stringify([1, 'a'])])('should start an execution with %p as input', async (input: string) => {
@@ -180,7 +195,7 @@ generateServiceTest('execution', (getUser) => {
         it('should correctly delete the execution context', async () => {
             expect.assertions(2);
 
-            const {execution: execution} = await createSMAndStartExecutionHelper();
+            const {execution} = await createSMAndStartExecutionHelper();
 
             const beforeEndingExecution = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn});
             await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});
@@ -189,5 +204,19 @@ generateServiceTest('execution', (getUser) => {
             expect(beforeEndingExecution).toBeDefined();
             expect(afterEndingExecution).toBeNull();
         });
+
+        it('should correctly delete the events from redis once the execution is finished', async () => {
+            expect.assertions(2);
+
+            const {execution} = await createSMAndStartExecutionHelper();
+
+            const key = Redis.getExecutionEventKey(execution.executionArn);
+            const eventsFromRedisBefore = await Redis.lrangeAsync(key, 0, -1);
+            await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});
+            const eventsFromRedisAfter = await Redis.lrangeAsync(key, 0, -1);
+
+            expect(eventsFromRedisBefore).toHaveLength(1);
+            expect(eventsFromRedisAfter).toHaveLength(0);
+        });
     });
-})
+}})

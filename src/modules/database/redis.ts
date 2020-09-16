@@ -46,6 +46,8 @@ export let blpopAsync: (key: string, timeout: number) => Promise<[string, string
 export let hsetAsync: (key: string, field: string, value: string) => Promise<void>
 export let hgetAsync: (key: string, field: string) => Promise<string>
 export let hdelAsync: (key: string, field: string) => Promise<void>
+export let incrAsync: (key: string) => Promise<number>;
+export let lrangeAsync: (key: string, from: number, toIncluded: number) => Promise<string[]>
 
 export let jsonsetAsync: (key: string, path: string, json: string) => Promise<boolean>;
 export let jsongetAsync: (key: string, path?: string) => Promise<string>;
@@ -76,20 +78,23 @@ export const startRedis = () => {
         max: 10000
     });
 
-    getAsync = pooledFunctionFactory(client.get) as (arg1: string) => Promise<string>;
-    setAsync = pooledFunctionFactory(client.set) as (key: string, value: string) => Promise<boolean>;
-    delAsync = pooledFunctionFactory(client.del) as (key: string) => Promise<void>;
-    rpushAsync = pooledFunctionFactory(client.rpush) as (key: string, ...args: string[]) => Promise<number>;
-    flushallAsync = pooledFunctionFactory(client.flushall) as () => Promise<unknown>;
-    llenAsync = pooledFunctionFactory(client.llen) as(key: string) => Promise<number>;
-    lpopAsync = pooledFunctionFactory(client.lpop) as (key: string) => Promise<string>;
-    blpopAsync = pooledFunctionFactory(client.blpop) as (key: string, timeout: number) => Promise<[string, string]>;
-    hsetAsync = pooledFunctionFactory(client.HSET) as (key: string, field: string, value: string) => Promise<void>
-    hgetAsync = pooledFunctionFactory(client.HGET) as (key: string, field: string) => Promise<string>
-    hdelAsync = pooledFunctionFactory(client.HDEL) as (key: string, field: string) => Promise<void>
-    jsonsetAsync = customPooledFunctionFactory("JSON.SET") as (key: string, path: string, json: string) => Promise<boolean>;
-    jsongetAsync = customPooledFunctionFactory("JSON.GET") as (key: string, path?: string) => Promise<string>;
-    jsondelAsync = customPooledFunctionFactory("JSON.DEL") as (key: string, path?: string) => Promise<void>;
+    getAsync = pooledFunctionFactory(client.get)
+    setAsync = pooledFunctionFactory(client.set)
+    delAsync = pooledFunctionFactory(client.del)
+    rpushAsync = pooledFunctionFactory(client.rpush)
+    flushallAsync = pooledFunctionFactory(client.flushall)
+    llenAsync = pooledFunctionFactory(client.llen)
+    lpopAsync = pooledFunctionFactory(client.lpop)
+    blpopAsync = pooledFunctionFactory(client.blpop)
+    hsetAsync = pooledFunctionFactory(client.HSET)
+    hgetAsync = pooledFunctionFactory(client.HGET)
+    hdelAsync = pooledFunctionFactory(client.HDEL)
+    incrAsync = pooledFunctionFactory(client.incr);
+    lrangeAsync = pooledFunctionFactory(client.lrange);
+
+    jsonsetAsync = customPooledFunctionFactory("JSON.SET")
+    jsongetAsync = customPooledFunctionFactory("JSON.GET")
+    jsondelAsync = customPooledFunctionFactory("JSON.DEL")
 }
 
 export const onConnectionSuccess = (callback: () => void ): void => {
@@ -111,5 +116,13 @@ export const getContextObjectKey = (executionArn: string): string => {
 
 export const getStateMachineStatesKey = (stateMachineArn: string): string => {
     return `${config.redis_prefix}:${stateMachineArn}:states`
+}
+
+export const getExecutionEventKey = (executionArn: string): string => {
+    return `${config.redis_prefix}:${executionArn}:events`
+}
+
+export const getExecutionEventCurrentIdKey = (executionArn: string): string => {
+    return `${config.redis_prefix}:${executionArn}:currentEventId`;
 }
 

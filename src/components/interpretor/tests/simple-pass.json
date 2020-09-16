@@ -6,7 +6,48 @@
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {},
             "describe": "should return the input as output with the input set as '{}'",
-            "name": "basic object"
+            "executionName": "basic",
+            "events": [
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                    "executionStartedEventDetails": {
+                        "input": "{}", 
+                        "roleArn": "todo"
+                    }, 
+                    "type": "ExecutionStarted", 
+                    "id": 1, 
+                    "previousEventId": 0
+                }, 
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                    "type": "PassStateEntered", 
+                    "id": 2, 
+                    "stateEnteredEventDetails": {
+                        "input": "{}",
+                        "name": "HelloWorld"
+                    }, 
+                    "previousEventId": 0
+                }, 
+                {
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                    "stateExitedEventDetails": {
+                        "output": "{}",
+                        "name": "HelloWorld"
+                    }, 
+                    "type": "PassStateExited", 
+                    "id": 3, 
+                    "previousEventId": 2
+                }, 
+                {
+                    "executionSucceededEventDetails": {
+                        "output": "{}"
+                    }, 
+                    "timestamp": "2020-06-07T00:00:01.000Z", 
+                    "type": "ExecutionSucceeded", 
+                    "id": 4, 
+                    "previousEventId": 3
+                }
+            ]
         },
         {
             "name": "hello",

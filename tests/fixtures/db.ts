@@ -2,7 +2,7 @@ import * as dbModule from '../../src/modules/database/db';
 import { ActivityTable } from '../../src/components/activity/activity.interfaces';
 import { UserTable } from '@App/components/user/user.interfaces';
 import { StateMachineTable, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
-import { ExecutionTable } from '@App/components/execution/execution.interfaces';
+import { ExecutionTable, ExecutionEventTable } from '@App/components/execution/execution.interfaces';
 import * as Redis from '@App/modules/database/redis';
 
 export const setupDatabaseForTests = async (): Promise<void> => {
@@ -15,6 +15,7 @@ export const setupDatabaseForTests = async (): Promise<void> => {
 
 const clearDatabase = async (): Promise<void> => {
     const db = dbModule.default;
+    await db.schema.dropTableIfExists(ExecutionEventTable.tableName);
     await db.schema.dropTableIfExists(ExecutionTable.tableName);
     await db.schema.dropTableIfExists(ActivityTable.tableName);
     await db.schema.dropTableIfExists(UserTable.tableName);

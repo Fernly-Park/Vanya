@@ -6,7 +6,7 @@ import { UserTable } from '../../components/user/user.interfaces';
 import Knex from 'knex';
 
 import { StateMachineTable, StateMachineStatus, StateMachineTypes, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
-import { ExecutionTable, ExecutionStatus } from '@App/components/execution/execution.interfaces';
+import { ExecutionTable, ExecutionStatus, ExecutionEventTable } from '@App/components/execution/execution.interfaces';
 
 
 const db = knex({
@@ -26,6 +26,7 @@ export const setupDatabase = async (): Promise<void> => {
     await setupStateMachineTable();
     await setupStateMachineVersionsTable();
     await setupExecutionTable();
+    await setupExecutionEventTable();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,6 +83,16 @@ const setupExecutionTable = async (): Promise<void> => {
         tableBuilder.text(ExecutionTable.statusColumn).notNullable().defaultTo(ExecutionStatus.running);
         tableBuilder.timestamp(ExecutionTable.stopDateColumn).nullable();
     });
+}
+
+const setupExecutionEventTable = async (): Promise<void> => {
+    await createTableIfNotExists(ExecutionEventTable.tableName, tableBuilder => {
+        tableBuilder.integer(ExecutionEventTable.idColumn).notNullable().index();
+        tableBuilder.text(ExecutionEventTable.executionArnColumn).notNullable().references(ExecutionTable.executionArnColumn).inTable(ExecutionTable.tableName);
+        tableBuilder.timestamp(ExecutionEventTable.timestampColumn).notNullable()
+        tableBuilder.text(ExecutionEventTable.typeColumn).notNullable();
+        tableBuilder.text(ExecutionEventTable.eventColumn).notNullable();
+    })
 }
 
 const createTableIfNotExists = async (tableName: string, createTableCallback: (tableBuilder: Knex.CreateTableBuilder) => void): Promise<void> => {

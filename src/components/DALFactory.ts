@@ -13,9 +13,9 @@ export const selectResourceFactory = <T>(tableName: string, columnName: string) 
     }
 }
 
-export const selectArrayOfResourcesFactory = <T> (tableName: string, columnToOrderBy: string) => {
-    return async (db: DbOrTransaction, limit: number, offset: number): Promise<T[]> => {
-        return await db(tableName).orderBy(columnToOrderBy).limit(limit).offset(offset) as T[];
+export const selectArrayOfResourcesFactory = <T> (tableName: string, columnToOrderBy: string, filters: Record<string, string> = {}) => {
+    return async (db: DbOrTransaction, limit: number, offset: number, asc = true): Promise<T[]> => {
+        return await db(tableName).where(filters).orderBy(columnToOrderBy, asc ? 'asc': 'desc').limit(limit).offset(offset) as T[];
     }
 }
 
