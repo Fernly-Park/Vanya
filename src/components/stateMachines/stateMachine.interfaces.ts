@@ -49,7 +49,7 @@ export interface IStateMachineDefinition {
 export type StateMachineStates = Record<string, StateMachineStateValue>;
 
 export interface StateMachineStateValue {
-    Type: string,
+    Type: StateType,
     Comment?: string,
 }
 
@@ -86,7 +86,7 @@ export interface ChoiceState extends StateMachineStateValue {
 export interface WaitState extends StateMachineStateValue {
     Seconds?: number
     SecondsPath?: string
-    Timestamp?: Date
+    Timestamp?: string
     TimestampPath?: string
     InputPath?: string
     OutputPath?: string

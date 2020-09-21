@@ -1,0 +1,11 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "Hello",
+    "States": {
+        "Hello": {
+        "Type": "Wait",
+        "Timestamp": "2016-03-14T01:59:00Z",
+        "End": true
+        }
+    }
+}

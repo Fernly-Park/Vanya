@@ -18,6 +18,7 @@ import { IStateMachineDefinition, StateMachineStates } from '@App/components/sta
 import { JSONPath } from 'jsonpath-plus';
 import { STATE_MACHINE_DEFINITION_MAX_LENGTH } from '@App/utils/constants';
 import { InvalidDefinitionError } from '@App/errors/AWSErrors';
+import validator from 'validator';
 
 
 export const retrieveAllStates = (def: IStateMachineDefinition): StateMachineStates => {
@@ -52,6 +53,7 @@ export const ensureStateMachineDefinitionIsValid = (definition: string): void =>
 
   ensureAllStatesAreReachable(sm);
   ensureJsonPathAreCorrects(sm);
+  ensureTimeStampAreCorrects(sm)
 };
 
 const ensureAllStatesAreReachable = (sm: IStateMachineDefinition) => {
@@ -71,12 +73,12 @@ const ensureAllStatesAreReachable = (sm: IStateMachineDefinition) => {
 
 const ensureJsonPathAreCorrects = (sm: IStateMachineDefinition) => {
 
-  const result: [] = JSONPath({json: sm, path: '$..[InputPath,OutputPath,ResultPath]'});
+  const result: [] = JSONPath({json: sm, path: '$..[InputPath,OutputPath,ResultPath,SecondsPath,TimestampPath]'});
   result.forEach((el: string) => {
     try {
       if (el !== null) {
         JSONPath({path: el, json: {},}) 
-        if (el !== el.trim()){
+        if (!el.startsWith('$') || el !== el.trim()){
           throw new Error();
         }
       }
@@ -85,3 +87,12 @@ const ensureJsonPathAreCorrects = (sm: IStateMachineDefinition) => {
     }
   });
 };
+
+const ensureTimeStampAreCorrects = (sm: IStateMachineDefinition) => {
+  const result: [] = JSONPath({json: sm, path: '$..[Timestamp]'});
+  result.forEach((el: string) => {
+    if (!validator.isRFC3339(el)) {
+      throw new InvalidDefinitionError('SCHEMA_VALIDATION_FAILED: Value does not match RFC3339 timestamp');
+    }
+  });
+}

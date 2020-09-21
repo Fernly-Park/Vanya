@@ -8,8 +8,8 @@ import AWS from 'aws-sdk';
 import config from '@App/config';
 import * as ExecutionService from '@App/components/execution/executionService';
 import * as StateMachineService from '@App/components/stateMachines/stateMachineService'
-import { IStateMachine } from '@App/components/stateMachines/stateMachine.interfaces';
-import { StartExecutionOutput } from 'aws-sdk/clients/stepfunctions';
+import { IStateMachine, IStateMachineDefinition, StateMachineStatus } from '@App/components/stateMachines/stateMachine.interfaces';
+import { HistoryEvent, StartExecutionOutput } from 'aws-sdk/clients/stepfunctions';
 
 
 export const setupForTestAgainstServer = async (): Promise<AWS.StepFunctions> => {
@@ -55,7 +55,7 @@ export const createSMAndStartExecutionHelper = async (req: {
     };
 };
 
-export const sleep = (ms: number) => {
+export const sleep = (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -74,6 +74,10 @@ export const stateMachinesForTests = {
         invalidTaskAliasFunction: getStateMachineDef('invalid', 'invalid-task-alias-function.json'),
         invalidUnreachableState: getStateMachineDef('invalid', 'invalid-unreachable-state.json'),
         invalidSpaceInInputPath: getStateMachineDef('invalid', 'invalid-space-in-inputPath.json'),
+        invalidWaitWithNegativeSeconds: getStateMachineDef('invalid', 'invalid-wait-with-negative-seconds.json'),
+        invalidWaitTimestampEmpty: getStateMachineDef('invalid', 'invalid-wait-timestamp-empty.json'),
+        invalidWaitSecondsPath: getStateMachineDef('invalid', 'invalid-wait-secondsPath.json'),
+        invalidWaitTimestampPath: getStateMachineDef('invalid', 'invalid-wait-timestampPath.json')
     }, 
     valid: {
         validCatchFailure: getStateMachineDef('valid', 'valid-catch-failure.json'),
@@ -87,6 +91,7 @@ export const stateMachinesForTests = {
         validPassTwoStates: getStateMachineDef('valid', 'pass', 'valid-pass-two-states.json'),
         validPassWithResult: getStateMachineDef('valid', 'pass', 'valid-pass-with-result.json'),
         validPassInputPathNull: getStateMachineDef('valid', 'pass', 'valid-pass-inputPath-null.json'),
+        validWaitTimestampPath: getStateMachineDef('valid', 'wait', 'valid-wait-timestampPath.json'),
         validInputPathInPass: getStateMachineDef('valid', 'inputPath', 'valid-InputPath-in-pass.json'),
         validInputPathDefault: getStateMachineDef('valid', 'inputPath', 'valid-inputPath-default.json'),
         validResultPathInPassState: getStateMachineDef('valid', 'resultPath', 'valid-resultPath-in-pass-state.json'),
@@ -116,3 +121,24 @@ export const dummyRoleARN = 'arn:aws:iam::012345678901:role/DummyRole';
 export const dummyStateMachineArn = 'arn:aws:states:us-east-1:123456789012:stateMachine:dummySmArn';
 export const dummyExecutionArn = 'arn:aws:states:us-east-1:123456789012:execution:name:006f371e-4504-46be-ba47-73f88641ad71'
 export const mockDateNow = '2020-06-07T00:00:01.000Z'
+
+
+export type TestStateMachineTestCase = {
+    input: Record<string, unknown>,
+    expectedStateMachineStatus: StateMachineStatus,
+    expectedOutput: string,
+    describe: string,
+    executionName?: string,
+    eventsExpectedDuration?: {
+        eventId: number,
+        expectedDurationInSeconds: number
+    }[],
+    events?: HistoryEvent[]
+}
+export type TestStateMachine = {
+    definition: IStateMachineDefinition,
+    describe: string,
+    tests: TestStateMachineTestCase[],
+    stateMachineName: string,
+    folderName: string
+}

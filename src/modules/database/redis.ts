@@ -5,7 +5,7 @@ import { promisify } from 'util';
 import config from '@App/config';
 import genericPool from 'generic-pool';
 
-let client: redis.RedisClient;
+export let client: redis.RedisClient;
 let connectionPool: genericPool.Pool<redis.RedisClient>;
 // eslint-disable-next-line @typescript-eslint/ban-types
 const pooledFunctionFactory = (func: Function) => {
@@ -48,7 +48,12 @@ export let hgetAsync: (key: string, field: string) => Promise<string>
 export let hdelAsync: (key: string, field: string) => Promise<void>
 export let incrAsync: (key: string) => Promise<number>;
 export let lrangeAsync: (key: string, from: number, toIncluded: number) => Promise<string[]>
-
+export let zaddAsync: (key: string, score: number, member: string) => Promise<void>
+export let zrangebyscoreAsync: (key: string, min: number|string, max: number|string) => Promise<string[]>
+export let zremrangebyscoreAsync: (key: string, min: number|string, max: number|string) => Promise<void>
+export let zcountAsync: (key: string, min: number|string, max: number|string) => Promise<number>
+export let multiAsync: (callback: (multi: redis.Multi) => Promise<string[]>) => Promise<string[]>
+export let watchAsync: (key: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => Promise<string[]>
 export let jsonsetAsync: (key: string, path: string, json: string) => Promise<boolean>;
 export let jsongetAsync: (key: string, path?: string) => Promise<string>;
 export let jsondelAsync: (key: string, path?: string) => Promise<void>;
@@ -91,7 +96,32 @@ export const startRedis = () => {
     hdelAsync = pooledFunctionFactory(client.HDEL)
     incrAsync = pooledFunctionFactory(client.incr);
     lrangeAsync = pooledFunctionFactory(client.lrange);
+    zaddAsync = pooledFunctionFactory(client.zadd);
+    zrangebyscoreAsync = pooledFunctionFactory(client.zrangebyscore);
+    zremrangebyscoreAsync = pooledFunctionFactory(client.zremrangebyscore);
+    zcountAsync = pooledFunctionFactory(client.zcount);
 
+    watchAsync = async (keyToWatch: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => {
+        const watcher = await connectionPool.acquire();
+        try {
+            const watchAsync = promisify(watcher.watch).bind(watcher) as (key: string) => Promise<'OK'>;
+            await watchAsync(keyToWatch);
+            return await callback(watcher);
+        } finally {
+            await connectionPool.release(watcher);
+        }
+
+    }
+
+    multiAsync = async (callback: (multi: redis.Multi) => Promise<string[]>) => {
+        const connection = await connectionPool.acquire();
+        try {
+            const results = await callback(connection.multi());
+            return results;
+        } finally {
+            await connectionPool.release(connection);
+        }
+    }
     jsonsetAsync = customPooledFunctionFactory("JSON.SET")
     jsongetAsync = customPooledFunctionFactory("JSON.GET")
     jsondelAsync = customPooledFunctionFactory("JSON.DEL")
@@ -105,10 +135,9 @@ export const onConnectionError = (callback: () => void ): void => {
     client.on('error', callback);
 }
 
-
-
-
 export const systemTaskKey = `${config.redis_prefix}:systemTasks`;
+
+export const delayedTaskKey = `${config.redis_prefix}:delayedTasks`;
 
 export const getContextObjectKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:contextObject`

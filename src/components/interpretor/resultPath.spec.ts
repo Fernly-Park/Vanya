@@ -1,4 +1,4 @@
-import * as InterpretorService from '@App/components/interpretor/interpretorService';
+import { applyResultPath } from './path';
 
 describe('result path', () => {
     it.each([
@@ -8,7 +8,7 @@ describe('result path', () => {
         ])('should correctly add the output in the input structure by overriding', (input, expectedOutput) => {
         expect.assertions(1);
 
-        const output = InterpretorService.applyResultPath(input, 'Hello World', '$.master.detail')
+        const output = applyResultPath(input, 'Hello World', '$.master.detail')
         expect(output).toStrictEqual(expectedOutput);
     });
 
@@ -17,14 +17,14 @@ describe('result path', () => {
              {hello: {world: 'Nope'}}])('Should send the input to the output', (taskOutput) => {
         expect.assertions(1);
 
-        const result = InterpretorService.applyResultPath({ab: 'cd'}, taskOutput, '$');
+        const result = applyResultPath({ab: 'cd'}, taskOutput, '$');
         expect(result).toStrictEqual(taskOutput);
     });
 
     it('should discard the task output if the resultPath is null', () => {
         expect.assertions(1);
         const input = {ab: 'cd'};
-        const result = InterpretorService.applyResultPath(input, {a: 'myOutput'}, null);
+        const result = applyResultPath(input, {a: 'myOutput'}, null);
         expect(result).toStrictEqual(input);
     });
 })

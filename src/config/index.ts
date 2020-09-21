@@ -22,5 +22,6 @@ export default {
     region: process.env.REGION,
     encryptUserSecret: process.env.ENCRYPT_USER_SECRET,
     redis_prefix: process.env.REDIS_PREFIX,
-    redisBlockingTimeout: process.env.REDIS_BLOCKING_TIMEOUT ? parseInt(process.env.REDIS_BLOCKING_TIMEOUT) : 0
+    redisBlockingTimeout: process.env.REDIS_BLOCKING_TIMEOUT ? parseInt(process.env.REDIS_BLOCKING_TIMEOUT) : 0,
+    timerPollIntervalMs: process.env.TIMER_POLL_INTERVAL_MS ? parseInt(process.env.TIMER_POLL_INTERVAL_MS) : 500,
 }; 

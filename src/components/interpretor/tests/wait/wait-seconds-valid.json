@@ -1,0 +1,70 @@
+{
+    "describe": "simple state machine with a wait state and a seconds of 2", 
+    "tests": [
+        {
+            "input": {"Comment": "Insert your JSON here"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Comment": "Insert your JSON here"},
+            "describe": "should succeed after 2 seconds",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 3,
+                    "expectedDurationInSeconds": 2
+                }
+            ],
+            "events": [
+                {
+                    "timestamp": "2020-09-18T14:32:32.831Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                        "input": "{\"Comment\":\"Insert your JSON here\"}",
+                        "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-18T14:32:32.880Z",
+                    "type": "WaitStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "Hello",
+                        "input": "{\"Comment\":\"Insert your JSON here\"}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-18T14:32:34.880Z",
+                    "type": "WaitStateExited",
+                    "id": 3,
+                    "previousEventId": 2,
+                    "stateExitedEventDetails": {
+                        "name": "Hello",
+                        "output": "{\"Comment\":\"Insert your JSON here\"}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-18T14:32:34.880Z",
+                    "type": "ExecutionSucceeded",
+                    "id": 4,
+                    "previousEventId": 3,
+                        "executionSucceededEventDetails": {
+                        "output": "{\"Comment\":\"Insert your JSON here\"}"
+                    }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+            "Type": "Wait",
+            "Seconds": 2,
+            "End": true
+            }
+        }
+    }
+}
+

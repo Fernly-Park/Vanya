@@ -3,177 +3,137 @@ import * as TaskService from '../task/taskService';
 import * as ExecutionService from '@App/components/execution/executionService';
 import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
 import { Task, TaskInput, TaskOutput } from '../task/task.interfaces';
-import { PassState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { PassState, StateMachineStateValue, StateType, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ExecutionStatus } from '../execution/execution.interfaces';
+import { applyPath, applyParameters, applyResultPath } from './path';
+import { addStateEnteredEvent, addStateExistedEvent, addExecutionFailedEvent, addExecutionSucceededEvent } from './event';
 import { JSONPath } from 'jsonpath-plus';
-import { InvalidPathError, InvalidParameterError } from '@App/errors/customErrors';
-import { ExecutionStatus, ContextObject, ExecutionInput } from '../execution/execution.interfaces';
-import { addProps } from '@App/utils/objectUtils';
-import { AWSConstant } from '@App/utils/constants';
+import { InvalidPathError } from '@App/errors/customErrors';
+import validator from 'validator';
+import * as Redis from '@App/modules/database/redis';
+import { sleep } from '@Tests/testHelper';
+import config from '@App/config';
 
+type TimerInfo = Task & WaitState & {previousEventId: number}
 let interpretor = true;
 export const startInterpretor = async (): Promise<void> => {
-    // eslint-disable-next-line no-constant-condition
-    
     interpretor = true;
+
+    // eslint-disable-next-line no-constant-condition
+    void startTimerPoll().then()
     while(interpretor) {
-        const task = await TaskService.getGeneralTask();
+        const task = await TaskService.getGeneralTaskBlocking();
         if (task) {
             void processTask(task).then();
         }
     }    
 };
 
+const startTimerPoll = async () => {
+    while(interpretor === true) {
+        const now = new Date();
+        const timers = await TaskService.getAndDeleteDelayedTasks(now);
+        if(timers && timers.length > 0) {
+            for(const timer of timers) {
+                const output = applyPath(timer.input, timer.OutputPath);
+                await endTaskExecution({...timer, output, nextStateName: timer.Next, stateType: timer.Type});
+            }
+        } else {
+            await sleep(config.timerPollIntervalMs);
+        }
+    }
+}
+
 export const processNextTask = async (): Promise<void> => {
-    const task = await TaskService.getGeneralTask();
+    const task = await TaskService.getGeneralTaskBlocking();
     await processTask(task);
 }
 
 const processTask = async (task: Task): Promise<void> => {
     let result: TaskInput;
     let next: string;
-    let lastEventId: number;
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
     await ExecutionService.updateContextObjectState({executionArn: task.executionArn, enteredState: {
         EnteredTime: new Date().toISOString(),
         Name: task.stateName,
     }});
-
+    let effectiveOutput: TaskOutput;
+    
+    const stateEnteredEventId = await addStateEnteredEvent(task, state.Type);
     try {
+        
+        const effectiveInput = await filterInput(task, state);
         switch (state.Type) {
-            default: 
-                // eslint-disable-next-line no-case-declarations
-                const processTaskResult = await processPassTask(task, state as PassState);
-                result = processTaskResult.output;
-                lastEventId = processTaskResult.lastEventId;
+            case StateType.Pass: 
+                result = processPassTask(state as PassState, effectiveInput);
                 next = (state as PassState).Next
                 break;
+            case StateType.Wait:
+                return await processWaitTask(task, state as WaitState, effectiveInput, stateEnteredEventId); 
+            default: 
+                throw new Error();
         }
+        effectiveOutput = filterOutput(effectiveInput, result, state);
     } catch (err) {
-        await ExecutionService.addEvent({executionArn: task.executionArn, event: {
-            previousEventId: task.previousEventId,
-            type: 'ExecutionFailed',
-            executionFailedEventDetails: {
-                cause: `An error occurred while executing the state '${task.stateName}'`,
-                error: AWSConstant.error.STATE_RUNTIME
-            }
-        }});
+        console.log(err)
+        await addExecutionFailedEvent(task)
         return await ExecutionService.endExecution({executionArn: task.executionArn, status: ExecutionStatus.failed})
     }
     
-    if (next) {
-        await TaskService.addTask({executionArn: task.executionArn, stateName: next, input: result, stateMachineArn: task.stateMachineArn, previousEventId: lastEventId})
-    } else {
-        await ExecutionService.addEvent({executionArn: task.executionArn, event: {
-            previousEventId: lastEventId,
-            type: 'ExecutionSucceeded',
-            executionSucceededEventDetails: {
-                output: JSON.stringify(result),
-            }
-        }});
-        await ExecutionService.endExecution({executionArn: task.executionArn, output: result, status: ExecutionStatus.succeeded});
-    }   
+    await endTaskExecution({...task, previousEventId: stateEnteredEventId, output: effectiveOutput, nextStateName: next, stateType: state.Type});
 };
 
-const addStateEnteredEvent = async (task: Task): Promise<number> => {
-    return await ExecutionService.addEvent({executionArn: task.executionArn, event: {
-        previousEventId: task.previousEventId,
-        type: 'PassStateEntered', 
-        stateEnteredEventDetails: {
-            name: task.stateName,
-            input: JSON.stringify(task.input),
-    }}});
+const endTaskExecution = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
+    stateName: string, previousEventId: number, output: TaskOutput, nextStateName?: string}): Promise<void> => {
+    const stateExitedEventId = await addStateExistedEvent(req);
+    if (req.nextStateName) {
+        await TaskService.addTask({executionArn: req.executionArn, stateName: req.nextStateName, input: req.output, stateMachineArn: req.stateMachineArn, previousEventId: stateExitedEventId})
+    } else {
+        await addExecutionSucceededEvent({result: req.output, previousEventId: stateExitedEventId, executionArn: req.executionArn})
+        await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
+    }   
 }
 
-const addStateExistedEvent = async (req: {executionArn: string, previousEventId: number, stateName: string, output: unknown}): Promise<number> => {
-    return await ExecutionService.addEvent({executionArn: req.executionArn, event: { previousEventId: req.previousEventId,
-        type: 'PassStateExited',
-        stateExitedEventDetails: {
-            name: req.stateName,
-            output: JSON.stringify(req.output)
-        }
-    }})
+const filterInput = async (task: Task, state: StateMachineStateValue): Promise<TaskInput> => {
+    const asPassState = state as PassState;
+    let toReturn = applyPath(task.input, asPassState.InputPath);
+    toReturn = await applyParameters(task.executionArn, toReturn, asPassState.Parameters)
+    return toReturn;
 }
+
+const filterOutput = (input: TaskInput, output: TaskOutput, state: StateMachineStateValue) => {
+    const asPassState = state as PassState;
+    let toReturn = applyResultPath(input, output, asPassState.ResultPath);
+    toReturn = applyPath(toReturn, asPassState.OutputPath);
+    return toReturn;
+};
+
 // inputPath -> Parameter
-const processPassTask = async (task: Task, state: PassState): Promise<{output: TaskOutput, lastEventId: number}> => {
-    const stateEnteredEventId = await addStateEnteredEvent(task);
-    let input = applyPath(task.input, state.InputPath);
-    input = await applyParameters(task.executionArn, input, state.Parameters)
-    const rawOutput = state.Result ?? input;
-    let toReturn = applyResultPath(input, rawOutput, state.ResultPath);
-    toReturn = applyPath(toReturn, state.OutputPath);
-    const stateExitedEventId = await addStateExistedEvent({executionArn: task.executionArn, stateName: task.stateName, 
-        previousEventId: stateEnteredEventId, output: toReturn});
-    return {
-        output: toReturn, 
-        lastEventId: stateExitedEventId
-    };
+const processPassTask = (state: PassState, effectiveInput: TaskInput): TaskOutput => {
+    return state.Result ?? effectiveInput;
 }
 
-export const applyPath = (rawInput: TaskInput | TaskOutput, path: string): TaskInput | TaskOutput => {
-    let toReturn: ExecutionInput;
-    if (path === null) {
-        return {};
-    }
-    if (path && path != '$') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        toReturn = JSONPath({json: rawInput as any, path: path, wrap: false});
-        if (!toReturn) {
-            throw new InvalidPathError(path);
+const processWaitTask = async (task: Task, state: WaitState, effectiveInput: TaskInput, previousEventId: number): Promise<void> => {
+    let time = new Date();
+    if (state.Seconds) {
+        time.setSeconds(time.getSeconds() + state.Seconds);
+    } else if (state.SecondsPath) {
+        const seconds: number = JSONPath({json: effectiveInput as any, path: state.SecondsPath, wrap: false});
+        if (!Number.isInteger(seconds) || seconds < 0) {
+            throw new InvalidPathError(state.SecondsPath);
+        }
+        time.setSeconds(time.getSeconds() + seconds);
+    } else if (state.Timestamp) {
+        time = new Date(state.Timestamp);
+    } else if (state.TimestampPath) {
+        const timestamp: string = JSONPath({json: effectiveInput as any, path: state.TimestampPath, wrap: false});
+        time = new Date(timestamp);
+        if (!validator.isRFC3339(timestamp)) {
+            throw new InvalidPathError(state.TimestampPath);
         }
     }
-    return toReturn ?? rawInput;
-}
-
-const applyParameters = async (executionArn: string, input: TaskInput, parameters: Record<string, unknown>): Promise<TaskInput> => {
-    if(!parameters) {
-        return input;
-    }
-    const toReturn: Record<string, unknown> = {};
-    let contextObject: ContextObject;
-
-    const retrieveContextObject = async () => {
-        if (contextObject) {
-            return Promise.resolve(contextObject);
-        }
-        return await ExecutionService.retrieveExecutionContextObject({executionArn});
-    };
-
-    for(const [key, val] of Object.entries(parameters)) {
-        if (key.endsWith('.$')) {
-            const value = val as string;
-            const result = await calculateParameterValue(input, value, retrieveContextObject);
-            toReturn[key.substring(0, key.length - 2)] = result;
-        } else {
-            toReturn[key] = val;
-        }
-    }
-
-    return toReturn;
-}
-
-export const applyResultPath = (input: TaskInput, output: TaskOutput, resultPath: string): TaskOutput => {
-    if (resultPath === null) {
-        return input;
-    }
-    if (resultPath && resultPath != '$') {
-        const resultPathWithoutPrefix = resultPath.substr(2, resultPath.length);
-        return addProps(input as Record<string, unknown>, resultPathWithoutPrefix, output)
-    }
-    return output;
-}
-
-const calculateParameterValue = async (input: TaskInput, value: string, getContextObject: () => Promise<ContextObject>): Promise<Record<string, unknown>> => {
-    let toReturn: Record<string, unknown>;
-    if (value.startsWith('$$')) {
-        toReturn = (JSONPath({json: await getContextObject(), path: value.substr(1)}) as Record<string, unknown>[])[0]
-    } else if (value.startsWith('$')) {
-        toReturn = (JSONPath({json: input as string, path: value}) as Record<string, unknown>[])[0]
-    } 
-
-    if (!toReturn) {
-        throw new InvalidParameterError(value); // TODO
-    }
-    return toReturn;
+    const timerInfo: TimerInfo = {...task, ...state, input: effectiveInput, previousEventId};
+    await TaskService.addToDelayedTask(time, timerInfo);
 }
 
 export const stopInterpreter = (): void => {

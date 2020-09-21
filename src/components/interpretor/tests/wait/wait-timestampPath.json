@@ -1,0 +1,169 @@
+{
+    "describe": "simple state machine with a wait state and a timestampPath of '$.timestamp'", 
+    "tests": [
+        {
+            "input": {"timestamp": "will Be Modified In Code"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"timestamp": "will Be Modified In Code"},
+            "describe": "should succeed if the 'timestamp' in the input is two second ahead",
+            "executionName": "timestampPathSuccess",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 3,
+                    "expectedDurationInSeconds": 2
+                }
+            ],
+            "events": [
+                {
+                    "timestamp": "2020-09-21T10:04:49.084Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                        "input": "{\"timestamp\":\"2020-09-21T10:05:24.235Z\"}",
+                        "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:04:49.102Z",
+                    "type": "WaitStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "Hello",
+                        "input": "{\"timestamp\":\"2020-09-21T10:05:24.235Z\"}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:05:24.102Z",
+                    "type": "WaitStateExited",
+                    "id": 3,
+                    "previousEventId": 2,
+                    "stateExitedEventDetails": {
+                        "name": "Hello",
+                        "output": "{\"timestamp\":\"2020-09-21T10:05:24.235Z\"}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:05:24.102Z",
+                    "type": "ExecutionSucceeded",
+                    "id": 4,
+                    "previousEventId": 3,
+                    "executionSucceededEventDetails": {
+                        "output": "{\"timestamp\":\"2020-09-21T10:05:24.235Z\"}"
+                    }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if there is no 'timestamp' field in the input",
+            "events": [
+                {
+                    "timestamp": "2020-09-21T10:02:57.301Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                    "input": "{}",
+                    "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:02:57.327Z",
+                    "type": "WaitStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                    "name": "Hello",
+                    "input": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:02:57.327Z",
+                    "type": "ExecutionFailed",
+                    "id": 3,
+                    "previousEventId": 0,
+                    "executionFailedEventDetails": {
+                    "error": "States.Runtime",
+                    "cause": "An error occurred while executing the state 'Hello'"
+                    }
+                }
+            ]
+        },
+        {
+            "input": {"timestamp": ""},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'timestamp' field in the input is empty"
+        },
+        {
+            "input": {"timestamp": "2016-03-14T01:59:00Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"timestamp": "2016-03-14T01:59:00Z"},
+            "describe": "todo",
+            "executionName": "timestampInPast",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 3,
+                    "expectedDurationInSeconds": 0
+                }
+            ],
+            "events": [
+                {
+                    "timestamp": "2020-09-21T10:03:24.553Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                        "input": "{\"timestamp\":\"2016-03-14T01:59:00Z\"}",
+                        "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:03:24.576Z",
+                    "type": "WaitStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "Hello",
+                        "input": "{\"timestamp\":\"2016-03-14T01:59:00Z\"}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:03:24.576Z",
+                    "type": "WaitStateExited",
+                    "id": 3,
+                    "previousEventId": 2,
+                    "stateExitedEventDetails": {
+                        "name": "Hello",
+                        "output": "{\"timestamp\":\"2016-03-14T01:59:00Z\"}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T10:03:24.576Z",
+                    "type": "ExecutionSucceeded",
+                    "id": 4,
+                    "previousEventId": 3,
+                    "executionSucceededEventDetails": {
+                        "output": "{\"timestamp\":\"2016-03-14T01:59:00Z\"}"
+                    }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Wait",
+                "TimestampPath": "$.timestamp",
+                "End": true
+            }
+        }
+    }
+}
+

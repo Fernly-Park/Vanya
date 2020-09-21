@@ -1,0 +1,104 @@
+{
+    "describe": "simple state machine with a wait state and a secondsPath", 
+    "tests": [
+        {
+            "input": {"seconds": 2},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"seconds": 2},
+            "describe": "should correctly wait for 2 seconds",
+            "executionName": "wait2secWithEvent",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 3,
+                    "expectedDurationInSeconds": 2
+                }
+            ],
+            "events":[
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"ExecutionStarted",
+                   "id":1,
+                   "previousEventId":0,
+                   "executionStartedEventDetails":{
+                      "input":"{\"seconds\":2}",
+                      "roleArn":"todo"
+                   }
+                },
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"WaitStateEntered",
+                   "id":2,
+                   "previousEventId":0,
+                   "stateEnteredEventDetails":{
+                      "name":"Hello",
+                      "input":"{\"seconds\":2}"
+                   }
+                },
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"WaitStateExited",
+                   "id":3,
+                   "previousEventId":2,
+                   "stateExitedEventDetails":{
+                      "name":"Hello",
+                      "output":"{\"seconds\":2}"
+                   }
+                },
+                {
+                   "timestamp":"2020-06-07T00:00:01.000Z",
+                   "type":"ExecutionSucceeded",
+                   "id":4,
+                   "previousEventId":3,
+                   "executionSucceededEventDetails":{
+                      "output":"{\"seconds\":2}"
+                   }
+                }
+            ]
+        },
+        {
+            "input": {"seconds": -1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the secondsPath input is a negative number",
+            "executionName": "negativeNumber"
+        },
+        {
+            "input": {"seconds": 0},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"seconds": 0},
+            "describe": "should immediatly succeed if the seconds is 0",
+            "executionName":"simpleWaitWithoutEvent"
+        },
+        {
+            "input": {"seconds": 1.2},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the secondsPath input is not an integer",
+            "executionName": "waitWithDecimalSeconds"
+        },
+        {
+            "input": {"seconds": "hello"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the secondsPath input is a string"
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the secondsPath is not present in the input"
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+            "Type": "Wait",
+            "SecondsPath": "$.seconds",
+            "End": true
+            }
+        }
+    }   
+}
+
