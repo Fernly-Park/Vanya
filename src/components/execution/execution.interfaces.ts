@@ -1,5 +1,3 @@
-import { HistoryEvent, HistoryEventType, ExecutionStartedEventDetails, StateEnteredEventDetails, StateExitedEventDetails, ExecutionSucceededEventDetails } from "aws-sdk/clients/stepfunctions";
-
 export enum ExecutionTable {
     tableName = 'executions',
     executionArnColumn = 'executionArn',
@@ -70,4 +68,15 @@ export type ContextObjectEnteredState = {
     EnteredTime: Date | string,
     Name: string,
     RetryCount?: number
+}
+
+export enum HistoryEventType {
+    ActivityScheduled = 'ActivityScheduled',
+    ExecutionStarted = 'ExecutionStarted',
+    ActivityScheduleFailed = 'ActivityScheduleFailed',
+    ActivityStarted = 'ActivityStarted',
+    ActivitySucceeded = 'ActivitySucceeded',
+    ActivityTimedOut = 'ActivityTimedOut',
+    ExecutionFailed = 'ExecutionFailed',
+    ExecutionSucceeded = 'ExecutionSucceeded',
 }

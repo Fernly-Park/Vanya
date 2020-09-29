@@ -1,4 +1,4 @@
-import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, HistoryEvent, GetExecutionHistoryInput, HistoryEventType } from "aws-sdk/clients/stepfunctions";
+import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, HistoryEvent, GetExecutionHistoryInput } from "aws-sdk/clients/stepfunctions";
 import * as ArnHelper from '@App/utils/ArnHelper';
 import * as ValidationHelper from '@App/utils/validationHelper';
 import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
@@ -8,7 +8,7 @@ import * as UserService from '@App/components/user/userService';
 import { InvalidExecutionInputError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from "@App/errors/AWSErrors";
 import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
-import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState } from "./execution.interfaces";
+import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, HistoryEventType } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
 import { IStateMachineDefinition, ParallelState, PassState, StateType } from "../stateMachines/stateMachine.interfaces";
 
@@ -61,7 +61,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
             input: JSON.stringify(result.input),
             roleArn: 'todo',
         },
-        type: 'ExecutionStarted'
+        type: HistoryEventType.ExecutionStarted
     }})
 
     return { executionArn, startDate: result.startDate }
@@ -162,24 +162,7 @@ const putPreviousEventIdRecursionHelper = (definition: IStateMachineDefinition, 
             lastEventId = lastEventIdOfBranch > lastEventId ? lastEventIdOfBranch: lastEventId;
         }
     } else if (currentState.Type === StateType.Task) {
-        const activityScheduled = events.find(x => x.type === 'ActivityScheduled');
-        if (activityScheduled) {
-            activityScheduled.previousEventId = lastEventId;
-            lastEventId = activityScheduled.id;
-            const activityScheduleFailed = events.find(x => x.type === 'ActivityScheduleFailed');
-            if (activityScheduleFailed) {
-                activityScheduleFailed.previousEventId = lastEventId;
-                lastEventId = activityScheduleFailed.id
-            } else {
-                const activityStarted = events.find(x => x.type === 'ActivityStarted');
-                activityStarted.previousEventId = lastEventId;
-                lastEventId = activityStarted.id;
-    
-                const activityFinished = events.find(x => x.type === 'ActivitySucceeded' || x.type === 'ActivityTimedOut');
-                activityFinished.previousEventId = lastEventId;
-                lastEventId = activityFinished.id;
-            }
-        }
+        lastEventId = putPreviousEventIdsForTaskStateHelper(events, lastEventId);
     }
     const currentStateExitedEvent = events.find(x => x.stateExitedEventDetails?.name === stateName);
     if (currentStateExitedEvent) {
@@ -189,5 +172,28 @@ const putPreviousEventIdRecursionHelper = (definition: IStateMachineDefinition, 
             lastEventId = putPreviousEventIdRecursionHelper(definition, events, lastEventId, (currentState as PassState).Next)
         }
     }
+    return lastEventId;
+}
+
+const putPreviousEventIdsForTaskStateHelper = (events: HistoryEvent[], lastEventId: number): number => {
+    const activityScheduled = events.find(x => x.type === HistoryEventType.ActivityScheduled);
+    if (activityScheduled) {
+        activityScheduled.previousEventId = lastEventId;
+        lastEventId = activityScheduled.id;
+        const activityScheduleFailed = events.find(x => x.type === HistoryEventType.ActivityScheduleFailed);
+        if (activityScheduleFailed) {
+            activityScheduleFailed.previousEventId = lastEventId;
+            lastEventId = activityScheduleFailed.id
+        } else {
+            const activityStarted = events.find(x => x.type === HistoryEventType.ActivityStarted);
+            activityStarted.previousEventId = lastEventId;
+            lastEventId = activityStarted.id;
+
+            const activityFinished = events.find(x => x.type === HistoryEventType.ActivitySucceeded || x.type === HistoryEventType.ActivityTimedOut);
+            activityFinished.previousEventId = lastEventId;
+            lastEventId = activityFinished.id;
+        }
+    }
+
     return lastEventId;
 }

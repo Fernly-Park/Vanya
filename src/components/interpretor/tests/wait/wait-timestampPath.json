@@ -103,7 +103,7 @@
             "input": {"timestamp": "2016-03-14T01:59:00Z"},
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {"timestamp": "2016-03-14T01:59:00Z"},
-            "describe": "todo",
+            "describe": "should succeed if the timestamp referenced in the timestampPath is in the past, and without waiting",
             "executionName": "timestampInPast",
             "eventsExpectedDuration": [
                 {
