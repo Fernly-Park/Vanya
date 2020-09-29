@@ -10,6 +10,7 @@ import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
 import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
+import { IStateMachineDefinition, ParallelState, PassState, StateType } from "../stateMachines/stateMachine.interfaces";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);
@@ -54,14 +55,13 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         },
     });
 
-    await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
+    await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn});
     await addEvent({executionArn, event: {
         executionStartedEventDetails: {
             input: JSON.stringify(result.input),
             roleArn: 'todo',
         },
-        type: 'ExecutionStarted',
-        previousEventId: 0
+        type: 'ExecutionStarted'
     }})
 
     return { executionArn, startDate: result.startDate }
@@ -117,8 +117,8 @@ export const updateContextObject = async (req: {executionArn: string, enteredSta
 }
 
 
-type CustomHistoryEvent = Partial<HistoryEvent> & {type: HistoryEventType, previousEventId: number}
-export const addEvent = async (req: {executionArn: string, event: CustomHistoryEvent}): Promise<number> => {
+type CustomHistoryEvent = Partial<HistoryEvent> & {type: HistoryEventType}
+export const addEvent = async (req: {executionArn: string, event: CustomHistoryEvent}): Promise<void> => {
     // todo check
     req.event.timestamp = new Date(Date.now());
     return await ExecutionDAL.addExecutionEvent(req);
@@ -128,5 +128,66 @@ export const addEvent = async (req: {executionArn: string, event: CustomHistoryE
 export const getExecutionHistory = async (req: GetExecutionHistoryInput): Promise<HistoryEvent[]> => {
     // todo
     ArnHelper.ensureIsValidExecutionArn(req.executionArn);
-    return await ExecutionDAL.getExecutionEvent({...req, limit: 1000, offset: 0});
+    const events = await ExecutionDAL.getExecutionEvent({...req, limit: 1000, offset: 0});
+    const execution = await describeExecution(req);
+    const stateMachine = await StateMachineService.describeStateMachine(execution);
+
+    putPreviousEventId(stateMachine.definition, events);
+
+    return events;
+}
+
+const putPreviousEventId = (definition: IStateMachineDefinition, events: HistoryEvent[]): void => {
+    events.find(x => x.type === 'ExecutionStarted').previousEventId = 0;
+    const lastEventId = putPreviousEventIdRecursionHelper(definition, events, 0, definition.StartAt);
+    const lastEvent = events.find(x => x.type === 'ExecutionSucceeded');
+    if (lastEvent) {
+        lastEvent.previousEventId = lastEventId;
+    } else {
+        events.find(x => x.type.startsWith('Execution') && x.type !== 'ExecutionStarted').previousEventId = 0; 
+    }
+}
+
+const putPreviousEventIdRecursionHelper = (definition: IStateMachineDefinition, events: HistoryEvent[], 
+                                           lastEventId: number, stateName: string): number => {
+
+    const currentState = definition.States[stateName];
+    const currentStateEnteredEvent = events.find(x => x.stateEnteredEventDetails?.name === stateName);
+    currentStateEnteredEvent.previousEventId = lastEventId;
+    lastEventId = currentStateEnteredEvent.id;
+    if (currentState.Type === StateType.Parallel) {
+        const currentParallel = currentState as ParallelState;
+        for(const branche of currentParallel.Branches) {
+            const lastEventIdOfBranch = putPreviousEventIdRecursionHelper(branche, events, lastEventId, branche.StartAt);
+            lastEventId = lastEventIdOfBranch > lastEventId ? lastEventIdOfBranch: lastEventId;
+        }
+    } else if (currentState.Type === StateType.Task) {
+        const activityScheduled = events.find(x => x.type === 'ActivityScheduled');
+        if (activityScheduled) {
+            activityScheduled.previousEventId = lastEventId;
+            lastEventId = activityScheduled.id;
+            const activityScheduleFailed = events.find(x => x.type === 'ActivityScheduleFailed');
+            if (activityScheduleFailed) {
+                activityScheduleFailed.previousEventId = lastEventId;
+                lastEventId = activityScheduleFailed.id
+            } else {
+                const activityStarted = events.find(x => x.type === 'ActivityStarted');
+                activityStarted.previousEventId = lastEventId;
+                lastEventId = activityStarted.id;
+    
+                const activityFinished = events.find(x => x.type === 'ActivitySucceeded' || x.type === 'ActivityTimedOut');
+                activityFinished.previousEventId = lastEventId;
+                lastEventId = activityFinished.id;
+            }
+        }
+    }
+    const currentStateExitedEvent = events.find(x => x.stateExitedEventDetails?.name === stateName);
+    if (currentStateExitedEvent) {
+        currentStateExitedEvent.previousEventId = lastEventId;
+        lastEventId = currentStateExitedEvent.id;
+        if ((currentState as PassState).Next) {
+            lastEventId = putPreviousEventIdRecursionHelper(definition, events, lastEventId, (currentState as PassState).Next)
+        }
+    }
+    return lastEventId;
 }

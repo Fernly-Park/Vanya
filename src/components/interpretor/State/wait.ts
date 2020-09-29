@@ -5,7 +5,7 @@ import { JSONPath } from "jsonpath-plus";
 import validator from "validator";
 import * as TimerService from '@App/components/timer/timerService';
 
-export const processWaitTask = async (task: Task, state: WaitState, effectiveInput: StateInput, previousEventId: number): Promise<void> => {
+export const processWaitTask = async (task: Task, state: WaitState, effectiveInput: StateInput): Promise<void> => {
     let time = new Date();
     if (state.Seconds) {
         time.setSeconds(time.getSeconds() + state.Seconds);
@@ -24,6 +24,6 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
         }
         time = new Date(timestamp);
     }
-    const timerInfo: WaitStateTaskInfo = {...task, ...state, input: effectiveInput, previousEventId};
+    const timerInfo: WaitStateTaskInfo = {...task, ...state, input: effectiveInput};
     await TimerService.addWaitTask(time, timerInfo)
 }

@@ -57,7 +57,8 @@
                 {
                     "name": "tmp",
                     "expectedInput": {},
-                    "output": {}
+                    "output": {},
+                    "workerName": "hello"
                 }
             ],
             "events": [
@@ -87,7 +88,7 @@
                     "id": 3,
                     "previousEventId": 2,
                     "activityScheduledEventDetails": {
-                        "resource": "arn:aws:states:eu-west-1:331149089501:activity:tmp",
+                        "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
                         "input": "{}"
                     }
                 },

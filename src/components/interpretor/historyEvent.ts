@@ -9,9 +9,8 @@ export enum InterpretorEvents {
     ActivitySucceeded = 'ActivitySucceeded'
 }
 
-export const addStateEnteredEvent = async (task: Task, stateType: StateType): Promise<number> => {
+export const addStateEnteredEvent = async (task: Task, stateType: StateType): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: task.executionArn, event: {
-        previousEventId: task.previousEventId,
         type: `${stateType}StateEntered`, 
         stateEnteredEventDetails: {
             name: task.stateName,
@@ -19,31 +18,38 @@ export const addStateEnteredEvent = async (task: Task, stateType: StateType): Pr
     }}});
 }
 
-export const addActivityScheduledEvent = async (task: Task, state: TaskState, resource: string): Promise<number> => {
+export const addActivityScheduledEvent = async (task: Task, state: TaskState, resource: string): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: task.executionArn, event: {
         type: 'ActivityScheduled',
-        previousEventId: task.previousEventId,
         activityScheduledEventDetails: {
             resource: resource,
             heartbeatInSeconds: state.HeartbeatSeconds,
             input: JSON.stringify(task.input),
             timeoutInSeconds: state.TimeoutSeconds
         }
-    }})
+    }});
 }
 
-export const addActivityStartedEvent = async (req: {executionArn: string, previousEventId: number, workerName?: string}): Promise<number> => {
+export const addActivityStartedEvent = async (req: {executionArn: string, workerName?: string}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: 'ActivityStarted',
-        previousEventId: req.previousEventId,
         activityStartedEventDetails: {
             workerName: req.workerName
         }
     }});
 }
 
-export const addStateExistedEvent = async (req: {executionArn: string, previousEventId: number, stateName: string, output: unknown, stateType: StateType}): Promise<number> => {
-    return await ExecutionService.addEvent({executionArn: req.executionArn, event: { previousEventId: req.previousEventId,
+export const addActivitySucceededEvent = async (req: {executionArn: string, output: unknown}): Promise<void> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event : {
+        type: 'ActivitySucceeded',
+        activitySucceededEventDetails: {
+            output: JSON.stringify(req.output),
+        }
+    }})
+}
+
+export const addStateExistedEvent = async (req: {executionArn: string, stateName: string, output: unknown, stateType: StateType}): Promise<void> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: `${req.stateType}StateExited`,
         stateExitedEventDetails: {
             name: req.stateName,
@@ -52,9 +58,8 @@ export const addStateExistedEvent = async (req: {executionArn: string, previousE
     }})
 }
 
-export const addExecutionFailedEvent = async (req: {executionArn: string, stateName: string, previousEventId: number, description: string}): Promise<number> => {
+export const addExecutionFailedEvent = async (req: {executionArn: string, stateName: string, description: string}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
-        previousEventId: req.previousEventId,
         type: 'ExecutionFailed',
         executionFailedEventDetails: {
             cause: `An error occurred while executing the state '${req.stateName}'. ${req.description}`,
@@ -63,9 +68,8 @@ export const addExecutionFailedEvent = async (req: {executionArn: string, stateN
     }});
 }
 
-export const addExecutionSucceededEvent = async (req: {executionArn: string, previousEventId: number, result: unknown}): Promise<number> => {
+export const addExecutionSucceededEvent = async (req: {executionArn: string, result: unknown}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
-        previousEventId: req.previousEventId,
         type: 'ExecutionSucceeded',
         executionSucceededEventDetails: {
             output: JSON.stringify(req.result),

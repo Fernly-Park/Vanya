@@ -6,6 +6,7 @@
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
             "describe": "should fail if the input does not contain the field 'hello'",
+            "executionName": "waitFailOutputPath",
             "events": [
                 {
                     "timestamp": "2020-09-21T19:43:41.389Z",
@@ -31,7 +32,7 @@
                     "timestamp": "2020-09-21T19:43:41.415Z",
                     "type": "ExecutionFailed",
                     "id": 3,
-                    "previousEventId": 2,
+                    "previousEventId": 0,
                     "executionFailedEventDetails": {
                         "error": "States.Runtime",
                         "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.hello' : No results for path: '$.hello'"

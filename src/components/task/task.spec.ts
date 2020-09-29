@@ -11,7 +11,7 @@ import { taskOutputMaxLength, taskTokenMaxLength } from '@App/components/task/ta
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
     const activityTask: ActivityTask = {token: 'token', input: {hello: 'world'}, Type: StateType.Pass, executionArn: dummyExecutionArn, 
-    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, previousEventId: 0, Resource: dummyActivityArn};
+    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, Resource: dummyActivityArn};
 
     const createAndGetActivityTaskHelper = async (req?: {input?: Record<string, unknown>, token?: string}) => {
         const activity = await ActivityService.createActivity(getUser().id, 'tmp');

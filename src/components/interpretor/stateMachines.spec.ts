@@ -20,8 +20,6 @@ import { IUser } from '../user/user.interfaces';
 import { ISO8601_REGEX } from '@App/utils/validationHelper';
 import { WaitState } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
-import { IActivity } from '../activity/activity.interfaces';
-
 
 const getTests = (dirPath = 'tests'): TestStateMachine[] => {
     const fileNames = readdirSync(join(__dirname, dirPath));
@@ -60,7 +58,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             finishedExecution = await ExecutionService.describeExecution(execution);
             if (activities) {
                 for(const activity of activities) {
-                    const res = await TaskService.getActivityTask({activityArn: activity.activityArn});
+                    const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
                     console.log('res: ', res)
                     if (res.input) {
                         expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);

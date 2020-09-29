@@ -8,7 +8,7 @@ import { Task, StateInput, StateOutput, ActivityTask } from '../task/task.interf
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyParameters, applyResultPath } from './path';
-import { addStateEnteredEvent, addStateExistedEvent, addExecutionFailedEvent, addExecutionSucceededEvent } from './historyEvent';
+import { addStateEnteredEvent, addStateExistedEvent, addExecutionFailedEvent, addExecutionSucceededEvent, addActivitySucceededEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './State/pass';
 import { processWaitTask } from './State/wait';
@@ -56,9 +56,10 @@ const processWaitingStateDone = async () => {
 
 export const processTaskStateDone = async (activityTask: ActivityTask): Promise<void> => {
     // outputPath
-    console.log('activity task : ', activityTask)
     try {
+        
         const output = applyPath(activityTask.input, activityTask.OutputPath);
+        await addActivitySucceededEvent({executionArn: activityTask.executionArn, output});
         await endStateExecution({...activityTask, output, nextStateName: activityTask.Next, stateType: activityTask.Type})
     } catch (err) {
         await addExecutionFailedEvent({...activityTask, description: (err as Error)?.message})
@@ -79,7 +80,7 @@ const processTask = async (task: Task): Promise<void> => {
     }, taskToken, previousState: task.previousStateName});
     let effectiveOutput: StateOutput;
     
-    const stateEnteredEventId = await addStateEnteredEvent(task, state.Type);
+    await addStateEnteredEvent(task, state.Type);
     try {
         
         const effectiveInput = await filterInput(task, state);
@@ -91,7 +92,7 @@ const processTask = async (task: Task): Promise<void> => {
             case StateType.Task:
                 return await processTaskState(task, state as TaskState, effectiveInput, taskToken);
             case StateType.Wait:
-                return await processWaitTask(task, state as WaitState, effectiveInput, stateEnteredEventId); 
+                return await processWaitTask(task, state as WaitState, effectiveInput); 
             default: 
                 throw new Error();
         }
@@ -102,17 +103,17 @@ const processTask = async (task: Task): Promise<void> => {
         return await ExecutionService.endExecution({executionArn: task.executionArn, status: ExecutionStatus.failed})
     }
     
-    await endStateExecution({...task, previousEventId: stateEnteredEventId, output: effectiveOutput, nextStateName: next, stateType: state.Type});
+    await endStateExecution({...task, output: effectiveOutput, nextStateName: next, stateType: state.Type});
 };
 
 const endStateExecution = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
-    stateName: string, previousEventId: number, output: StateOutput, nextStateName?: string}): Promise<void> => {
-    const stateExitedEventId = await addStateExistedEvent(req);
+    stateName: string, output: StateOutput, nextStateName?: string}): Promise<void> => {
+    await addStateExistedEvent(req);
     if (req.nextStateName) {
         await TaskService.addTask({executionArn: req.executionArn, stateName: req.nextStateName, 
-            input: req.output, stateMachineArn: req.stateMachineArn, previousEventId: stateExitedEventId, previousStateName: req.stateName})
+            input: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
     } else {
-        await addExecutionSucceededEvent({result: req.output, previousEventId: stateExitedEventId, executionArn: req.executionArn})
+        await addExecutionSucceededEvent({result: req.output, executionArn: req.executionArn})
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
     }   
 }

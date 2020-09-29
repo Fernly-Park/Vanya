@@ -151,4 +151,5 @@ export type ActivitiyToCreateForTests = {
     name: string,
     output: string,
     expectedInput: Record<string, unknown>,
+    workerName: string
 }

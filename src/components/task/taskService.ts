@@ -7,6 +7,7 @@ import Joi from "@hapi/joi";
 import { maxResourceNameLength } from "@App/utils/validationHelper";
 import { isJSON } from "@App/utils/objectUtils";
 import { CustomEvents, eventEmitter } from "../events";
+import { addActivityStartedEvent } from "../interpretor/historyEvent";
 
 
 export const taskOutputMaxLength = 262144;
@@ -40,6 +41,8 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
     const task = await TaskDAL.popActivityTask(req.activityArn);
     if (task) {
         await TaskDAL.addActivityTaskToInProgress(task);
+        await addActivityStartedEvent({executionArn: task.executionArn, workerName: req.workerName})
+
     }
     return {
         input: task === null ? null : JSON.stringify(task.input),
@@ -55,6 +58,7 @@ export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> 
         throw new TaskDoesNotExistError(req.taskToken);
     }
     // todo timeout
+
     eventEmitter.emit(CustomEvents.ActivityTaskSucceeded, activityTask)
 }
 

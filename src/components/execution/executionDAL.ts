@@ -1,5 +1,5 @@
 import db, { DbOrTransaction } from '@App/modules/database/db';
-import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable, ContextObjectEnteredState } from './execution.interfaces';
+import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable } from './execution.interfaces';
 import * as DALFactory from '@App/components/DALFactory';
 import * as Redis from '@App/modules/database/redis';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
@@ -106,11 +106,10 @@ export const deleteContextObject = async (executionArn: string, stateName?: stri
     }
 }
 
-export const addExecutionEvent = async (req: {executionArn: string, event: Partial<HistoryEvent>}): Promise<number> => {
+export const addExecutionEvent = async (req: {executionArn: string, event: Partial<HistoryEvent>}): Promise<void> => {
     const key = Redis.getExecutionEventKey(req.executionArn);
     req.event.id = (await Redis.incrAsync(Redis.getExecutionEventCurrentIdKey(req.executionArn)));
     await Redis.rpushAsync(key, JSON.stringify(req.event));
-    return req.event.id;
 }
 
 const selectListExecutionEvent = DALFactory.selectArrayOfResourcesFactory<HistoryEvent & {event: string}>(ExecutionEventTable.tableName, ExecutionEventTable.timestampColumn);
