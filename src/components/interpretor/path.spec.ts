@@ -1,5 +1,7 @@
 import { InvalidPathError } from "@App/errors/customErrors";
-import { applyPath } from './path';
+import { dummyExecutionArn, dummyRoleARN, dummyStateMachineArn } from "@Tests/testHelper";
+import { ContextObject } from "../execution/execution.interfaces";
+import { applyPath, applyParameters, applyResultPath, } from './path';
 
 describe('inputPath tests', () => {
 
@@ -38,3 +40,87 @@ describe('inputPath tests', () => {
         expect(result).toStrictEqual([1, 2]);
     });
 });
+
+describe('parameters', () => {
+    it('should correctly add the parameters to the input', () => {
+        expect.assertions(1);
+
+        const parameters = {
+            "Numbers.$": "$.numbers",
+            "Input.$": "$",
+            "ContextObj.$": "$$",
+            "CadContextObj": "$$",
+            "ContextObjectSMId.$": "$$.StateMachine.Id",
+            "ContextObjectExecutionId.$": "$$.Execution.Id",
+            "ContextObjectExecutionName.$": "$$.Execution.Name",
+            "ContextObjectStateMachineName.$": "$$.StateMachine.Name",
+            "ContextObjectStateName.$": "$$.State.Name"
+        };
+        const StartTime = new Date();
+        const EnteredTime = new Date();
+        const parsedInput = {name: 3, numbers: {five: 5, sept: 7}};
+        const contextObj: ContextObject = {
+            Execution: {Id: dummyExecutionArn, Input: parsedInput, Name: 'executionName', RoleArn: dummyRoleARN, StartTime},
+            StateMachine: {Id: dummyStateMachineArn, Name: 'smName'},
+            State: {EnteredTime, Name: 'HelloWorld', RetryCount: 0}
+        };
+        const output = applyParameters(contextObj, parsedInput, parameters);
+        expect(output).toStrictEqual({
+            CadContextObj: '$$',
+            ContextObjectStateName: 'HelloWorld',
+            Numbers: parsedInput.numbers,
+            ContextObjectExecutionId: dummyExecutionArn,
+            Input: parsedInput,
+            ContextObjectStateMachineName: 'smName',
+            ContextObjectSMId: dummyStateMachineArn,
+            ContextObjectExecutionName: 'executionName' ,
+            ContextObj: {
+                Execution: {
+                    Id: dummyExecutionArn,
+                    Input: parsedInput,
+                    Name: 'executionName',
+                    StartTime,
+                    RoleArn: dummyRoleARN,
+                },
+                State: {
+                    EnteredTime,
+                    Name: 'HelloWorld',
+                    RetryCount: 0
+                },
+                StateMachine: {
+                    Id: dummyStateMachineArn,
+                    Name: 'smName'
+                }
+            }
+        })
+    })
+});
+
+describe('result path', () => {
+    it.each([
+            [{"master": { "detail": [1, 2, 3] } }, {"master": {"detail": "Hello World"}}],
+            [{}, {"master": {"detail": "Hello World"}}],
+            [{a: 'tea'}, {a: 'tea', "master": {"detail": "Hello World"}}]
+        ])('should correctly add the output in the input structure by overriding', (input, expectedOutput) => {
+        expect.assertions(1);
+
+        const output = applyResultPath(input, 'Hello World', '$.master.detail')
+        expect(output).toStrictEqual(expectedOutput);
+    });
+
+    it.each([{master: 'helloWorld'},
+             {},
+             {hello: {world: 'Nope'}}])('Should send the input to the output', (taskOutput) => {
+        expect.assertions(1);
+
+        const result = applyResultPath({ab: 'cd'}, taskOutput, '$');
+        expect(result).toStrictEqual(taskOutput);
+    });
+
+    it('should discard the task output if the resultPath is null', () => {
+        expect.assertions(1);
+        const input = {ab: 'cd'};
+        const result = applyResultPath(input, {a: 'myOutput'}, null);
+        expect(result).toStrictEqual(input);
+    });
+})

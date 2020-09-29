@@ -51,7 +51,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         StateMachine : {
             Id: stateMachine.arn,
             Name: stateMachine.name
-        }
+        },
     });
 
     await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
@@ -101,16 +101,21 @@ export const endExecution = async (req: {executionArn: string, output?: unknown,
     await ExecutionDAL.deleteContextObject(req.executionArn)
 };
 
-export const retrieveExecutionContextObject = async (req: {executionArn: string}): Promise<ContextObject> => {
+export const retrieveExecutionContextObject = async (req: {executionArn: string, stateName: string}): Promise<ContextObject> => {
     ArnHelper.ensureIsValidExecutionArn(req.executionArn);
 
-    return await ExecutionDAL.getContextObject(req.executionArn);
+    return await ExecutionDAL.getContextObject(req.executionArn, req.stateName);
 }
 
-export const updateContextObjectState = async (req: {executionArn: string, enteredState: ContextObjectEnteredState}): Promise<void> => {
+export const updateContextObject = async (req: {executionArn: string, enteredState: ContextObjectEnteredState, taskToken?: string, previousState?: string}): Promise<void> => {
     // todo check
-    await ExecutionDAL.updateContextObject({executionArn: req.executionArn, path: '.State', update: req.enteredState});
+    if (req.previousState) {
+        await ExecutionDAL.deleteContextObject(req.executionArn, req.previousState);
+    }
+    await ExecutionDAL.updateContextObject({executionArn: req.executionArn, update: req.enteredState, 
+        token: req.taskToken, stateName: req.enteredState.Name, });
 }
+
 
 type CustomHistoryEvent = Partial<HistoryEvent> & {type: HistoryEventType, previousEventId: number}
 export const addEvent = async (req: {executionArn: string, event: CustomHistoryEvent}): Promise<number> => {

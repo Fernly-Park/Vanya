@@ -7,15 +7,20 @@
 import * as ExecutionService from '@App/components/execution/executionService';
 import * as TaskService from '@App/components/task/taskService';
 import * as TestHelper from '@Tests/testHelper';
+import * as TimerService from '@App/components/timer/timerService'
+import * as ActivityService from '@App/components/activity/activityService';
+import * as Redis from '@App/modules/database/redis';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { generateServiceTest } from '@Tests/testGenerator';
 import {readFileSync, readdirSync, statSync} from 'fs';
 import {basename, dirname, join} from 'path';
 import { isAnObject } from '@App/utils/objectUtils';
-import { TestStateMachine, TestStateMachineTestCase } from '@Tests/testHelper';
+import { ActivitiyToCreateForTests, EventDurationExpectedForTests, TestStateMachine, TestStateMachineTestCase } from '@Tests/testHelper';
 import { IUser } from '../user/user.interfaces';
 import { ISO8601_REGEX } from '@App/utils/validationHelper';
 import { WaitState } from '../stateMachines/stateMachine.interfaces';
+import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
+import { IActivity } from '../activity/activity.interfaces';
 
 
 const getTests = (dirPath = 'tests'): TestStateMachine[] => {
@@ -38,14 +43,8 @@ const getTests = (dirPath = 'tests'): TestStateMachine[] => {
 
 const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestStateMachineTestCase, getUser:  () => IUser) => {
     it(currentTest.describe, async () => {
-        expect.assertions(currentTest.events ? 7 + currentTest.events.length + (currentTest.eventsExpectedDuration?.length ?? 0): 6);
-        if (currentTest.executionName === 'timestampPathSuccess') {
-            modifieTests(currentTest)
-        } else if (testStateMachine.stateMachineName === 'wait-timestamp') {
-            const time = new Date();
-            time.setSeconds(time.getSeconds() + 1);
-            (testStateMachine.definition.States.Hello as WaitState).Timestamp = time.toISOString()
-        }
+        modifieTimestampInWaitTests(testStateMachine)
+        const activities = await createActivities(currentTest.activitiesToCreate, getUser().id)
         const {execution} = await TestHelper.createSMAndStartExecutionHelper({
             userId: getUser().id,
             stateMachineDef: JSON.stringify(testStateMachine.definition), 
@@ -55,52 +54,90 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         });
 
         let finishedExecution = await ExecutionService.describeExecution(execution);
+        await TestHelper.sleep(100);
         while (finishedExecution.status === ExecutionStatus.running) {
             await TestHelper.sleep(100);
             finishedExecution = await ExecutionService.describeExecution(execution);
+            if (activities) {
+                for(const activity of activities) {
+                    const res = await TaskService.getActivityTask({activityArn: activity.activityArn});
+                    console.log('res: ', res)
+                    if (res.input) {
+                        expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
+                        await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
+                    }
+                }
+            }
         }
         const numberOfRemainingTasks = await TaskService.numberOfGeneralTask();
-        const numberOfDelayedTask = await TaskService.numberOfDelayedTask();
+        const numberOfDelayedTask = await TimerService.numberOfTimedTask();
+        const numberOfWaitingTaskDone = await TimerService.numberOfWaitingTaskDone();
         const events = await ExecutionService.getExecutionHistory(execution);
-
+        const contextObj = await Redis.jsongetAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
+        expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(numberOfDelayedTask).toBe(0);
+        expect(numberOfWaitingTaskDone).toBe(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         expect(finishedExecution.output).toBe(isAnObject(currentTest.expectedOutput) ? JSON.stringify(currentTest.expectedOutput): currentTest.expectedOutput);
         expect(finishedExecution.stopDate).toBeDefined();
         expect(finishedExecution.input).toStrictEqual(currentTest.input)
         if (currentTest.events) {
-            for (let i = 0; i < events.length; i++) {
-                expect(events[i].timestamp).toMatch(ISO8601_REGEX);
-                const expectedDuration = currentTest.eventsExpectedDuration?.find(x => x.eventId === currentTest.events[i].id);
-                if (expectedDuration){
-                    const previousEventTime = events.find(x => x.id === currentTest.events[i].previousEventId).timestamp;
-                    const currentEventTime = new Date(events[i].timestamp);
-                    const previousDate = new Date(previousEventTime);
-                    const seconds = (currentEventTime.getTime() - previousDate.getTime()) / 1000;
-                    expect(Math.round(seconds)).toBe(expectedDuration.expectedDurationInSeconds);
-                }
-            }
-            for (let i = 0; i < events.length; i++) {
-                delete events[i].timestamp;
-                delete currentTest.events[i].timestamp;
-            }
-            expect(events).toStrictEqual(currentTest.events);
+            expectEventsToBeCorrect(currentTest.events, events, currentTest.eventsExpectedDuration)
         }
     });
 }
+const createActivities = async (activities: ActivitiyToCreateForTests[], userId: string): Promise<(ActivitiyToCreateForTests & {activityArn: string})[]> => {
+    if (!activities) return;
 
-const modifieTests = (test: TestStateMachineTestCase) => {
-    const time = new Date();
-    time.setSeconds(time.getSeconds() + 2);
-    test.input = {timestamp: time.toISOString()}
-    test.expectedOutput = JSON.stringify(test.input)
-    test.events[0].executionStartedEventDetails.input = JSON.stringify(test.input);
-    test.events[1].stateEnteredEventDetails.input = JSON.stringify(test.input);
-    test.events[2].stateExitedEventDetails.output = JSON.stringify(test.input);
-    test.events[3].executionSucceededEventDetails.output = JSON.stringify(test.input);
+    const toReturn = [];
+    for (const activity of activities) {
+        toReturn.push({...activity, ...await ActivityService.createActivity(userId, activity.name)});
+    }
 
+    return toReturn;
 }
+
+const expectEventsToBeCorrect = (received: HistoryEvent[], expected: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
+    for (let i = 0; i < expected.length; i++) {
+        expect(received[i].timestamp).toMatch(ISO8601_REGEX);
+        const expectedDuration = expectedDurations?.find(x => x.eventId === received[i].id);
+        if (expectedDuration){
+            const previousEventTime = expected.find(x => x.id === received[i].previousEventId).timestamp;
+            const currentEventTime = new Date(expected[i].timestamp);
+            const previousDate = new Date(previousEventTime);
+            const seconds = (currentEventTime.getTime() - previousDate.getTime()) / 1000;
+            expect(Math.round(seconds)).toBe(expectedDuration.expectedDurationInSeconds);
+        }
+    }
+    for (let i = 0; i < expected.length; i++) {
+        delete expected[i].timestamp;
+        delete received[i].timestamp;
+    }
+
+    expect(received).toStrictEqual(expected);
+}
+
+const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {
+    if (stateMachineTested.stateMachineName === 'wait-timestamp') {
+        const time = new Date();
+        time.setSeconds(time.getSeconds() + 1);
+        (stateMachineTested.definition.States.Hello as WaitState).Timestamp = time.toISOString()
+    }
+
+    const test = stateMachineTested.tests.find(x => x.executionName === 'timestampPathSuccess')
+    if (test) {
+        const time = new Date();
+        time.setSeconds(time.getSeconds() + 2);
+        test.input = {timestamp: time.toISOString()}
+        test.expectedOutput = JSON.stringify(test.input)
+        test.events[0].executionStartedEventDetails.input = JSON.stringify(test.input);
+        test.events[1].stateEnteredEventDetails.input = JSON.stringify(test.input);
+        test.events[2].stateExitedEventDetails.output = JSON.stringify(test.input);
+        test.events[3].executionSucceededEventDetails.output = JSON.stringify(test.input);
+    }
+}
+
 const generateStateMachinesTests = (req?: {stateMachineName?: string, executionName?: string, folderName?: string}) => {
     generateServiceTest({ describeText: 'simple state machine with only a pass state',options: {startInterpretor: true, mockDate: false}, tests: (getUser) => {
         let tests = getTests();
@@ -123,4 +160,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests();
+generateStateMachinesTests({folderName: 'task'});

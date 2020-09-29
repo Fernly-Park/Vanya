@@ -6,7 +6,7 @@ import * as TaskService from '@App/components/task/taskService';
 import * as Redis from '@App/modules/database/redis';
 import { sleep, stateMachinesForTests } from './testHelper';
 import { JSONPath } from 'jsonpath-plus';
-import { TimerInfo } from '@App/components/task/task.interfaces';
+import { WaitStateTaskInfo } from '@App/components/task/task.interfaces';
 
 describe('random tests', () => {
 
@@ -16,7 +16,7 @@ describe('random tests', () => {
         tenLater.setSeconds(tenLater.getSeconds() + 4);
         const t = tenLater.getTime()
 
-        const key = Redis.delayedTaskKey;
+        const key = Redis.timerKey;
         await Redis.zaddAsync(key, now, 'now');
         await Redis.zaddAsync(key, t, 'later');
     }
@@ -29,13 +29,13 @@ describe('random tests', () => {
     it('should work', async () => {
         expect.assertions(0);
         const now = new Date();
-        await Redis.zaddAsync(Redis.delayedTaskKey, 100, 'hello');
-        const keys = await Redis.zrangebyscoreAsync(Redis.delayedTaskKey, '-inf', 1000)
-        const results = await Redis.watchAsync(Redis.delayedTaskKey, async (watcher) => {
-            await Redis.delAsync(Redis.delayedTaskKey)
+        await Redis.zaddAsync(Redis.timerKey, 100, 'hello');
+        const keys = await Redis.zrangebyscoreAsync(Redis.timerKey, '-inf', 1000)
+        const results = await Redis.watchAsync(Redis.timerKey, async (watcher) => {
+            await Redis.delAsync(Redis.timerKey)
             return new Promise((resolve, reject) => {
                 watcher.multi()
-                .del(Redis.delayedTaskKey)
+                .del(Redis.timerKey)
                 .exec((multiExecError, results) => {
                     if (multiExecError) reject(multiExecError);
                     resolve(results);

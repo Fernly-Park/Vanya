@@ -1,0 +1,62 @@
+{
+    "describe": "simple state machine with a wait state and a seconds of 1 and and inputPath of '$.hello'", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input does not contain the field 'hello'",
+            "events": [
+                {
+                    "timestamp": "2020-09-21T19:16:50.631Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                        "input": "{}",
+                        "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T19:16:50.662Z",
+                    "type": "WaitStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "Hello",
+                        "input": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T19:16:50.662Z",
+                    "type": "ExecutionFailed",
+                    "id": 3,
+                    "previousEventId": 0,
+                    "executionFailedEventDetails": {
+                        "error": "States.Runtime",
+                        "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.hello' : No results for path: '$.hello'"
+                    }
+                }
+            ]
+        },
+        {
+            "input": {"hello": "Insert your JSON here"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "Insert your JSON here",
+            "describe": "should succeed after 1 seconds and filter the input"
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Wait",
+                "InputPath": "$.hello",
+                "Seconds": 1,
+                "End": true
+            }
+        }
+    }
+}
+

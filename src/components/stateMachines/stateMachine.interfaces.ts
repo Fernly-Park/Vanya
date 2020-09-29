@@ -70,7 +70,7 @@ export interface TaskState extends StateMachineStateValue {
     InputPath?: string,
     OutputPath?: string,
     ResultPath?: string,
-    Parameters: unknown,
+    Parameters?: unknown,
     Next?: string,
     End?: boolean,
     Retry?: Retrier[],

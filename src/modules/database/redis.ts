@@ -136,8 +136,8 @@ export const onConnectionError = (callback: () => void ): void => {
 }
 
 export const systemTaskKey = `${config.redis_prefix}:systemTasks`;
-
-export const delayedTaskKey = `${config.redis_prefix}:delayedTasks`;
+export const timerKey = `${config.redis_prefix}:timedTasks`;
+export const waitingStatesKey = `${config.redis_prefix}:finishedWaitingState`;
 
 export const getContextObjectKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:contextObject`
@@ -155,3 +155,14 @@ export const getExecutionEventCurrentIdKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:currentEventId`;
 }
 
+export const getActivityTaskKey = (activityArn: string): string => {
+    return `${config.redis_prefix}:${activityArn}:tasks`;
+}
+
+export const getActivityTaskInProgressKey = (token: string): string => {
+    return `${config.redis_prefix}:tasks:${token}`;
+}
+
+export const getTaskInProgress = (taskToken: string): string => {
+    return `${config.redis_prefix}:${taskToken}:tasks`;
+}

@@ -96,7 +96,7 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             const executionName = 'name';
             const input = '{}';
             const {execution: execution, stateMachine} = await createSMAndStartExecutionHelper({executionName, input});
-            const contextObject = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn});
+            const contextObject = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn, stateName:'HelloWorld'});
 
             expect(contextObject.Execution.Id).toBe(execution.executionArn);
             expect(contextObject.Execution.Input).toStrictEqual(JSON.parse(input));
@@ -197,9 +197,9 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
             const {execution} = await createSMAndStartExecutionHelper();
 
-            const beforeEndingExecution = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn});
+            const beforeEndingExecution = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn, stateName: 'HelloWorld'});
             await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});
-            const afterEndingExecution = await ExecutionService.retrieveExecutionContextObject(execution);
+            const afterEndingExecution = await ExecutionService.retrieveExecutionContextObject({...execution, stateName: 'HelloWorld'});
 
             expect(beforeEndingExecution).toBeDefined();
             expect(afterEndingExecution).toBeNull();

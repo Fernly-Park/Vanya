@@ -18,6 +18,12 @@ export class MissingHeaderError extends AWSError {
     }
 }
 
+export class ActivityDoesNotExistError extends AWSError {
+    constructor(description: string) {
+        super("Activity Does Not Exist", description, 'com.amazonaws.swf.service.v2.model#ActivityDoesNotExist');
+    }
+}
+
 export class UnsupportedOperationError extends AWSError {
     constructor(description: string) {
         super("Unsupported Operation", description, "com.amazonaws.swf.service.v2.model#UnsupportedOperation");
@@ -93,5 +99,17 @@ export class ExecutionAlreadyExistsError extends AWSError {
 export class ExecutionDoesNotExistError extends AWSError {
     constructor(description: string) {
         super("Execution Does Not Exist", description, "com.amazonaws.swf.service.v2.model#ExecutionDoesNotExist");
+    }
+}
+
+export class InvalidOutputError extends AWSError {
+    constructor(description: string) {
+        super("InvalidOutput", description, "com.amazonaws.swf.service.v2.model#InvalidOutput");
+    }
+}
+
+export class TaskDoesNotExistError extends AWSError {
+    constructor(description: string) {
+        super("TaskDoesNotExist", description, "com.amazonaws.swf.service.v2.model#TaskDoesNotExist");
     }
 }

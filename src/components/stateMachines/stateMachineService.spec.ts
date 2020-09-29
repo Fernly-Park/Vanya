@@ -170,8 +170,6 @@ describe('state machines', () => {
         });
     });
 
-    
-
     describe('delete', () => {
         it('should correctly delete a state machine', async () => {
             expect.assertions(4);

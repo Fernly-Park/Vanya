@@ -1,0 +1,146 @@
+{
+    "describe": "simple state machine with a single pass state", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the activity in the resource does not exists",
+            "executionName": "activitiesTaskDoesNotExists",
+            "activitiesToCreate": [
+                {
+                    "name": "otherActivity",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                    "timestamp": "2020-09-21T18:23:12.634Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                        "input": "{}",
+                        "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T18:23:12.666Z",
+                    "type": "TaskStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "Hello",
+                        "input": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-21T18:23:12.666Z",
+                    "type": "ExecutionFailed",
+                    "id": 3,
+                    "previousEventId": 0,
+                    "executionFailedEventDetails": {
+                        "error": "States.Runtime",
+                        "cause": "An error occurred while executing the state 'Hello'. The activity arn:aws:states:eu-west:012345678901:activity:tmp does not exist."
+                    }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should succeed if the activity exists",
+            "executionName": "activitiesTaskDoesNotExists",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                    "timestamp": "2020-09-26T14:22:53.136Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                     "input": "{}",
+                     "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-26T14:22:53.167Z",
+                    "type": "TaskStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "Hello",
+                        "input": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-26T14:22:53.167Z",
+                    "type": "ActivityScheduled",
+                    "id": 3,
+                    "previousEventId": 2,
+                    "activityScheduledEventDetails": {
+                        "resource": "arn:aws:states:eu-west-1:331149089501:activity:tmp",
+                        "input": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-26T14:22:53.418Z",
+                    "type": "ActivityStarted",
+                    "id": 4,
+                    "previousEventId": 3,
+                    "activityStartedEventDetails": {
+                        "workerName": "hello"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-26T14:22:53.637Z",
+                    "type": "ActivitySucceeded",
+                    "id": 5,
+                    "previousEventId": 4,
+                    "activitySucceededEventDetails": {
+                        "output": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-26T14:22:53.637Z",
+                    "type": "TaskStateExited",
+                    "id": 6,
+                    "previousEventId": 5,
+                    "stateExitedEventDetails": {
+                        "name": "Hello",
+                        "output": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-09-26T14:22:53.637Z",
+                    "type": "ExecutionSucceeded",
+                    "id": 7,
+                    "previousEventId": 6,
+                    "executionSucceededEventDetails": {
+                        "output": "{}"
+                    }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+            "End": true
+            }
+        }
+    }    
+}
+

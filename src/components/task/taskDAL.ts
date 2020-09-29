@@ -1,14 +1,24 @@
-import { Task, TimerInfo } from "./task.interfaces";
+import { ActivityTask, StateInput, Task } from "./task.interfaces";
 import * as Redis from '@App/modules/database/redis';
 import config from "@App/config";
-import { watch } from "fs";
 
 export const addToGeneralTaskQueue = async (task: Task): Promise<void> => {
     await Redis.rpushAsync(Redis.systemTaskKey, JSON.stringify(task));
 }
 
-export const addToDelayedTask = async (score: number, timerInfo: TimerInfo): Promise<void> => {
-    await Redis.zaddAsync(Redis.delayedTaskKey, score, JSON.stringify(timerInfo));
+export const addActivityTaskToActivityQueue = async (activityArn: string, input: ActivityTask): Promise<void> => {
+    const key = Redis.getActivityTaskKey(activityArn);
+    await Redis.rpushAsync(key, JSON.stringify(input));
+}
+
+export const addActivityTaskToInProgressQueue = async (task: ActivityTask): Promise<void> => {
+    const key = Redis.getTaskInProgress(task.token);
+}
+
+export const popActivityTask = async (activityArn: string): Promise<ActivityTask> => {
+    const key = Redis.getActivityTaskKey(activityArn);
+    const result = await Redis.blpopAsync(key, config.activityTaskDefaultTimeout);
+    return result ? JSON.parse(result[1]) as ActivityTask : null;
 }
 
 export const popFromGeneralTaskQueue = async (): Promise<Task> => {
@@ -16,35 +26,22 @@ export const popFromGeneralTaskQueue = async (): Promise<Task> => {
     return result ? JSON.parse(result[1]) as Task : null;
 }
 
-export const retrieveAndDeleteDelayedTaskUpTo = async (score: number): Promise<TimerInfo[]> => {
-    const key = Redis.delayedTaskKey;
-    const toReturn =  await Redis.watchAsync(key, (watcher) => {
-        return new Promise((resolve, reject) => {
-            watcher.multi()
-                .zrangebyscore(key, '-inf', score)
-                .zremrangebyscore(key, '-inf', score)
-                .exec((err, results) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(results)
-                    }
-                })
-        });
-    });
-    return (toReturn[0] as unknown as string[]).map(x => JSON.parse(x) as TimerInfo);
-}
-
-export const deleteDelayedTaskUpTo = async (score: number): Promise<void> => {
-    const key = Redis.delayedTaskKey;
-    await Redis.zremrangebyscoreAsync(key, '-inf', score);
-}
-
 export const numberOfDelayedTask = async (): Promise<number> => {
-    const key = Redis.delayedTaskKey;
+    const key = Redis.timerKey;
     return await Redis.zcountAsync(key, '-inf', '+inf');
 }
 
 export const lengthOfGeneralTaskQueue = async (): Promise<number> => {
     return await Redis.llenAsync(Redis.systemTaskKey);
+}
+
+export const addActivityTaskToInProgress = async (task: ActivityTask): Promise<void> => {
+    const key = Redis.getActivityTaskInProgressKey(task.token);
+    await Redis.setAsync(key, JSON.stringify(task));
+}
+
+export const retrieveActivityTaskInProgress = async (token: string): Promise<ActivityTask> => {
+    const key = Redis.getActivityTaskInProgressKey(token);
+    const toReturn = await Redis.getAsync(key);
+    return toReturn ? JSON.parse(toReturn) as ActivityTask : null;
 }

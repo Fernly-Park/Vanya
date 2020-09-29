@@ -56,4 +56,11 @@ export class InvalidParameterError extends BaseError {
     }
 }
 
+export class TaskResourceDoesNotExistsError extends BaseError {
+    constructor(description: string) {
+        super("Task Resource Does Not Exists", description, true);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
 

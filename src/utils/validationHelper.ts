@@ -3,7 +3,7 @@ import Joi from "@hapi/joi";
 import { InvalidInputError } from "@App/errors/customErrors";
 import { InvalidNameError, InvalidTokenError } from "@App/errors/AWSErrors";
 
-const maxResourceNameLength = 80;
+export const maxResourceNameLength = 80;
 
 export const ensureResourceNameIsValid = (resourceName: string): void => {
     const activityNameValidator = Joi

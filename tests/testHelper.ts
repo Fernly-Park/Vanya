@@ -106,6 +106,7 @@ export const stateMachinesForTests = {
         validParallelWithCatch: getStateMachineDef('valid', 'valid-parallel-with-catch.json'),
         validParallelWithResultPath: getStateMachineDef('valid', 'valid-parallel-with-result-path.json'),
         validParallelWithRetry: getStateMachineDef('valid', 'valid-parallel-with-retry.json'),
+        validTask: getStateMachineDef('valid', 'valid-task.json'),
         validPassState: getStateMachineDef('valid', 'valid-pass-state.json'),
         validRetryFailure: getStateMachineDef('valid', 'valid-retry-failure.json'),
         validTaskAliasFunction: getStateMachineDef('valid', 'valid-task-alias-function.json'),
@@ -129,10 +130,8 @@ export type TestStateMachineTestCase = {
     expectedOutput: string,
     describe: string,
     executionName?: string,
-    eventsExpectedDuration?: {
-        eventId: number,
-        expectedDurationInSeconds: number
-    }[],
+    activitiesToCreate?: ActivitiyToCreateForTests[],
+    eventsExpectedDuration?: EventDurationExpectedForTests[],
     events?: HistoryEvent[]
 }
 export type TestStateMachine = {
@@ -141,4 +140,15 @@ export type TestStateMachine = {
     tests: TestStateMachineTestCase[],
     stateMachineName: string,
     folderName: string
+}
+
+export type EventDurationExpectedForTests = {
+    eventId: number,
+    expectedDurationInSeconds: number
+};
+
+export type ActivitiyToCreateForTests = {
+    name: string,
+    output: string,
+    expectedInput: Record<string, unknown>,
 }

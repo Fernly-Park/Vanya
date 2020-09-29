@@ -1,0 +1,14 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Pass states",
+    "StartAt": "Hello",
+    "States": {
+        "Hello": {
+            "Parameters": {
+                "ContextObj.$": "$$"
+            },
+            "Type": "Task",
+            "Resource": "arn:aws:states:eu-west-1:012345678901:activity:tmp",
+            "End": true
+        }
+    }
+}

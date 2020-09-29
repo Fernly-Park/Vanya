@@ -1,12 +1,11 @@
 {
-    "describe": "simple state machine with a single pass state containing a parameters that does not exists", 
+    "describe": "simple state machine with a single pass state containing a parameters a parameters '$.numbers'", 
     "tests": [
         {
             "input": {},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
-            "describe": "should fail due to the '$$.UnexistingAttribute' parameter",
-            "executionName": "basicObject",
+            "describe": "should fail due to the '$.numbers' parameter not present in the input",
             "events":[
                 {
                     "timestamp":"2020-06-07T00:00:01.000Z",
@@ -35,7 +34,7 @@
                     "previousEventId":0,
                     "executionFailedEventDetails":{
                         "error":"States.Runtime",
-                        "cause":"An error occurred while executing the state 'HelloWorld'. The JSONPath '$$.UnexistingAttribute' could not be found in the input"
+                        "cause":"An error occurred while executing the state 'HelloWorld'. The JSONPath '$.numbers' could not be found in the input"
                     }
                 }
             ]
@@ -47,13 +46,12 @@
         "States": {
             "HelloWorld": {
                 "Parameters": {
-                    "ContextObjectStateMachineName.$": "$$.UnexistingAttribute"
+                    "Numbers.$": "$.numbers"
                 },
                 "Type": "Pass",
                 "End": true
             }
         }
-    }
-          
+    }    
 }
 

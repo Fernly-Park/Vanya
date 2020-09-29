@@ -6,7 +6,7 @@ import * as logger from '@App/modules/logging';
 import { AWSError } from "@App/errors/AWSErrors";
 
 
-export const errorHandlerMiddleware =  (error: Error, request: express.Request, response: express.Response, next: express.NextFunction): void => {
+export const errorHandlerMiddleware =  (error: Error, _request: express.Request, response: express.Response, next: express.NextFunction): void => {
     const isOperationalError = handleError(error);
     
     if (isOperationalError) {

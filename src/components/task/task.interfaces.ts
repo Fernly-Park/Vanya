@@ -1,13 +1,18 @@
-import { WaitState } from "../stateMachines/stateMachine.interfaces";
+import { TaskState, WaitState } from "../stateMachines/stateMachine.interfaces";
 
-export type TaskInput = unknown;
-export type TaskOutput = unknown;
-export type TimerInfo = Task & WaitState & {previousEventId: number}
+export type StateInput = unknown;
+export type StateOutput = unknown;
+export type WaitStateTaskInfo = Task & WaitState & {previousEventId: number}
 
 export interface Task {
     stateName: string,
-    input: TaskInput,
+    input: StateInput,
     executionArn: string,
     stateMachineArn: string,
-    previousEventId: number
+    previousEventId: number,
+    previousStateName?: string
+}
+
+export type ActivityTask = Task & TaskState & {
+    token: string
 }

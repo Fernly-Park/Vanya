@@ -2,7 +2,6 @@ import express = require('express');
 import handleError from './errors/errorHandler';
 import init from './loaders';
 
-
 process.on('unhandledRejection', (reason: Error) => {
     throw reason;
 });
