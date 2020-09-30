@@ -129,10 +129,13 @@ export const getExecutionHistory = async (req: GetExecutionHistoryInput): Promis
     // todo
     ArnHelper.ensureIsValidExecutionArn(req.executionArn);
     const events = await ExecutionDAL.getExecutionEvent({...req, limit: 1000, offset: 0});
-    const execution = await describeExecution(req);
-    const stateMachine = await StateMachineService.describeStateMachine(execution);
+    if (events) {
+        const execution = await describeExecution(req);
+        const stateMachine = await StateMachineService.describeStateMachine(execution);
+    
+        putPreviousEventId(stateMachine.definition, events);
+    }
 
-    putPreviousEventId(stateMachine.definition, events);
 
     return events;
 }
@@ -144,7 +147,8 @@ const putPreviousEventId = (definition: IStateMachineDefinition, events: History
     if (lastEvent) {
         lastEvent.previousEventId = lastEventId;
     } else {
-        events.find(x => x.type.startsWith('Execution') && x.type !== 'ExecutionStarted').previousEventId = 0; 
+        const failedEvent = events.find(x => x.type.startsWith('Execution') && x.type !== 'ExecutionStarted');
+        failedEvent != null ? failedEvent.previousEventId = 0 : false
     }
 }
 
@@ -153,6 +157,9 @@ const putPreviousEventIdRecursionHelper = (definition: IStateMachineDefinition, 
 
     const currentState = definition.States[stateName];
     const currentStateEnteredEvent = events.find(x => x.stateEnteredEventDetails?.name === stateName);
+    if (currentStateEnteredEvent == null) {
+        return;
+    }
     currentStateEnteredEvent.previousEventId = lastEventId;
     lastEventId = currentStateEnteredEvent.id;
     if (currentState.Type === StateType.Parallel) {

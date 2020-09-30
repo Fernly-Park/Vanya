@@ -6,7 +6,6 @@ import { ActivityDoesNotExistError, InvalidNameError, InvalidOutputError, Invali
 import Joi from "@hapi/joi";
 import { maxResourceNameLength } from "@App/utils/validationHelper";
 import { isJSON } from "@App/utils/objectUtils";
-import { CustomEvents } from "../events";
 import * as Event from '../events';
 
 

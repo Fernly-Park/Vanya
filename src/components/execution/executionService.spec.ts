@@ -7,6 +7,7 @@ import { ExecutionStatus } from '@App/components/execution/execution.interfaces'
 import { UserDoesNotExistsError } from '@App/errors/customErrors';
 import { InvalidExecutionInputError, InvalidNameError, InvalidArnError, StateMachineDoesNotExistsError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
+import * as Event from '@App/components/events';
 
 generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
@@ -44,12 +45,12 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             expect(retrievedExecution.startDate).toStrictEqual(execution.startDate);
         });
 
-        it('should correctly create an event when starting an execution', async () => {
+        it('should correctly send an event when starting an execution', async () => {
             expect.assertions(6);
 
             const {execution} = await createSMAndStartExecutionHelper();
             const result = await ExecutionService.getExecutionHistory(execution);
-
+            console.log('result : ', result)
             expect(result).toHaveLength(1);
             expect(result[0].type).toBe('ExecutionStarted');
             expect(result[0].id).toBe(1);
