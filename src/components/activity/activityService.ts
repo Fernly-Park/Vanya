@@ -3,9 +3,9 @@ import db from '../../modules/database/db';
 import * as ActivityDAL from '@App/components/activity/activityDAL';
 import { IActivity } from '@App/components/activity/activity.interfaces';
 import * as ArnHelper from '../../utils/ArnHelper';
-import * as UserService from '@App/components/user/userService';
 import { ensureResourceNameIsValid } from '@App/utils/validationHelper';
 import { listResourcesFactory } from '../ListResourceFactory';
+import { UserService } from '../user';
 
 
 export const createActivity = async (userId: string, activityName: string): Promise<IActivity> => {

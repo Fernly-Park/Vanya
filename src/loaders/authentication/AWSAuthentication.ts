@@ -1,8 +1,8 @@
 // https://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html
 import crypto from 'crypto';
-import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
 import { AWSConstant } from '@App/utils/constants';
+import { UserService } from '@App/components/user';
 
 const signingAlgorithm = 'sha256';
 const v4Identifier = 'aws4_request';

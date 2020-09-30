@@ -1,12 +1,5 @@
-import * as UserService from '@App/components/user/userService';
-import { IUser } from '@App/components/user/user.interfaces';
 import { setupDatabaseForTests } from '@Tests/fixtures/db';
-import * as InterpretorService from '@App/components/interpretor/interpretorService';
-import * as TaskService from '@App/components/task/taskService';
 import * as Redis from '@App/modules/database/redis';
-import { sleep, stateMachinesForTests } from './testHelper';
-import { JSONPath } from 'jsonpath-plus';
-import { WaitStateTaskInfo } from '@App/components/task/task.interfaces';
 
 describe('random tests', () => {
 

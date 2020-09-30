@@ -1,5 +1,5 @@
 import * as UserService from './userService';
 
-export default {
+export {
     UserService
 }

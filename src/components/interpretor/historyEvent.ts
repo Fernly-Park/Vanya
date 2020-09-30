@@ -1,8 +1,8 @@
-import * as ExecutionService from '@App/components/execution/executionService';
 import { AWSConstant } from '@App/utils/constants';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEventType } from '../execution/execution.interfaces';
 import { ActivityScheduledEventInput, ActivityStartedEventInput, ActivitySucceededEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
+import { ExecutionService } from '../execution';
 
 export enum InterpretorEvents {
     ActivityScheduled = 'ActivityScheduled',

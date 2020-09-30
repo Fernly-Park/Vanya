@@ -3,13 +3,13 @@ import * as ArnHelper from '@App/utils/ArnHelper';
 import {readFileSync} from 'fs';
 import {join} from 'path';
 import { setupDatabaseForTests } from './fixtures/db';
-import * as UserService from '@App/components/user/userService';
 import AWS from 'aws-sdk';
 import config from '@App/config';
-import * as ExecutionService from '@App/components/execution/executionService';
-import * as StateMachineService from '@App/components/stateMachines/stateMachineService'
 import { IStateMachine, IStateMachineDefinition, StateMachineStatus } from '@App/components/stateMachines/stateMachine.interfaces';
 import { HistoryEvent, StartExecutionOutput } from 'aws-sdk/clients/stepfunctions';
+import { UserService } from '@App/components/user';
+import { StateMachineService } from '@App/components/stateMachines';
+import { ExecutionService } from '@App/components/execution';
 
 
 export const setupForTestAgainstServer = async (): Promise<AWS.StepFunctions> => {

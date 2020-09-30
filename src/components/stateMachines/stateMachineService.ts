@@ -3,13 +3,13 @@ import * as ValidationHelper from "@App/utils/validationHelper";
 import * as ArnHelper from "@App/utils/ArnHelper";
 import * as ASLHelper from "./asl/ASLHelper";
 import { IStateMachineDefinition, IStateMachine, StateMachineTypes, StateMachineStatus, StateMachineStateValue } from "./stateMachine.interfaces";
-import * as UserService from '@App/components/user/userService';
 import db from '../../modules/database/db'; 
 import * as StateMachineDAL from './stateMachineDAL';
 import { StateMachineAlreadyExistsError, StateMachineTypeNotSupportedError, StateMachineDoesNotExistsError, MissingRequiredParameterError, StateMachineDeletingError } from "@App/errors/AWSErrors";
 import {areObjectsEquals} from '@App/utils/objectUtils';
 import * as Logger from '@App/modules/logging';
 import { listResourcesFactory } from "../ListResourceFactory";
+import { UserService } from "../user";
 
 export const createStateMachine = async (userId: string, req: CreateStateMachineInput): Promise<IStateMachine> => {
     ensureCreateStateMachineInputIsValid(req);

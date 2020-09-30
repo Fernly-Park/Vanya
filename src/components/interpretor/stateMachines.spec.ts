@@ -4,11 +4,7 @@
 /* eslint-disable jest/consistent-test-it */
 /* eslint-disable jest/require-top-level-describe */
 /* eslint-disable jest/valid-title */
-import * as ExecutionService from '@App/components/execution/executionService';
-import * as TaskService from '@App/components/task/taskService';
 import * as TestHelper from '@Tests/testHelper';
-import * as TimerService from '@App/components/timer/timerService'
-import * as ActivityService from '@App/components/activity/activityService';
 import * as Redis from '@App/modules/database/redis';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { generateServiceTest } from '@Tests/testGenerator';
@@ -20,6 +16,10 @@ import { IUser } from '../user/user.interfaces';
 import { ISO8601_REGEX } from '@App/utils/validationHelper';
 import { WaitState } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
+import { ExecutionService } from '../execution';
+import { TaskService } from '../task';
+import { TimerService } from '../timer';
+import { ActivityService } from '../activity';
 
 const getTests = (dirPath = 'tests'): TestStateMachine[] => {
     const fileNames = readdirSync(join(__dirname, dirPath));

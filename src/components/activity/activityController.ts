@@ -2,9 +2,9 @@ import express from "express";
 import * as Logger from '../../modules/logging'
 import { InvalidInputError, UnexistingResourceError } from "@App/errors/customErrors";
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
-import * as ActivityService from "@App/components/activity/activityService";
 import { IUser } from "../user/user.interfaces";
-import { CreateActivityOutput, DescribeActivityOutput, CreateActivityInput, DeleteActivityInput, DescribeActivityInput, ListActivitiesInput, ListActivitiesOutput } from "aws-sdk/clients/stepfunctions";
+import { CreateActivityOutput, DescribeActivityOutput, CreateActivityInput, DeleteActivityInput, DescribeActivityInput, ListActivitiesOutput } from "aws-sdk/clients/stepfunctions";
+import { ActivityService } from ".";
 
 const router = express.Router();
 

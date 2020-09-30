@@ -7,9 +7,9 @@ import passport from 'passport';
 import {Strategy as CustomStrategy} from 'passport-custom';
 import {Strategy as JwtStrategy, StrategyOptions, VerifyCallbackWithRequest} from 'passport-jwt';
 import { OAuth2Strategy as GoogleStrategy, VerifyFunction } from 'passport-google-oauth';
-import * as UserService from '@App/components/user/userService';
 import config from '../../config/index'
 import { checkAWSSignature } from './AWSAuthentication';
+import { UserService } from '@App/components/user';
 
 const jwtKeyInCookie = 'jwt';
 export const AWSStrategyName = 'AWS-local';

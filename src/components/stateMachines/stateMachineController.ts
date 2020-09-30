@@ -2,9 +2,9 @@ import express from "express";
 import * as Logger from '../../modules/logging'
 import { CreateStateMachineInput, CreateStateMachineOutput, DescribeStateMachineInput, DescribeStateMachineOutput, DeleteStateMachineInput, ListStateMachinesInput, ListStateMachinesOutput, StateMachineList, UpdateStateMachineInput, UpdateStateMachineOutput } from "aws-sdk/clients/stepfunctions";
 import { IUser } from "../user/user.interfaces";
-import * as StateMachineService from './stateMachineService';
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
 import { IStateMachine } from "./stateMachine.interfaces";
+import { StateMachineService } from ".";
 
 export const createStateMachine =  async (req: express.Request, resp: express.Response): Promise<void> => {
     Logger.logDebug('Entering create state machine controller');

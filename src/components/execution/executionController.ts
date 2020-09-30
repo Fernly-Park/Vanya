@@ -1,8 +1,8 @@
 import express from "express";
-import * as ExecutionService from './executionService';
 import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, DescribeExecutionOutput } from "aws-sdk/clients/stepfunctions";
 import { IUser } from "../user/user.interfaces";
 import { HttpStatusCode } from "@App/utils/httpStatusCode";
+import { ExecutionService } from ".";
 
 export const startExecution = async (req: express.Request, resp: express.Response): Promise<void> => {
     const input: StartExecutionInput = req.body;

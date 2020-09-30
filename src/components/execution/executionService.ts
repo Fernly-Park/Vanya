@@ -1,16 +1,16 @@
 import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, HistoryEvent, GetExecutionHistoryInput } from "aws-sdk/clients/stepfunctions";
 import * as ArnHelper from '@App/utils/ArnHelper';
 import * as ValidationHelper from '@App/utils/validationHelper';
-import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
-import * as TaskService from '@App/components/task/taskService';
 import * as ExecutionDAL from './executionDAL';
-import * as UserService from '@App/components/user/userService';
 import { InvalidExecutionInputError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from "@App/errors/AWSErrors";
 import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
 import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, HistoryEventType } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
 import { IStateMachineDefinition, ParallelState, PassState, StateType } from "../stateMachines/stateMachine.interfaces";
+import { StateMachineService } from "../stateMachines";
+import { TaskService } from "../task";
+import { UserService } from "../user";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);

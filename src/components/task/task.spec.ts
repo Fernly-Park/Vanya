@@ -1,13 +1,13 @@
-import * as TaskService from '@App/components/task/taskService';
 import { dummyActivityArn, dummyExecutionArn, dummyStateMachineArn } from '@Tests/testHelper';
 import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidTokenError, TaskDoesNotExistError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
-import * as ActivityService from '@App/components/activity/activityService';
 import config from '@App/config';
 import { ActivityTask } from './task.interfaces';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import * as Event from '../events';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/components/task/taskService';
+import { TaskService } from '.';
+import { ActivityService } from '../activity';
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
     const activityTask: ActivityTask = {token: 'token', input: {hello: 'world'}, Type: StateType.Pass, executionArn: dummyExecutionArn, 

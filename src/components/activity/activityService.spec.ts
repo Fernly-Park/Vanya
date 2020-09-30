@@ -1,13 +1,13 @@
 import { InvalidInputError, UserDoesNotExistsError } from '../../errors/customErrors';
 import { setupDatabaseForTests, emptyActivityTable } from '@Tests/fixtures/db';
-import * as ActivityService from '@App/components/activity/activityService';
 import * as ActivityDAL from '@App/components/activity/activityDAL';
 import db from '@App/modules/database/db';
-import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
 import { dummyActivityArn } from '@Tests/testHelper';
 import { IActivity, ActivityTable } from '@App/components/activity/activity.interfaces';
 import { InvalidNameError, InvalidArnError, InvalidTokenError } from '@App/errors/AWSErrors';
+import { ActivityService } from '.';
+import { UserService } from '../user';
 
 describe('activity service', () => {
     let user: IUser;

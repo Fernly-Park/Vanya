@@ -2,7 +2,6 @@ import db, { DbOrTransaction } from "@App/modules/database/db";
 import { ListStateMachinesInput, ListActivitiesInput } from "aws-sdk/clients/stepfunctions";
 import { ensureListResourceInputAreValid } from "@App/utils/validationHelper";
 import { LIST_RESOURCE_DEFAULT_RESULT } from "@App/utils/constants";
-import { InvalidInputError } from "@App/errors/customErrors";
 import * as Logger from '@App/modules/logging';
 import { InvalidTokenError } from "@App/errors/AWSErrors";
 

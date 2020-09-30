@@ -1,12 +1,12 @@
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
 import { ActivityTask, Task } from "./task.interfaces";
 import * as TaskDAL from "./taskDAL";
-import * as ActivityService from '@App/components/activity/activityService';
 import { ActivityDoesNotExistError, InvalidNameError, InvalidOutputError, InvalidTokenError, TaskDoesNotExistError } from "@App/errors/AWSErrors";
 import Joi from "@hapi/joi";
 import { maxResourceNameLength } from "@App/utils/validationHelper";
 import { isJSON } from "@App/utils/objectUtils";
 import * as Event from '../events';
+import { ActivityService } from "../activity";
 
 
 export const taskOutputMaxLength = 262144;

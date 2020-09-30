@@ -1,9 +1,9 @@
 import * as express from "express";
-import * as ActivityController from "../../components/activity/activityController";
-import * as StateMachineController from '@App/components/stateMachines/stateMachineController';
-import * as ExecutionController from '@App/components/execution/executionController';
 import { AWSConstant } from "@App/utils/constants";
 import { UnsupportedOperationError } from "@App/errors/AWSErrors";
+import { ActivityController } from "@App/components/activity";
+import { StateMachineController } from "@App/components/stateMachines";
+import { ExecutionController } from "@App/components/execution";
 
 const router = express.Router();
 

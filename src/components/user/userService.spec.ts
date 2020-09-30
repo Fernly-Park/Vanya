@@ -1,8 +1,8 @@
 import { setupDatabaseForTests } from "@Tests/fixtures/db";
-import * as UserService from "@App/components/user/userService";
 import * as UserDAL from "@App/components/user/userDAL";
 import db from '@App/modules/database/db';
 import { InvalidInputError, ResourceAlreadyExistsError, UserDoesNotExistsError } from "@App/errors/customErrors";
+import { UserService } from ".";
 
 describe('create user', () => {
 

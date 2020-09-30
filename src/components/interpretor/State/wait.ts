@@ -1,9 +1,9 @@
 import { WaitState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { StateInput, Task, WaitStateTaskInfo } from "@App/components/task/task.interfaces";
+import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import { JSONPath } from "jsonpath-plus";
 import validator from "validator";
-import * as TimerService from '@App/components/timer/timerService';
 
 export const processWaitTask = async (task: Task, state: WaitState, effectiveInput: StateInput): Promise<void> => {
     let time = new Date();

@@ -1,12 +1,12 @@
-import * as StateMachineService from '@App/components/stateMachines/stateMachineService';
 import { setupDatabaseForTests, emptyStateMachineTable, countRowInTable } from '@Tests/fixtures/db';
-import * as UserService from '@App/components/user/userService';
 import { IUser } from '@App/components/user/user.interfaces';
 import { InvalidNameError, InvalidArnError, StateMachineTypeNotSupportedError, StateMachineAlreadyExistsError, StateMachineDoesNotExistsError, InvalidTokenError, MissingRequiredParameterError, InvalidDefinitionError } from '@App/errors/AWSErrors';
 import { stateMachinesForTests, dummyRoleARN, dummyId, dummyStateMachineArn, badlyFormedArnCases, badResourceNameCases } from '@Tests/testHelper';
 import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import { UserDoesNotExistsError, InvalidInputError } from '@App/errors/customErrors';
 import { StateMachineTypes, StateMachineTable, IStateMachine, StateMachineVersionTable } from '@App/components/stateMachines/stateMachine.interfaces';
+import { UserService } from '../user';
+import { StateMachineService } from '.';
 
 describe('state machines', () => {
 
