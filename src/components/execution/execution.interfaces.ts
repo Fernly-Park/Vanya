@@ -79,4 +79,6 @@ export enum HistoryEventType {
     ActivityTimedOut = 'ActivityTimedOut',
     ExecutionFailed = 'ExecutionFailed',
     ExecutionSucceeded = 'ExecutionSucceeded',
+    StateEntered = 'StateEntered',
+    StateExited = 'StateExited'
 }

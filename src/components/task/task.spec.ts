@@ -6,7 +6,7 @@ import * as ActivityService from '@App/components/activity/activityService';
 import config from '@App/config';
 import { ActivityTask } from './task.interfaces';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
-import { CustomEvents, eventEmitter } from '../events';
+import * as Event from '../events';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/components/task/taskService';
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
@@ -111,8 +111,9 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             expect.assertions(1);
             
             let wasCalled = false;
-            eventEmitter.on(CustomEvents.ActivityTaskSucceeded, () => {
+            Event.on(Event.CustomEvents.ActivityTaskSucceeded, () => {
                 wasCalled = true;
+                return Promise.resolve()
             })
             
             const {result} = await createAndGetActivityTaskHelper()

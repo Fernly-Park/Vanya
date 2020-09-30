@@ -8,17 +8,25 @@ import { Task, StateInput, StateOutput, ActivityTask } from '../task/task.interf
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyParameters, applyResultPath } from './path';
-import { addStateEnteredEvent, addStateExistedEvent, addExecutionFailedEvent, addExecutionSucceededEvent, addActivitySucceededEvent } from './historyEvent';
+import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './State/pass';
 import { processWaitTask } from './State/wait';
 import { processTaskState } from './State/task';
-import { CustomEvents, eventEmitter } from '../events';
+import * as Event from '../events';
 
 let interpretor = true;
 export const startInterpretor = async (): Promise<void> => {
     interpretor = true;
-    eventEmitter.on(CustomEvents.ActivityTaskSucceeded, WrapperProcessTaskStateDone)
+
+    Event.activityTaskSucceededEvent.on(processTaskStateDone);
+    Event.stateEnteredEvent.on(onStateEnteredEvent);
+    Event.stateExitedEvent.on(onStateExitedEvent);
+    Event.activityScheduledEvent.on(onActivityScheduledEvent);
+    Event.activityStartedEvent.on(onActivityStartedEvent);
+    Event.activitySucceededEvent.on(onActivitySucceededEvent);
+    Event.executionFailedEvent.on(onExecutionFailedEvent);
+    Event.executionSucceededEvent.on(onExecutionSucceededEvent);
 
     void processWaitingStateDone().then()
     void TimerService.startTimerPoll().then()
@@ -33,10 +41,16 @@ export const startInterpretor = async (): Promise<void> => {
 export const stopInterpreter = (): void => {
     interpretor = false;
     TimerService.stopTimerPoll();
-    eventEmitter.removeListener(CustomEvents.ActivityTaskSucceeded, WrapperProcessTaskStateDone)
+    
+    Event.activityTaskSucceededEvent.removeListener(processTaskStateDone);
+    Event.stateEnteredEvent.removeListener(onStateEnteredEvent);
+    Event.stateExitedEvent.removeListener(onStateExitedEvent);
+    Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
+    Event.activityStartedEvent.removeListener(onActivityStartedEvent);
+    Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
+    Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
+    Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
 }
-
-const WrapperProcessTaskStateDone = (activityTask: ActivityTask): void => void processTaskStateDone(activityTask).then();
 
 const processWaitingStateDone = async () => {
     while (interpretor) {
@@ -47,7 +61,7 @@ const processWaitingStateDone = async () => {
                 await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
             } catch (err) {
                 console.log(err)
-                await addExecutionFailedEvent({...waitingState, description: (err as Error)?.message})
+                await Event.executionFailedEvent.emit({...waitingState, description: (err as Error)?.message})
                 return await ExecutionService.endExecution({executionArn: waitingState.executionArn, status: ExecutionStatus.failed})
             }
         }
@@ -59,10 +73,10 @@ export const processTaskStateDone = async (activityTask: ActivityTask): Promise<
     try {
         
         const output = applyPath(activityTask.input, activityTask.OutputPath);
-        await addActivitySucceededEvent({executionArn: activityTask.executionArn, output});
+        await Event.activitySucceededEvent.emit({executionArn: activityTask.executionArn, output})
         await endStateExecution({...activityTask, output, nextStateName: activityTask.Next, stateType: activityTask.Type})
     } catch (err) {
-        await addExecutionFailedEvent({...activityTask, description: (err as Error)?.message})
+        await Event.executionFailedEvent.emit({...activityTask, description: (err as Error)?.message})
         return await ExecutionService.endExecution({executionArn: activityTask.executionArn, status: ExecutionStatus.failed})
     }
 }
@@ -79,8 +93,8 @@ const processTask = async (task: Task): Promise<void> => {
         Name: task.stateName,
     }, taskToken, previousState: task.previousStateName});
     let effectiveOutput: StateOutput;
-    
-    await addStateEnteredEvent(task, state.Type);
+    await Event.stateEnteredEvent.emit({executionArn: task.executionArn, stateName: task.stateName, stateType: state.Type, input: task.input})
+
     try {
         
         const effectiveInput = await filterInput(task, state);
@@ -99,7 +113,7 @@ const processTask = async (task: Task): Promise<void> => {
         effectiveOutput = filterOutput(effectiveInput, result, state);
     } catch (err) {
         console.log(err)
-        await addExecutionFailedEvent({...task, description: (err as Error)?.message})
+        await Event.executionFailedEvent.emit({...task, description: (err as Error)?.message})
         return await ExecutionService.endExecution({executionArn: task.executionArn, status: ExecutionStatus.failed})
     }
     
@@ -108,12 +122,12 @@ const processTask = async (task: Task): Promise<void> => {
 
 const endStateExecution = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
     stateName: string, output: StateOutput, nextStateName?: string}): Promise<void> => {
-    await addStateExistedEvent(req);
+    await Event.stateExitedEvent.emit(req);
     if (req.nextStateName) {
         await TaskService.addTask({executionArn: req.executionArn, stateName: req.nextStateName, 
             input: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
     } else {
-        await addExecutionSucceededEvent({result: req.output, executionArn: req.executionArn})
+        await Event.executionSucceededEvent.emit({result: req.output, executionArn: req.executionArn})
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
     }   
 }

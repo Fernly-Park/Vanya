@@ -12,6 +12,7 @@
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {},
             "describe": "should output '{}' with the input set as '[]' and the inputPath set a null",
+            "executionName": "tmp",
             "events":[
                 {
                    "timestamp":"2020-06-07T00:00:01.000Z",
