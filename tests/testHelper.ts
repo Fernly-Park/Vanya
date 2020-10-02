@@ -90,6 +90,7 @@ export const stateMachinesForTests = {
         validInputPathMultiple: getStateMachineDef('valid', 'inputPath', 'valid-multiple-inputPath.json'),
         validPassTwoStates: getStateMachineDef('valid', 'pass', 'valid-pass-two-states.json'),
         validPassWithResult: getStateMachineDef('valid', 'pass', 'valid-pass-with-result.json'),
+        validPathResultPathNull: getStateMachineDef('valid', 'pass', 'valid-pass-resultPath-null.json'),
         validPassInputPathNull: getStateMachineDef('valid', 'pass', 'valid-pass-inputPath-null.json'),
         validWaitTimestampPath: getStateMachineDef('valid', 'wait', 'valid-wait-timestampPath.json'),
         validInputPathInPass: getStateMachineDef('valid', 'inputPath', 'valid-InputPath-in-pass.json'),
@@ -129,7 +130,7 @@ export type TestStateMachineTestCase = {
     expectedStateMachineStatus: StateMachineStatus,
     expectedOutput: string,
     describe: string,
-    executionName?: string,
+    executionName: string,
     activitiesToCreate?: ActivitiyToCreateForTests[],
     eventsExpectedDuration?: EventDurationExpectedForTests[],
     events?: HistoryEvent[]

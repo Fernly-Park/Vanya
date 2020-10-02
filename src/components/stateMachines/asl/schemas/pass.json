@@ -23,7 +23,7 @@
       "type": ["string", "null"]
     },
     "ResultPath": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "Parameters": {
       "type": "object"

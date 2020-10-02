@@ -1,0 +1,65 @@
+{
+    "describe": "simple state machine with a single pass state, a result of 'world' and a resultPath null", 
+    "tests": [
+        {
+            "input": {"Comment": "Insert your JSON here"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Comment": "Insert your JSON here"},
+            "describe": "should succeed and ignore the result if the resultPath is null",
+            "events": [
+                {
+                 "timestamp": "2020-10-02T14:54:35.678Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"Comment\":\"Insert your JSON here\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-02T14:54:35.699Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "HelloWorld",
+                  "input": "{\"Comment\":\"Insert your JSON here\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-02T14:54:35.699Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "HelloWorld",
+                  "output": "{\"Comment\":\"Insert your JSON here\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-02T14:54:35.699Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Comment\":\"Insert your JSON here\"}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "HelloWorld",
+        "States": {
+            "HelloWorld": {
+                "Type": "Pass",
+                "Result": "World",
+                "ResultPath": null,
+                "End": true
+            }
+        }
+    }    
+}
+

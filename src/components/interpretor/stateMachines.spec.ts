@@ -25,13 +25,16 @@ const getTests = (dirPath = 'tests'): TestStateMachine[] => {
     const fileNames = readdirSync(join(__dirname, dirPath));
     const toReturn: TestStateMachine[] = [];
 
-    for(const fileName of fileNames) {
+    for (const fileName of fileNames) {
         if (statSync(join(__dirname, dirPath, fileName)).isDirectory()) {
             toReturn.push(...getTests(join(dirPath, fileName)));
         } else {
             const fileContent = JSON.parse(readFileSync(join(__dirname, dirPath, fileName), 'utf-8')) as TestStateMachine;
             fileContent.folderName = basename(dirname(join(__dirname, dirPath, fileName)));
             fileContent.stateMachineName = fileContent.stateMachineName ?? fileName.split('.')[0];
+            for (let i = 0; i < fileContent.tests.length; i++) {
+                fileContent.tests[i].executionName = fileContent.stateMachineName + i.toString();
+            }
             toReturn.push(fileContent);
         }
     }
@@ -40,7 +43,7 @@ const getTests = (dirPath = 'tests'): TestStateMachine[] => {
 }
 
 const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestStateMachineTestCase, getUser:  () => IUser) => {
-    it(currentTest.describe, async () => {
+    it(currentTest.executionName + ' - ' + currentTest.describe, async () => {
         modifieTimestampInWaitTests(testStateMachine)
         const activities = await createActivities(currentTest.activitiesToCreate, getUser().id)
         const {execution} = await TestHelper.createSMAndStartExecutionHelper({
@@ -59,9 +62,9 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             if (activities) {
                 for(const activity of activities) {
                     const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
-                    console.log('res: ', res)
                     if (res.input) {
                         expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
+                        console.log('output : ', activity)
                         await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
                     }
                 }
@@ -90,7 +93,7 @@ const createActivities = async (activities: ActivitiyToCreateForTests[], userId:
 
     const toReturn = [];
     for (const activity of activities) {
-        toReturn.push({...activity, ...await ActivityService.createActivity(userId, activity.name)});
+        toReturn.push({...activity, output: JSON.stringify(activity.output),...await ActivityService.createActivity(userId, activity.name)});
     }
 
     return toReturn;
@@ -137,7 +140,7 @@ const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {
 }
 
 const generateStateMachinesTests = (req?: {stateMachineName?: string, executionName?: string, folderName?: string}) => {
-    generateServiceTest({ describeText: 'simple state machine with only a pass state',options: {startInterpretor: true, mockDate: false}, tests: (getUser) => {
+    generateServiceTest({ describeText: 'state machine executions',options: {startInterpretor: true, mockDate: false}, tests: (getUser) => {
         let tests = getTests();
         if (req?.folderName) {
             tests = tests.filter(x => x.folderName === req.folderName);
@@ -146,7 +149,7 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
             if (req?.stateMachineName && req?.stateMachineName !== stateMachine.stateMachineName) {
                 continue;
             }
-            describe(stateMachine.describe, () => {
+            describe(stateMachine.stateMachineName + ' - ' + stateMachine.describe, () => {
                 for (const test of stateMachine.tests) {
                     if (req?.executionName && req?.executionName !== test.executionName) {
                         continue;
@@ -158,4 +161,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests();
+generateStateMachinesTests({folderName: "task"});

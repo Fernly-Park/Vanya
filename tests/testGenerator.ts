@@ -37,7 +37,7 @@ export const generateServiceTest = (req: {describeText: string, tests: (getUser:
             })
             user = await UserService.retrieveUserByEmail('tmp@gmail.com');
             if (req.options?.startInterpretor) {
-                void InterpretorService.startInterpretor().then();
+                InterpretorService.startInterpretor();
             }
         });
 

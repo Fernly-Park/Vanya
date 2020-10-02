@@ -13,5 +13,6 @@ export interface Task {
 }
 
 export type ActivityTask = Task & TaskState & {
-    token: string
+    token: string,
+    output?: Record<string, unknown>
 }

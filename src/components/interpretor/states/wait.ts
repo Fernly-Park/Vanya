@@ -4,6 +4,11 @@ import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import { JSONPath } from "jsonpath-plus";
 import validator from "validator";
+import { endStateExecution } from "../interpretorService";
+import { applyPath } from "../path";
+import * as Event from '../../events';
+import { ExecutionService } from "@App/components/execution";
+import { ExecutionStatus } from "@App/components/execution/execution.interfaces";
 
 export const processWaitTask = async (task: Task, state: WaitState, effectiveInput: StateInput): Promise<void> => {
     let time = new Date();
@@ -26,4 +31,27 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
     }
     const timerInfo: WaitStateTaskInfo = {...task, ...state, input: effectiveInput};
     await TimerService.addWaitTask(time, timerInfo)
+}
+
+let poll = true;
+
+export const processWaitingStateDone = async (): Promise<void> => {
+    poll = true;
+    while (poll) {
+        const waitingState = await TimerService.retrieveWaitingStateDoneBlocking();
+        if (waitingState) {
+            try {
+                const output = applyPath(waitingState.input, waitingState.OutputPath);
+                await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
+            } catch (err) {
+                console.log(err)
+                await Event.executionFailedEvent.emit({...waitingState, description: (err as Error)?.message})
+                return await ExecutionService.endExecution({executionArn: waitingState.executionArn, status: ExecutionStatus.failed})
+            }
+        }
+    }
+}
+
+export const stopProcessingWaitingState = (): void => {
+    poll = false;
 }

@@ -49,7 +49,6 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
             const {execution} = await createSMAndStartExecutionHelper();
             const result = await ExecutionService.getExecutionHistory(execution);
-            console.log('result : ', result)
             expect(result).toHaveLength(1);
             expect(result[0].type).toBe('ExecutionStarted');
             expect(result[0].id).toBe(1);

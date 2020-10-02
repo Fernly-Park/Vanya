@@ -5,9 +5,9 @@ import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyParameters, applyResultPath } from './path';
 import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
-import { processPassTask } from './State/pass';
-import { processWaitTask } from './State/wait';
-import { processTaskState, processTaskStateDone } from './State/task';
+import { processPassTask } from './states/pass';
+import { processWaitingStateDone, processWaitTask, stopProcessingWaitingState } from './states/wait';
+import { processTaskState, processTaskStateDone } from './states/task';
 import * as Event from '../events';
 import { TaskService } from '../task';
 import { ExecutionService } from '../execution';
@@ -15,58 +15,30 @@ import { StateMachineService } from '../stateMachines';
 import { TimerService } from '../timer';
 
 let interpretor = true;
-export const startInterpretor = async (): Promise<void> => {
+export const startInterpretor = (): void => {
     interpretor = true;
-
-    Event.activityTaskSucceededEvent.on(processTaskStateDone);
-    Event.stateEnteredEvent.on(onStateEnteredEvent);
-    Event.stateExitedEvent.on(onStateExitedEvent);
-    Event.activityScheduledEvent.on(onActivityScheduledEvent);
-    Event.activityStartedEvent.on(onActivityStartedEvent);
-    Event.activitySucceededEvent.on(onActivitySucceededEvent);
-    Event.executionFailedEvent.on(onExecutionFailedEvent);
-    Event.executionSucceededEvent.on(onExecutionSucceededEvent);
-
+    registerEvents();
     void processWaitingStateDone().then()
     void TimerService.startTimerPoll().then()
+    void startInterpretorPoll().then();
+};
+
+export const stopInterpreter = (): void => {
+    interpretor = false;
+
+    TimerService.stopTimerPoll();
+    stopProcessingWaitingState();
+    unregisterEvents();
+}
+
+const startInterpretorPoll = async (): Promise<void> => {
     while(interpretor) {
         const task = await TaskService.getGeneralTaskBlocking();
         if (task) {
             void processTask(task).then();
         }
-    }    
-};
-
-export const stopInterpreter = (): void => {
-    interpretor = false;
-    TimerService.stopTimerPoll();
-    
-    Event.activityTaskSucceededEvent.removeListener(processTaskStateDone);
-    Event.stateEnteredEvent.removeListener(onStateEnteredEvent);
-    Event.stateExitedEvent.removeListener(onStateExitedEvent);
-    Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
-    Event.activityStartedEvent.removeListener(onActivityStartedEvent);
-    Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
-    Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
-    Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
-}
-
-const processWaitingStateDone = async () => {
-    while (interpretor) {
-        const waitingState = await TimerService.retrieveWaitingStateDoneBlocking();
-        if (waitingState) {
-            try {
-                const output = applyPath(waitingState.input, waitingState.OutputPath);
-                await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
-            } catch (err) {
-                console.log(err)
-                await Event.executionFailedEvent.emit({...waitingState, description: (err as Error)?.message})
-                return await ExecutionService.endExecution({executionArn: waitingState.executionArn, status: ExecutionStatus.failed})
-            }
-        }
     }
 }
-
 
 const processTask = async (task: Task): Promise<void> => {
     let result: StateInput;
@@ -133,3 +105,24 @@ const filterOutput = (input: StateInput, output: StateOutput, state: StateMachin
     return toReturn;
 };
 
+const registerEvents = (): void => {
+    Event.activityTaskSucceededEvent.on(processTaskStateDone);
+    Event.stateEnteredEvent.on(onStateEnteredEvent);
+    Event.stateExitedEvent.on(onStateExitedEvent);
+    Event.activityScheduledEvent.on(onActivityScheduledEvent);
+    Event.activityStartedEvent.on(onActivityStartedEvent);
+    Event.activitySucceededEvent.on(onActivitySucceededEvent);
+    Event.executionFailedEvent.on(onExecutionFailedEvent);
+    Event.executionSucceededEvent.on(onExecutionSucceededEvent);
+}
+
+const unregisterEvents = (): void => {
+    Event.activityTaskSucceededEvent.removeListener(processTaskStateDone);
+    Event.stateEnteredEvent.removeListener(onStateEnteredEvent);
+    Event.stateExitedEvent.removeListener(onStateExitedEvent);
+    Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
+    Event.activityStartedEvent.removeListener(onActivityStartedEvent);
+    Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
+    Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
+    Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
+}

@@ -6,7 +6,6 @@
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {"seconds": 2},
             "describe": "should correctly wait for 2 seconds (from the secondsPath)",
-            "executionName": "wait2secWithEvent",
             "eventsExpectedDuration": [
                 {
                     "eventId": 3,
@@ -59,22 +58,19 @@
             "input": {"seconds": -1},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
-            "describe": "should fail if the secondsPath input is a negative number",
-            "executionName": "negativeNumber"
+            "describe": "should fail if the secondsPath input is a negative number"        
         },
         {
             "input": {"seconds": 0},
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {"seconds": 0},
-            "describe": "should immediatly succeed if the seconds is 0",
-            "executionName":"simpleWaitWithoutEvent"
+            "describe": "should immediatly succeed if the seconds is 0"        
         },
         {
             "input": {"seconds": 1.2},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
-            "describe": "should fail if the secondsPath input is not an integer",
-            "executionName": "waitWithDecimalSeconds"
+            "describe": "should fail if the secondsPath input is not an integer"
         },
         {
             "input": {"seconds": "hello"},

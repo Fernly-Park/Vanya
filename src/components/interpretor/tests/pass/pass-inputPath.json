@@ -1,0 +1,102 @@
+{
+    "describe": "simple state machine with a single pass state and an inputPath of '$.hello'", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the inputPath is not in the input",
+            "events": [
+                {
+                    "timestamp": "2020-10-02T14:08:45.357Z",
+                    "type": "ExecutionStarted",
+                    "id": 1,
+                    "previousEventId": 0,
+                    "executionStartedEventDetails": {
+                        "input": "{}",
+                        "roleArn": "todo"
+                    }
+                },
+                {
+                    "timestamp": "2020-10-02T14:08:45.384Z",
+                    "type": "PassStateEntered",
+                    "id": 2,
+                    "previousEventId": 0,
+                    "stateEnteredEventDetails": {
+                        "name": "HelloWorld",
+                        "input": "{}"
+                    }
+                },
+                {
+                    "timestamp": "2020-10-02T14:08:45.384Z",
+                    "type": "ExecutionFailed",
+                    "id": 3,
+                    "previousEventId": 0,
+                    "executionFailedEventDetails": {
+                        "error": "States.Runtime",
+                        "cause": "An error occurred while executing the state 'HelloWorld'. Invalid path '$.hello' : No results for path: '$.hello'"
+                    }
+                }
+            ]
+        },
+        {
+            "input": {"hello": "world"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "world",
+            "describe": "should fail if the inputPath is not in the input",
+            "events": [
+                {
+                 "timestamp": "2020-10-02T14:15:40.620Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":\"world\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-02T14:15:40.642Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "HelloWorld",
+                  "input": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-02T14:15:40.642Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "HelloWorld",
+                  "output": "\"world\""
+                 }
+                },
+                {
+                 "timestamp": "2020-10-02T14:15:40.642Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "\"world\""
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "HelloWorld",
+        "States": {
+            "HelloWorld": {
+                "InputPath": "$.hello",
+                "Type": "Pass",
+                "End": true
+            }
+        }
+    }    
+}
+

@@ -17,14 +17,13 @@ export const processTaskState = async (task: Task, state: TaskState, effectiveIn
     }
     await TaskService.addActivityTask(resource, {...task, ...state, input: effectiveInput, token});
     await Event.activityScheduledEvent.emit({executionArn: task.executionArn, resource, heartbeatSeconds: state.HeartbeatSeconds, 
-        input: task.input, timeoutSeconds: state.TimeoutSeconds});
+        input: effectiveInput, timeoutSeconds: state.TimeoutSeconds});
 }
 
 export const processTaskStateDone = async (activityTask: ActivityTask): Promise<void> => {
     // outputPath
     try {
-        
-        const output = applyPath(activityTask.input, activityTask.OutputPath);
+        const output = applyPath(activityTask.output, activityTask.OutputPath);
         await Event.activitySucceededEvent.emit({executionArn: activityTask.executionArn, output})
         await endStateExecution({...activityTask, output, nextStateName: activityTask.Next, stateType: activityTask.Type})
     } catch (err) {
