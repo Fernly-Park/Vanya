@@ -1,8 +1,7 @@
 import * as TimerDAL from './timerDAL';
 import { sleep } from '@Tests/testHelper';
 import config from '@App/config';
-import { WaitStateTaskInfo } from '../task/task.interfaces';
-import { TimedTask, TimedTaskType } from './timer.interfaces';
+import { TimedTask } from './timer.interfaces';
 import * as Event from '../events';
 
 let timerActive = true;
@@ -10,11 +9,11 @@ export const startTimerPoll = async (): Promise<void> => {
     timerActive = true;
     while(timerActive) {
         const now = new Date();
-        const timers = await TimerDAL.getAndDeleteTimedTasks(now.getTime());
+        const timers = await TimerDAL.getAndDeleteTimedTasks(now);
         if(timers && timers.length > 0) {
             for(const stringifiedTimer of timers) {
                 const timer = JSON.parse(stringifiedTimer) as TimedTask;
-                void Event.waitingStateDoneEvent.emit(timer.task as WaitStateTaskInfo)
+                void Event.emit(timer.eventName, timer.task).then();
             }
         } else {
             await sleep(config.timerPollIntervalMs);
@@ -22,9 +21,9 @@ export const startTimerPoll = async (): Promise<void> => {
     }
 }
 
-export const addWaitTask = async (time: Date, task: WaitStateTaskInfo): Promise<void> => {
-    const t: TimedTask = {type: TimedTaskType.WaitTask, task};
-    await TimerDAL.addTimedTask(time.getTime(), t);
+export const addTimedTask = async (req: {until: Date, task: unknown, eventNameToUse: string}): Promise<void> => {
+    const t: TimedTask = {eventName: req.eventNameToUse, task: req.task};
+    await TimerDAL.addTimedTask(req.until, t)
 }
 
 export const stopTimerPoll = (): void => {

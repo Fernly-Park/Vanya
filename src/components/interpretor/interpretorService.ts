@@ -112,7 +112,7 @@ const registerEvents = (): void => {
     Event.activitySucceededEvent.on(onActivitySucceededEvent);
     Event.executionFailedEvent.on(onExecutionFailedEvent);
     Event.executionSucceededEvent.on(onExecutionSucceededEvent);
-    Event.waitingStateDoneEvent.on(processWaitingStateDone);
+    Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
 }
 
 const unregisterEvents = (): void => {
@@ -124,5 +124,5 @@ const unregisterEvents = (): void => {
     Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
     Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
     Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
-    Event.waitingStateDoneEvent.removeListener(processWaitingStateDone);
+    Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
 }

@@ -1,23 +1,13 @@
 import * as Redis from '@App/modules/database/redis';
-import { TimedTask, TimedTaskType } from './timer.interfaces';
+import { TimedTask } from './timer.interfaces';
 
-export const addTimedTask = async (score: number, task: TimedTask): Promise<void> => {
-    let key: string;
-    switch(task.type) {
-        case TimedTaskType.WaitTask:
-            key = Redis.waitingStatesKey;
-            break;
-    }
-
+export const addTimedTask = async (until: Date, task: TimedTask): Promise<void> => {
+    const score = until.getTime();
     await Redis.zaddAsync(Redis.timerKey, score, JSON.stringify(task));
 }
 
-export const addToWaitingStateDone = async (task: TimedTask): Promise<void> => {
-    const key = Redis.waitingStatesKey;
-    await Redis.rpushAsync(key, JSON.stringify(task.task));
-}
-
-export const getAndDeleteTimedTasks = async (score: number): Promise<string[]> => {
+export const getAndDeleteTimedTasks = async (time: Date): Promise<string[]> => {
+    const score = time.getTime();
     const key = Redis.timerKey;
     const toReturn =  await Redis.watchAsync(key, (watcher) => {
         return new Promise((resolve, reject) => {

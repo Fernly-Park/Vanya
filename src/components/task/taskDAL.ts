@@ -11,10 +11,6 @@ export const addActivityTaskToActivityQueue = async (activityArn: string, input:
     await Redis.rpushAsync(key, JSON.stringify(input));
 }
 
-export const addActivityTaskToInProgressQueue = async (task: ActivityTask): Promise<void> => {
-    const key = Redis.getTaskInProgress(task.token);
-}
-
 export const popActivityTask = async (activityArn: string): Promise<ActivityTask> => {
     const key = Redis.getActivityTaskKey(activityArn);
     const result = await Redis.blpopAsync(key, config.activityTaskDefaultTimeout);

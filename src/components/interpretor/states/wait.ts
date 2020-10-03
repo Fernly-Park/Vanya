@@ -31,7 +31,7 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
         time = new Date(timestamp);
     }
     const timerInfo: WaitStateTaskInfo = {...task, ...state, input: effectiveInput};
-    await TimerService.addWaitTask(time, timerInfo)
+    await TimerService.addTimedTask({eventNameToUse: Event.CustomEvents.WaitingStateDone, until: time, task: timerInfo})
 }
 
 

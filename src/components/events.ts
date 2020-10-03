@@ -76,4 +76,3 @@ export const activityStartedEvent = factoryCustomEvent<ActivityStartedEventInput
 export const activitySucceededEvent = factoryCustomEvent<ActivitySucceededEventInput>(HistoryEventType.ActivitySucceeded);
 export const executionFailedEvent = factoryCustomEvent<ExecutionFailedEventInput>(HistoryEventType.ExecutionFailed);
 export const executionSucceededEvent = factoryCustomEvent<ExecutionSucceededEventInput>(HistoryEventType.ExecutionSucceeded);
-export const waitingStateDoneEvent = factoryCustomEvent<WaitStateTaskInfo>(CustomEvents.WaitingStateDone)

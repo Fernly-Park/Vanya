@@ -1,5 +1,1 @@
-export type TimedTask = {type: TimedTaskType, task: unknown};
-
-export enum TimedTaskType {
-    WaitTask = 'WaitTask'
-}
+export type TimedTask = {eventName: string, task: unknown};

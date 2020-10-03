@@ -161,4 +161,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({folderName: "wait"});
+generateStateMachinesTests({});
