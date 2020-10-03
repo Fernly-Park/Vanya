@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { HistoryEventType } from './execution/execution.interfaces';
 import { StateType } from './stateMachines/stateMachine.interfaces';
-import { ActivityTask } from './task/task.interfaces';
+import { ActivityTask, WaitStateTaskInfo } from './task/task.interfaces';
 
 export type StateEnteredEventInput = {executionArn: string, stateName: string, stateType: StateType, input: unknown};
 export type ProcessTaskDoneInput = ActivityTask;
@@ -18,6 +18,7 @@ let events: Record<string, EventCallback[]> = {};
 
 export enum CustomEvents {
     StartListeningToEvents = 'StartListeningToEvents',
+    WaitingStateDone = 'WaitingStateDone',
     StopListeningToEvents = 'StopListeningToEvents',
     ActivityTaskSucceeded = 'ActivityTaskSucceeded'
 }
@@ -75,3 +76,4 @@ export const activityStartedEvent = factoryCustomEvent<ActivityStartedEventInput
 export const activitySucceededEvent = factoryCustomEvent<ActivitySucceededEventInput>(HistoryEventType.ActivitySucceeded);
 export const executionFailedEvent = factoryCustomEvent<ExecutionFailedEventInput>(HistoryEventType.ExecutionFailed);
 export const executionSucceededEvent = factoryCustomEvent<ExecutionSucceededEventInput>(HistoryEventType.ExecutionSucceeded);
+export const waitingStateDoneEvent = factoryCustomEvent<WaitStateTaskInfo>(CustomEvents.WaitingStateDone)

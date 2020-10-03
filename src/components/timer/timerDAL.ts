@@ -1,6 +1,4 @@
-import config from '@App/config';
 import * as Redis from '@App/modules/database/redis';
-import { WaitStateTaskInfo } from '../task/task.interfaces';
 import { TimedTask, TimedTaskType } from './timer.interfaces';
 
 export const addTimedTask = async (score: number, task: TimedTask): Promise<void> => {
@@ -17,11 +15,6 @@ export const addTimedTask = async (score: number, task: TimedTask): Promise<void
 export const addToWaitingStateDone = async (task: TimedTask): Promise<void> => {
     const key = Redis.waitingStatesKey;
     await Redis.rpushAsync(key, JSON.stringify(task.task));
-}
-
-export const retrieveWaitingStateDoneBlocking = async (): Promise<WaitStateTaskInfo> => {
-    const result = await Redis.blpopAsync(Redis.waitingStatesKey, config.redisBlockingTimeout);
-    return result ? JSON.parse(result[1]) as WaitStateTaskInfo : null;
 }
 
 export const getAndDeleteTimedTasks = async (score: number): Promise<string[]> => {

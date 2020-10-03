@@ -6,6 +6,7 @@
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {"timestamp": "will Be Modified In Code"},
             "describe": "should succeed if the 'timestamp' in the input is two second ahead",
+            "executionName": "timestampPathSuccess",
             "eventsExpectedDuration": [
                 {
                     "eventId": 3,

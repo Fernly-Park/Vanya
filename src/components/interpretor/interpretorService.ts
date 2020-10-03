@@ -6,7 +6,7 @@ import { applyPath, applyParameters, applyResultPath } from './path';
 import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
-import { processWaitingStateDone, processWaitTask, stopProcessingWaitingState } from './states/wait';
+import { processWaitingStateDone, processWaitTask } from './states/wait';
 import { processTaskState, processTaskStateDone } from './states/task';
 import * as Event from '../events';
 import { TaskService } from '../task';
@@ -18,7 +18,6 @@ let interpretor = true;
 export const startInterpretor = (): void => {
     interpretor = true;
     registerEvents();
-    void processWaitingStateDone().then()
     void TimerService.startTimerPoll().then()
     void startInterpretorPoll().then();
 };
@@ -27,7 +26,6 @@ export const stopInterpreter = (): void => {
     interpretor = false;
 
     TimerService.stopTimerPoll();
-    stopProcessingWaitingState();
     unregisterEvents();
 }
 
@@ -114,6 +112,7 @@ const registerEvents = (): void => {
     Event.activitySucceededEvent.on(onActivitySucceededEvent);
     Event.executionFailedEvent.on(onExecutionFailedEvent);
     Event.executionSucceededEvent.on(onExecutionSucceededEvent);
+    Event.waitingStateDoneEvent.on(processWaitingStateDone);
 }
 
 const unregisterEvents = (): void => {
@@ -125,4 +124,5 @@ const unregisterEvents = (): void => {
     Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
     Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
     Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
+    Event.waitingStateDoneEvent.removeListener(processWaitingStateDone);
 }

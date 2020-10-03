@@ -33,7 +33,7 @@ const getTests = (dirPath = 'tests'): TestStateMachine[] => {
             fileContent.folderName = basename(dirname(join(__dirname, dirPath, fileName)));
             fileContent.stateMachineName = fileContent.stateMachineName ?? fileName.split('.')[0];
             for (let i = 0; i < fileContent.tests.length; i++) {
-                fileContent.tests[i].executionName = fileContent.stateMachineName + i.toString();
+                fileContent.tests[i].executionName = fileContent.tests[i].executionName ?? fileContent.stateMachineName + i.toString();
             }
             toReturn.push(fileContent);
         }
@@ -161,4 +161,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({folderName: "task"});
+generateStateMachinesTests({folderName: "wait"});

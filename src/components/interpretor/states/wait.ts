@@ -24,6 +24,7 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
         time = new Date(state.Timestamp);
     } else if (state.TimestampPath) {
         const timestamp: string = JSONPath({json: effectiveInput as any, path: state.TimestampPath, wrap: false});
+        console.log('timestamp : ', timestamp)
         if (!timestamp || !validator.isRFC3339(timestamp)) {
             throw new InvalidPathError('The timestampPath parameter does not reference a valid ISO-8604 extended offset date-time format string');
         }
@@ -33,25 +34,14 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
     await TimerService.addWaitTask(time, timerInfo)
 }
 
-let poll = true;
 
-export const processWaitingStateDone = async (): Promise<void> => {
-    poll = true;
-    while (poll) {
-        const waitingState = await TimerService.retrieveWaitingStateDoneBlocking();
-        if (waitingState) {
-            try {
-                const output = applyPath(waitingState.input, waitingState.OutputPath);
-                await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
-            } catch (err) {
-                console.log(err)
-                await Event.executionFailedEvent.emit({...waitingState, description: (err as Error)?.message})
-                return await ExecutionService.endExecution({executionArn: waitingState.executionArn, status: ExecutionStatus.failed})
-            }
-        }
-    }
-}
-
-export const stopProcessingWaitingState = (): void => {
-    poll = false;
+export const processWaitingStateDone = async (waitingState: WaitStateTaskInfo): Promise<void> => {
+    try {
+        const output = applyPath(waitingState.input, waitingState.OutputPath);
+        await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
+    } catch (err) {
+        console.log(err)
+        await Event.executionFailedEvent.emit({...waitingState, description: (err as Error)?.message})
+        return await ExecutionService.endExecution({executionArn: waitingState.executionArn, status: ExecutionStatus.failed})
+    }   
 }
