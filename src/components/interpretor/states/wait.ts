@@ -24,14 +24,13 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
         time = new Date(state.Timestamp);
     } else if (state.TimestampPath) {
         const timestamp: string = JSONPath({json: effectiveInput as any, path: state.TimestampPath, wrap: false});
-        console.log('timestamp : ', timestamp)
         if (!timestamp || !validator.isRFC3339(timestamp)) {
             throw new InvalidPathError('The timestampPath parameter does not reference a valid ISO-8604 extended offset date-time format string');
         }
         time = new Date(timestamp);
     }
     const timerInfo: WaitStateTaskInfo = {...task, ...state, input: effectiveInput};
-    await TimerService.addTimedTask({eventNameToUse: Event.CustomEvents.WaitingStateDone, until: time, task: timerInfo})
+    await TimerService.addTimedTask({until: time, timedTask: {task: timerInfo, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
 }
 
 

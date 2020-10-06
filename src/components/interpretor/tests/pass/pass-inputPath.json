@@ -31,7 +31,7 @@
                     "timestamp": "2020-10-02T14:08:45.384Z",
                     "type": "ExecutionFailed",
                     "id": 3,
-                    "previousEventId": 0,
+                    "previousEventId": 2,
                     "executionFailedEventDetails": {
                         "error": "States.Runtime",
                         "cause": "An error occurred while executing the state 'HelloWorld'. Invalid path '$.hello' : No results for path: '$.hello'"

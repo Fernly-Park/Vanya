@@ -1,21 +1,23 @@
 {
-    "describe": "simple state machine with a single task state with an inputPath", 
+    "describe": "simple state machine with a single task state containing a hearbeat of 1 second and a timeout of 2 seconds", 
     "tests": [
         {
             "input": {},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
-            "describe": "should fail if the input does not contain a 'hello' key",
+            "describe": "should fail if the timeout is reached",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
                     "expectedInput": {},
-                    "output": {}
+                    "workDurationSeconds" : 3,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
                 }
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-02T20:20:22.699Z",
+                 "timestamp": "2020-10-06T15:45:42.424Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
@@ -25,7 +27,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:20:22.729Z",
+                 "timestamp": "2020-10-06T15:45:42.455Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -35,96 +37,125 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:20:22.729Z",
-                 "type": "ExecutionFailed",
-                 "id": 3,
-                 "previousEventId": 2,
-                 "executionFailedEventDetails": {
-                  "error": "States.Runtime",
-                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.hello' : No results for path: '$.hello'"
-                 }
-                }
-            ]
-        },
-        {
-            "input": {"hello": "world"},
-            "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {},
-            "describe": "should succeed if the input does contain the 'hello' key",
-            "activitiesToCreate": [
-                {
-                    "name": "tmp",
-                    "expectedInput": "world",
-                    "output": {},
-                    "workerName": "hello"
-                }
-            ],
-            "events": [
-                {
-                 "timestamp": "2020-10-02T20:26:13.689Z",
-                 "type": "ExecutionStarted",
-                 "id": 1,
-                 "previousEventId": 0,
-                 "executionStartedEventDetails": {
-                  "input": "{\"hello\":\"world\"}",
-                  "roleArn": "todo"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-02T20:26:13.712Z",
-                 "type": "TaskStateEntered",
-                 "id": 2,
-                 "previousEventId": 0,
-                 "stateEnteredEventDetails": {
-                  "name": "Hello",
-                  "input": "{\"hello\":\"world\"}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-02T20:26:13.712Z",
+                 "timestamp": "2020-10-06T15:45:42.455Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
                  "activityScheduledEventDetails": {
                   "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
-                  "input": "\"world\""
+                  "input": "{}",
+                  "timeoutInSeconds": 2,
+                  "heartbeatInSeconds": 1
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:26:19.755Z",
+                 "timestamp": "2020-10-06T15:45:42.639Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
-                 "activityStartedEventDetails": {
-                  "workerName": "hello"
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-06T15:45:44.639Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:26:19.954Z",
+                 "timestamp": "2020-10-06T15:45:44.639Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "cause": "An error occurred while executing the state 'Hello'. ",
+                  "error": "States.Timeout"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello": "world"},
+            "describe": "should succeed if the timeout is not reached",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 1,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-06T16:48:21.128Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T16:48:21.155Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T16:48:21.155Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "timeoutInSeconds": 2,
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T16:48:21.353Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-06T16:48:22.204Z",
                  "type": "ActivitySucceeded",
                  "id": 5,
                  "previousEventId": 4,
                  "activitySucceededEventDetails": {
-                  "output": "{}"
+                  "output": "{\"hello\":\"world\"}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:26:19.954Z",
+                 "timestamp": "2020-10-06T16:48:22.204Z",
                  "type": "TaskStateExited",
                  "id": 6,
                  "previousEventId": 5,
                  "stateExitedEventDetails": {
                   "name": "Hello",
-                  "output": "{}"
+                  "output": "{\"hello\":\"world\"}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:26:19.954Z",
+                 "timestamp": "2020-10-06T16:48:22.204Z",
                  "type": "ExecutionSucceeded",
                  "id": 7,
                  "previousEventId": 6,
                  "executionSucceededEventDetails": {
-                  "output": "{}"
+                  "output": "{\"hello\":\"world\"}"
                  }
                 }
             ]
@@ -136,7 +167,8 @@
         "States": {
             "Hello": {
                 "Type": "Task",
-                "InputPath": "$.hello",
+                "TimeoutSeconds": 2,
+                "HeartbeatSeconds": 1,
                 "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
                 "End": true
             }

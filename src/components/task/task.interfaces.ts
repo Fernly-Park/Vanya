@@ -14,5 +14,12 @@ export interface Task {
 
 export type ActivityTask = Task & TaskState & {
     token: string,
-    output?: Record<string, unknown>
+    output?: Record<string, unknown>,
+    status: ActivityTaskStatus
+}
+
+export enum ActivityTaskStatus {
+    Running = 'Running',
+    TimedOut = 'TimedOut',
+    Waiting = 'Waiting'
 }

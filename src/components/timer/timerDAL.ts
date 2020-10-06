@@ -3,7 +3,8 @@ import { TimedTask } from './timer.interfaces';
 
 export const addTimedTask = async (until: Date, task: TimedTask): Promise<void> => {
     const score = until.getTime();
-    await Redis.zaddAsync(Redis.timerKey, score, JSON.stringify(task));
+    const toAdd: TimedTask = {task: task.task, eventNameForCallback: task.eventNameForCallback};
+    await Redis.zaddAsync(Redis.timerKey, score, JSON.stringify(toAdd));
 }
 
 export const getAndDeleteTimedTasks = async (time: Date): Promise<string[]> => {
@@ -16,23 +17,22 @@ export const getAndDeleteTimedTasks = async (time: Date): Promise<string[]> => {
                 .zremrangebyscore(key, '-inf', score)
                 .exec((err, results) => {
                     if (err) {
-                        reject(err);
+                        reject();
                     } else {
                         resolve(results)
                     }
                 })
         });
     });
-    return (toReturn[0] as unknown as string[]);
+    return toReturn ? (toReturn[0] as unknown as string[]): [];
 }
 
+export const deleteTimedTask = async (task: TimedTask): Promise<number> => {
+    const toRemove: TimedTask = {task: task.task, eventNameForCallback: task.eventNameForCallback};
+    return await Redis.zremAsync(Redis.timerKey, JSON.stringify(toRemove));
+}
 
 export const numberOfTimedTask = async (): Promise<number> => {
     const key = Redis.timerKey;
     return await Redis.zcountAsync(key, '-inf', '+inf');
-}
-
-export const numberOfWaitingTaskDone = async (): Promise<number> => {
-    const key = Redis.waitingStatesKey;
-    return await Redis.llenAsync(key);
 }

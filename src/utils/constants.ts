@@ -18,7 +18,8 @@ export  const AWSConstant = {
         DESCRIBE_EXECUTION: 'DescribeExecution',
     },
     error: {
-        STATE_RUNTIME: 'States.Runtime'
+        STATE_RUNTIME: 'States.Runtime',
+        STATE_TIMEOUT: 'States.Timeout'
     },
     serviceName: 'states'
 }

@@ -38,7 +38,7 @@
                     "timestamp": "2020-09-21T18:23:12.666Z",
                     "type": "ExecutionFailed",
                     "id": 3,
-                    "previousEventId": 0,
+                    "previousEventId": 2,
                     "executionFailedEventDetails": {
                         "error": "States.Runtime",
                         "cause": "An error occurred while executing the state 'Hello'. The activity arn:aws:states:eu-west:012345678901:activity:tmp does not exist."

@@ -148,7 +148,7 @@ const putPreviousEventId = (definition: IStateMachineDefinition, events: History
         lastEvent.previousEventId = lastEventId;
     } else {
         const failedEvent = events.find(x => x.type.startsWith('Execution') && x.type !== 'ExecutionStarted');
-        failedEvent != null ? failedEvent.previousEventId = 0 : false
+        failedEvent != null ? failedEvent.previousEventId = lastEventId : false
     }
 }
 

@@ -85,7 +85,7 @@
                     "timestamp": "2020-09-21T10:02:57.327Z",
                     "type": "ExecutionFailed",
                     "id": 3,
-                    "previousEventId": 0,
+                    "previousEventId": 2,
                     "executionFailedEventDetails": {
                     "error": "States.Runtime",
                     "cause": "An error occurred while executing the state 'Hello'. The timestampPath parameter does not reference a valid ISO-8604 extended offset date-time format string"

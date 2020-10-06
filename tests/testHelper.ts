@@ -133,7 +133,7 @@ export type TestStateMachineTestCase = {
     executionName: string,
     activitiesToCreate?: ActivitiyToCreateForTests[],
     eventsExpectedDuration?: EventDurationExpectedForTests[],
-    events?: HistoryEvent[]
+    events?: HistoryEvent[],
 }
 export type TestStateMachine = {
     definition: IStateMachineDefinition,
@@ -146,11 +146,14 @@ export type TestStateMachine = {
 export type EventDurationExpectedForTests = {
     eventId: number,
     expectedDurationInSeconds: number
+    
 };
 
 export type ActivitiyToCreateForTests = {
     name: string,
     output: string,
     expectedInput: Record<string, unknown>,
+    workDurationSeconds?: number,
     workerName: string
+    heartbeatIntervalSeconds?: number
 }

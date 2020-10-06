@@ -1,7 +1,7 @@
 import { AWSConstant } from '@App/utils/constants';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEventType } from '../execution/execution.interfaces';
-import { ActivityScheduledEventInput, ActivityStartedEventInput, ActivitySucceededEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
+import { ActivityScheduledEventInput, ActivityStartedEventInput, ActivitySucceededEventInput, ActivityTimeoutEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
 import { ExecutionService } from '../execution';
 
 export enum InterpretorEvents {
@@ -19,6 +19,17 @@ export const onStateEnteredEvent = async (req: {executionArn: string, stateName:
     }}});
 }
 
+export const onActivityTimeoutEvent = async (req: ActivityTimeoutEventInput): Promise<void> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn,
+        event: {
+            type: HistoryEventType.ActivityTimedOut,
+            activityTimedOutEventDetails: {
+                error: AWSConstant.error.STATE_TIMEOUT,
+                cause: req.cause
+            }
+        }
+    });
+}
 export const onActivityScheduledEvent = async (req: ActivityScheduledEventInput): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ActivityScheduled,
@@ -63,8 +74,8 @@ export const onExecutionFailedEvent = async (req: ExecutionFailedEventInput): Pr
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionFailed,
         executionFailedEventDetails: {
-            cause: `An error occurred while executing the state '${req.stateName}'. ${req.description}`,
-            error: AWSConstant.error.STATE_RUNTIME
+            cause: `An error occurred while executing the state '${req.stateName}'. ${req.description ?? ''}`,
+            error: req.error ?? AWSConstant.error.STATE_RUNTIME
         }
     }});
 }

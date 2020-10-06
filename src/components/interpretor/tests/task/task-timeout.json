@@ -1,0 +1,179 @@
+{
+    "describe": "simple state machine with a single task state and a timeout of 1 seconds", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello": "world"},
+            "describe": "should succeed if the worker takes less than 1 seconds to respond",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"},
+                    "workerName": "hello"
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-04T14:35:23.126Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-04T14:35:23.155Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-04T14:35:23.155Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "timeoutInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-04T14:35:23.359Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {
+                  "workerName": "hello"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-04T14:35:23.523Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-04T14:35:23.523Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-04T14:35:23.523Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the worker takes more than 1 seconds to respond",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 2,
+                    "output": {},
+                    "workerName": "hello"
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-03T14:48:41.083Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-03T14:48:41.112Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-03T14:48:41.112Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "timeoutInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-03T14:49:41.200Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {
+                  "workerName": "hello"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-03T14:49:42.200Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-03T14:49:42.200Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "cause": "An error occurred while executing the state 'Hello'. ",
+                  "error": "States.Timeout"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "TimeoutSeconds": 1,
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true
+            }
+        }
+    }    
+}
+

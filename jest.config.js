@@ -16,3 +16,4 @@ module.exports = {
       '^@Tests/(.*)$': '<rootDir>/tests/$1'
     }
   }
+

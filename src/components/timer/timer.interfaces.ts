@@ -1,1 +1,1 @@
-export type TimedTask = {eventName: string, task: unknown};
+export type TimedTask = {eventNameForCallback: string, task: unknown};

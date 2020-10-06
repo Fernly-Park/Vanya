@@ -1,4 +1,4 @@
-import { ActivityTask, StateInput, Task } from "./task.interfaces";
+import { ActivityTask,  ActivityTaskStatus,  Task } from "./task.interfaces";
 import * as Redis from '@App/modules/database/redis';
 import config from "@App/config";
 
@@ -10,6 +10,12 @@ export const addActivityTaskToActivityQueue = async (activityArn: string, input:
     const key = Redis.getActivityTaskKey(activityArn);
     await Redis.rpushAsync(key, JSON.stringify(input));
 }
+
+export const removeActivityTaskFromActivityQueue = async (activityArn: string, input: ActivityTask): Promise<number> => {
+    const key = Redis.getActivityTaskKey(activityArn);
+    return await Redis.lremAsync(key, 0, JSON.stringify(input))
+}
+
 
 export const popActivityTask = async (activityArn: string): Promise<ActivityTask> => {
     const key = Redis.getActivityTaskKey(activityArn);
@@ -40,4 +46,29 @@ export const retrieveActivityTaskInProgress = async (token: string): Promise<Act
     const key = Redis.getActivityTaskInProgressKey(token);
     const toReturn = await Redis.getAsync(key);
     return toReturn ? JSON.parse(toReturn) as ActivityTask : null;
+}
+
+export const modifyActivityTaskStatus = async (token: string, newStatus: ActivityTaskStatus): Promise<void> => {
+    const key = Redis.getActivityTaskInProgressKey(token);
+    await Redis.watchAsync(key, (watcher) => {
+        return new Promise((resolve, reject) => {
+            watcher.get(key, (err, activityTaskStringified) => {
+                if (err) return reject (err);
+                const activityTask = JSON.parse(activityTaskStringified) as ActivityTask;
+                if (activityTask.status === ActivityTaskStatus.TimedOut) {
+                    return reject (err);
+                }
+                activityTask.status = newStatus;
+                watcher.multi()
+                .set(key, JSON.stringify(activityTask))
+                .exec((err, results) => {
+                    if (err || results === null) {
+                        reject('Concurrency error : the activity task status is already Timeout');
+                    } else {
+                        resolve(results)
+                    }
+                })
+            });
+        });
+    });
 }

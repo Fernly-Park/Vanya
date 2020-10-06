@@ -3,11 +3,11 @@ import { Task, StateInput, StateOutput } from '../task/task.interfaces';
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyParameters, applyResultPath } from './path';
-import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent } from './historyEvent';
+import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivityTimeoutEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
-import { processTaskState, processTaskStateDone } from './states/task';
+import { processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
 import * as Event from '../events';
 import { TaskService } from '../task';
 import { ExecutionService } from '../execution';
@@ -112,6 +112,10 @@ const registerEvents = (): void => {
     Event.activitySucceededEvent.on(onActivitySucceededEvent);
     Event.executionFailedEvent.on(onExecutionFailedEvent);
     Event.executionSucceededEvent.on(onExecutionSucceededEvent);
+    Event.activityTimeoutEvent.on(onActivityTimeoutEvent);
+    Event.activityTaskHeartbeat.on(processTaskHeartbeat);
+    Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
+    Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
 }
 
@@ -124,5 +128,9 @@ const unregisterEvents = (): void => {
     Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
     Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
     Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
+    Event.activityTimeoutEvent.removeListener(onActivityTimeoutEvent);
+    Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
+    Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
+    Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
 }

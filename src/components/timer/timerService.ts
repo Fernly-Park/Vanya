@@ -13,7 +13,7 @@ export const startTimerPoll = async (): Promise<void> => {
         if(timers && timers.length > 0) {
             for(const stringifiedTimer of timers) {
                 const timer = JSON.parse(stringifiedTimer) as TimedTask;
-                void Event.emit(timer.eventName, timer.task).then();
+                void Event.emit(timer.eventNameForCallback, timer.task).then();
             }
         } else {
             await sleep(config.timerPollIntervalMs);
@@ -21,10 +21,13 @@ export const startTimerPoll = async (): Promise<void> => {
     }
 }
 
-export const addTimedTask = async (req: {until: Date, task: unknown, eventNameToUse: string}): Promise<void> => {
-    const t: TimedTask = {eventName: req.eventNameToUse, task: req.task};
-    await TimerDAL.addTimedTask(req.until, t)
+export const addTimedTask = async (req: {until: Date, timedTask: TimedTask}): Promise<void> => {
+    await TimerDAL.addTimedTask(req.until, req.timedTask)
 }
+
+export const removeTimedTask = async (task: TimedTask): Promise<void> => {
+    await TimerDAL.deleteTimedTask(task);
+};
 
 export const stopTimerPoll = (): void => {
     timerActive = false;
@@ -32,8 +35,4 @@ export const stopTimerPoll = (): void => {
 
 export const numberOfTimedTask = async(): Promise<number> => {
     return await TimerDAL.numberOfTimedTask();
-}
-
-export const numberOfWaitingTaskDone = async (): Promise<number> => {
-    return await TimerDAL.numberOfWaitingTaskDone();
 }

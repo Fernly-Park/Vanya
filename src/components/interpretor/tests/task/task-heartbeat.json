@@ -1,0 +1,175 @@
+{
+    "describe": "simple state machine with a single task state and a heartBeatSeconds of 1 seconds", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello": "world"},
+            "describe": "should succeed if the worker send a heartbeat every 1 seconds and the task lasts for 3 seconds",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-05T16:13:40.922Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:40.944Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:40.944Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.161Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.924Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.924Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.924Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the interval between heartbeat is 2 second",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 3,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 2
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-05T17:01:45.259Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T17:01:45.282Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T17:01:45.282Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T17:01:45.451Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-05T17:01:46.451Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T17:01:46.451Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "cause": "An error occurred while executing the state 'Hello'. ",
+                  "error": "States.Timeout"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "HeartbeatSeconds": 1,
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true
+            }
+        }
+    }    
+}
+

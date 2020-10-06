@@ -2,7 +2,7 @@ import { dummyActivityArn, dummyExecutionArn, dummyStateMachineArn } from '@Test
 import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidTokenError, TaskDoesNotExistError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
-import { ActivityTask } from './task.interfaces';
+import { ActivityTask, ActivityTaskStatus } from './task.interfaces';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import * as Event from '../events';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/components/task/taskService';
@@ -11,7 +11,7 @@ import { ActivityService } from '../activity';
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
     const activityTask: ActivityTask = {token: 'token', input: {hello: 'world'}, Type: StateType.Pass, executionArn: dummyExecutionArn, 
-    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, Resource: dummyActivityArn};
+    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, Resource: dummyActivityArn, status: ActivityTaskStatus.Running};
 
     const createAndGetActivityTaskHelper = async (req?: {input?: Record<string, unknown>, token?: string}) => {
         const activity = await ActivityService.createActivity(getUser().id, 'tmp');

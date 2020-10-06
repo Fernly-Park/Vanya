@@ -1,5 +1,5 @@
-import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
-import { ActivityTask, Task } from "./task.interfaces";
+import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskHeartbeatInput, SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
+import { ActivityTask, ActivityTaskStatus, Task } from "./task.interfaces";
 import * as TaskDAL from "./taskDAL";
 import { ActivityDoesNotExistError, InvalidNameError, InvalidOutputError, InvalidTokenError, TaskDoesNotExistError } from "@App/errors/AWSErrors";
 import Joi from "@hapi/joi";
@@ -29,16 +29,19 @@ export const addActivityTask = async (activityArn: string, input: ActivityTask):
     await TaskDAL.addActivityTaskToActivityQueue(activityArn, input);
 }
 
-
+export const removeActivityTask = async (input: ActivityTask): Promise<number> => {
+    return await TaskDAL.removeActivityTaskFromActivityQueue(input.Resource, input);
+}
 
 export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetActivityTaskOutput> => {
     ensureWorkerNameIsValid(req?.workerName);
     if (!await ActivityService.getActivity(req.activityArn)) {
         throw new ActivityDoesNotExistError(req?.activityArn)
     }
-
+    //todo timeout
     const task = await TaskDAL.popActivityTask(req.activityArn);
     if (task) {
+        task.status = ActivityTaskStatus.Running;
         await TaskDAL.addActivityTaskToInProgress(task);
         await Event.activityStartedEvent.emit({executionArn: task.executionArn, workerName: req.workerName})
     }
@@ -48,15 +51,32 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
     }
 }
 
-export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {
-    ensureSendTaskSuccessInputIsValid(req);
-
+export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<void> => {
+    ensureTaskTokenIsValid(req?.taskToken);
     const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
     if (!activityTask) {
         throw new TaskDoesNotExistError(req.taskToken);
     }
     // todo timeout
-    console.log('req: ', req)
+    await Event.activityTaskHeartbeat.emit(activityTask);
+}
+
+export const getActivityTaskFromToken = async (taskToken: string): Promise<ActivityTask> => {
+    return await TaskDAL.retrieveActivityTaskInProgress(taskToken);
+}
+
+export const modifyActivityTaskStatus = async (activityTask: ActivityTask, newStatus: ActivityTaskStatus): Promise<void> => {
+    // todo
+    return await TaskDAL.modifyActivityTaskStatus(activityTask.token, newStatus);
+};
+
+export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {
+    ensureSendTaskSuccessInputIsValid(req);
+    const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
+    if (!activityTask) {
+        throw new TaskDoesNotExistError(req.taskToken);
+    }
+    // todo timeout
     await Event.activityTaskSucceededEvent.emit({...activityTask, output: JSON.parse(req.output)})
 }
 
@@ -65,9 +85,13 @@ const ensureSendTaskSuccessInputIsValid = (req: SendTaskSuccessInput) => {
         throw new InvalidOutputError(`Invalid Output: '${req?.output ?? ''}' is not a valid JSON`);
     }
 
-    if (typeof req.taskToken !== 'string' || req.taskToken.length === 0 || req.taskToken.length > taskTokenMaxLength) { // todo changé lorsque réussi a répliqué le token d'amazon
-        throw new InvalidTokenError(req?.taskToken ?? '');
-    }
+    ensureTaskTokenIsValid(req?.taskToken);
+}
+
+const ensureTaskTokenIsValid = (taskToken: string): void => {
+    if (typeof taskToken !== 'string' || taskToken.length === 0 || taskToken.length > taskTokenMaxLength) { // todo changé lorsque réussi a répliqué le token d'amazon
+    throw new InvalidTokenError(taskToken ?? '');
+}
 }
 
 const ensureWorkerNameIsValid = (workerName: string): void  => {

@@ -20,6 +20,9 @@ import { ExecutionService } from '../execution';
 import { TaskService } from '../task';
 import { TimerService } from '../timer';
 import { ActivityService } from '../activity';
+import { clearInterval, setInterval } from 'timers';
+
+jest.setTimeout(10000)
 
 const getTests = (dirPath = 'tests'): TestStateMachine[] => {
     const fileNames = readdirSync(join(__dirname, dirPath));
@@ -63,22 +66,32 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
                 for(const activity of activities) {
                     const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
                     if (res.input) {
+                            const interval = activity.heartbeatIntervalSeconds 
+                            ? setInterval(() => {
+                                void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch(() => clearInterval(interval))
+                            }, activity.heartbeatIntervalSeconds * 1000)
+                            : undefined;
                         expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
-                        console.log('output : ', activity)
-                        await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
+                        if (activity.workDurationSeconds) {
+                            await TestHelper.sleep(activity.workDurationSeconds * 1000)
+                        }
+                        try {
+                            interval ? clearInterval(interval) : false
+                            await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
+                        // eslint-disable-next-line no-empty
+                        } catch {
+                        }
                     }
                 }
             }
         }
         const numberOfRemainingTasks = await TaskService.numberOfGeneralTask();
         const numberOfDelayedTask = await TimerService.numberOfTimedTask();
-        const numberOfWaitingTaskDone = await TimerService.numberOfWaitingTaskDone();
         const events = await ExecutionService.getExecutionHistory(execution);
         const contextObj = await Redis.jsongetAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(numberOfDelayedTask).toBe(0);
-        expect(numberOfWaitingTaskDone).toBe(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         expect(finishedExecution.output).toBe(isAnObject(currentTest.expectedOutput) ? JSON.stringify(currentTest.expectedOutput): currentTest.expectedOutput);
         expect(finishedExecution.stopDate).toBeDefined();
@@ -161,4 +174,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({});
+generateStateMachinesTests({folderName: 'task'});

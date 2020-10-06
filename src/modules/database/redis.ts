@@ -39,6 +39,7 @@ export let getAsync: (arg1: string) => Promise<string>;
 export let setAsync: (key: string, value: string) => Promise<boolean>;
 export let delAsync: (key: string) => Promise<void>;
 export let rpushAsync: (key: string, ...args: string[]) => Promise<number>;
+export let lremAsync: (key: string, count: number, element: string) => Promise<number>;
 export let flushallAsync: () => Promise<unknown>;
 export let llenAsync: (key: string) => Promise<number>;
 export let lpopAsync: (key: string) => Promise<string>;
@@ -57,6 +58,7 @@ export let watchAsync: (key: string, callback: (watcher: redis.RedisClient) => P
 export let jsonsetAsync: (key: string, path: string, json: string) => Promise<boolean>;
 export let jsongetAsync: (key: string, path?: string) => Promise<string>;
 export let jsondelAsync: (key: string, path?: string) => Promise<void>;
+export let zremAsync: (key: string, member: string) => Promise<number>;
 
 export const quitAsync = async (): Promise<void> => {
     if (connectionPool) {
@@ -100,6 +102,8 @@ export const startRedis = () => {
     zrangebyscoreAsync = pooledFunctionFactory(client.zrangebyscore);
     zremrangebyscoreAsync = pooledFunctionFactory(client.zremrangebyscore);
     zcountAsync = pooledFunctionFactory(client.zcount);
+    lremAsync = pooledFunctionFactory(client.lrem);
+    zremAsync = pooledFunctionFactory(client.zrem);
 
     watchAsync = async (keyToWatch: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => {
         const watcher = await connectionPool.acquire();
@@ -137,7 +141,6 @@ export const onConnectionError = (callback: () => void ): void => {
 
 export const systemTaskKey = `${config.redis_prefix}:systemTasks`;
 export const timerKey = `${config.redis_prefix}:timedTasks`;
-export const waitingStatesKey = `${config.redis_prefix}:finishedWaitingState`;
 
 export const getContextObjectKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:contextObject`
