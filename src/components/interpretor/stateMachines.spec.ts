@@ -58,15 +58,13 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         });
 
         let finishedExecution = await ExecutionService.describeExecution(execution);
-        await TestHelper.sleep(100);
+        await TestHelper.sleep(50);
         while (finishedExecution.status === ExecutionStatus.running) {
-            await TestHelper.sleep(100);
+            await TestHelper.sleep(50);
             finishedExecution = await ExecutionService.describeExecution(execution);
             if (activities) {
                 for(const activity of activities) {
-                    console.log('before the wait')
                     activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
-                    console.log('after the wait ')
                     const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
                     if (res.input) {
                             const interval = activity.heartbeatIntervalSeconds 
@@ -181,4 +179,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'task-heartbeat'});
+generateStateMachinesTests();

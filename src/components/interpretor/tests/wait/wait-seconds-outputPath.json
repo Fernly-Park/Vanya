@@ -34,7 +34,7 @@
                     "previousEventId": 2,
                     "executionFailedEventDetails": {
                         "error": "States.Runtime",
-                        "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.hello' : No results for path: '$.hello'"
+                        "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.hello' : No valid results for path: '$.hello'"
                     }
                 }
             ]
