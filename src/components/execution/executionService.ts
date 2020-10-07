@@ -55,7 +55,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         },
     });
 
-    await TaskService.addTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn});
+    await TaskService.addGeneralTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn});
     await addEvent({executionArn, event: {
         executionStartedEventDetails: {
             input: JSON.stringify(result.input),
@@ -135,8 +135,6 @@ export const getExecutionHistory = async (req: GetExecutionHistoryInput): Promis
     
         putPreviousEventId(stateMachine.definition, events);
     }
-
-
     return events;
 }
 

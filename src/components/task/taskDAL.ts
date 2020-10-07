@@ -37,7 +37,7 @@ export const lengthOfGeneralTaskQueue = async (): Promise<number> => {
     return await Redis.llenAsync(Redis.systemTaskKey);
 }
 
-export const addActivityTaskToInProgress = async (task: ActivityTask): Promise<void> => {
+export const addActivityTaskKeyValue = async (task: ActivityTask): Promise<void> => {
     const key = Redis.getActivityTaskInProgressKey(task.token);
     await Redis.setAsync(key, JSON.stringify(task));
 }

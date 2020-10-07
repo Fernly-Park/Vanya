@@ -7,7 +7,7 @@ import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExec
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
-import { processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
+import { processActivityTaskStarted, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
 import * as Event from '../events';
 import { TaskService } from '../task';
 import { ExecutionService } from '../execution';
@@ -80,7 +80,7 @@ export const endStateExecution = async (req: {executionArn: string, stateMachine
     stateName: string, output: StateOutput, nextStateName?: string}): Promise<void> => {
     await Event.stateExitedEvent.emit(req);
     if (req.nextStateName) {
-        await TaskService.addTask({executionArn: req.executionArn, stateName: req.nextStateName, 
+        await TaskService.addGeneralTask({executionArn: req.executionArn, stateName: req.nextStateName, 
             input: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
     } else {
         await Event.executionSucceededEvent.emit({result: req.output, executionArn: req.executionArn})
@@ -109,6 +109,7 @@ const registerEvents = (): void => {
     Event.stateExitedEvent.on(onStateExitedEvent);
     Event.activityScheduledEvent.on(onActivityScheduledEvent);
     Event.activityStartedEvent.on(onActivityStartedEvent);
+    Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activitySucceededEvent.on(onActivitySucceededEvent);
     Event.executionFailedEvent.on(onExecutionFailedEvent);
     Event.executionSucceededEvent.on(onExecutionSucceededEvent);
@@ -125,6 +126,7 @@ const unregisterEvents = (): void => {
     Event.stateExitedEvent.removeListener(onStateExitedEvent);
     Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
     Event.activityStartedEvent.removeListener(onActivityStartedEvent);
+    Event.activityStartedEvent.removeListener(processActivityTaskStarted)
     Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
     Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
     Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);

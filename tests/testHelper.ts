@@ -77,7 +77,7 @@ export const stateMachinesForTests = {
         invalidWaitWithNegativeSeconds: getStateMachineDef('invalid', 'invalid-wait-with-negative-seconds.json'),
         invalidWaitTimestampEmpty: getStateMachineDef('invalid', 'invalid-wait-timestamp-empty.json'),
         invalidWaitSecondsPath: getStateMachineDef('invalid', 'invalid-wait-secondsPath.json'),
-        invalidWaitTimestampPath: getStateMachineDef('invalid', 'invalid-wait-timestampPath.json')
+        invalidWaitTimestampPath: getStateMachineDef('invalid', 'invalid-wait-timestampPath.json'),
     }, 
     valid: {
         validCatchFailure: getStateMachineDef('valid', 'valid-catch-failure.json'),
@@ -154,6 +154,7 @@ export type ActivitiyToCreateForTests = {
     output: string,
     expectedInput: Record<string, unknown>,
     workDurationSeconds?: number,
+    waitBeforeGetActivityTaskSeconds?: number,
     workerName: string
     heartbeatIntervalSeconds?: number
 }

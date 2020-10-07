@@ -64,11 +64,18 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             finishedExecution = await ExecutionService.describeExecution(execution);
             if (activities) {
                 for(const activity of activities) {
+                    console.log('before the wait')
+                    activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
+                    console.log('after the wait ')
                     const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
                     if (res.input) {
                             const interval = activity.heartbeatIntervalSeconds 
                             ? setInterval(() => {
-                                void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch(() => clearInterval(interval))
+                                // eslint-disable-next-line jest/valid-expect-in-promise
+                                void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch((err) => {
+                                    console.log(err);
+                                    return clearInterval(interval);
+                                })
                             }, activity.heartbeatIntervalSeconds * 1000)
                             : undefined;
                         expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
@@ -174,4 +181,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({folderName: 'task'});
+generateStateMachinesTests({stateMachineName: 'task-heartbeat'});

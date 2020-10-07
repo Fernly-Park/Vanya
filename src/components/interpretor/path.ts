@@ -5,6 +5,11 @@ import { ContextObject, ExecutionInput } from '../execution/execution.interfaces
 import { addProps } from '@App/utils/objectUtils';
 import { JSONPath } from 'jsonpath-plus';
 
+
+export const retrieveField = <T>(input: StateInput, path: string): T => {
+    return JSONPath({json: input as any, path, wrap: false}) as T;
+}
+
 export const applyPath = (rawInput: StateInput | StateOutput, path: string): StateInput | StateOutput => {
     let toReturn: ExecutionInput;
     if (path === null) {
@@ -14,7 +19,7 @@ export const applyPath = (rawInput: StateInput | StateOutput, path: string): Sta
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         toReturn = JSONPath({json: rawInput as any, path: path, wrap: false});
         if (!toReturn) {
-            throw new InvalidPathError(`Invalid path '${path}' : No results for path: '${path}'`);
+            throw new InvalidPathError(`Invalid path '${path}' : No valid results for path: '${path}'`);
         }
     }
     return toReturn ?? rawInput;

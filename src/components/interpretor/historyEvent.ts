@@ -43,7 +43,7 @@ export const onActivityScheduledEvent = async (req: ActivityScheduledEventInput)
 }
 
 export const onActivityStartedEvent = async (req: ActivityStartedEventInput): Promise<void> => {
-    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+    return await ExecutionService.addEvent({executionArn: req.task.executionArn, event: {
         type: HistoryEventType.ActivityStarted,
         activityStartedEventDetails: {
             workerName: req.workerName

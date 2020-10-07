@@ -5,7 +5,7 @@
             "input": {},
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": {"hello": "world"},
-            "describe": "should succeed if the worker send a heartbeat every 1 seconds and the task lasts for 3 seconds",
+            "describe": "should succeed if the worker send a heartbeat every 0.5 seconds and the task lasts for 2 seconds",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
@@ -154,6 +154,90 @@
                  "executionFailedEventDetails": {
                   "cause": "An error occurred while executing the state 'Hello'. ",
                   "error": "States.Timeout"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello": "world"},
+            "describe": "should succeed if the worker send a heartbeat every 0.5 seconds but wait 1 seconds before taking the tasks",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "waitBeforeGetActivityTaskSeconds": 1,
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-05T16:13:40.922Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:40.944Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:40.944Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.161Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.924Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.924Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-05T16:13:41.924Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
                  }
                 }
             ]

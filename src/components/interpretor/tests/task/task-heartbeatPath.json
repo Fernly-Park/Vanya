@@ -1,0 +1,362 @@
+{
+    "describe": "simple state machine with a single task state and a heartBeatSecondsPath of 'heartBeat'", 
+    "tests": [
+        {
+            "input": {"heartbeat": 1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello": "world"},
+            "describe": "should succeed if the 'heatbeat' value in the input is the number '1'",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"heartbeat": 1},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-06T19:12:31.649Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T19:12:31.672Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T19:12:31.672Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":1}",
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T19:12:59.882Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-06T19:13:00.725Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T19:13:00.725Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T19:13:00.725Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'heatbeat' key is not in the input",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-06T18:34:52.989Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T18:34:53.018Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T18:34:53.018Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.heartbeat' : No valid results for path: '$.heartbeat'"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"heartbeat": -1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'heatbeat' value in the input is '-1'",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-06T18:53:10.031Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":-1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T18:53:10.052Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":-1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T18:53:10.052Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.heartbeat' : No valid results for path: '$.heartbeat'"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"heartbeat": "1"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'heatbeat' value in the input is the string '1'",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-06T18:56:44.965Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":\"1\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T18:56:44.989Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":\"1\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-06T18:56:44.989Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.heartbeat' : No valid results for path: '$.heartbeat'"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"heartbeat": 0},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should accept but immediatly timeout a 'heatbeat' value of 0",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"heartbeat": 0},
+                    "workDurationSeconds" : 1,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T11:51:00.833Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T11:51:00.863Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T11:51:00.863Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":0}",
+                  "heartbeatInSeconds": 0
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T11:51:39.239Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T11:51:39.244Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T11:51:39.244Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                 "cause": "An error occurred while executing the state 'Hello'. ",
+                  "error": "States.Timeout"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"heartbeat": 0.5},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the heartbeat in the input is a floating number (0.5)",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"heartbeat": 0},
+                    "workDurationSeconds" : 1,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T11:54:48.183Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":0.5}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T11:54:48.206Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":0.5}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T11:54:48.206Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.heartbeat' : No valid results for path: '$.heartbeat'"                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "HeartbeatSecondsPath": "$.heartbeat",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true
+            }
+        }
+    }    
+}
+

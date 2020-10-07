@@ -66,7 +66,9 @@ export interface PassState extends StateMachineStateValue{
 export interface TaskState extends StateMachineStateValue {
     Resource: string
     TimeoutSeconds?: number,
+    TimeoutSecondsPath?: string,
     HeartbeatSeconds?: number,
+    HeartbeatSecondsPath?: string,
     InputPath?: string,
     OutputPath?: string,
     ResultPath?: string,

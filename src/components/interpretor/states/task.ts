@@ -1,8 +1,8 @@
 import { TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { ActivityTask, ActivityTaskStatus, StateInput, StateOutput, Task } from "@App/components/task/task.interfaces";
-import { TaskResourceDoesNotExistsError } from "@App/errors/customErrors";
+import { InvalidPathError, TaskResourceDoesNotExistsError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
-import { applyPath } from "../path";
+import { applyPath, retrieveField } from "../path";
 import { ExecutionService } from "@App/components/execution";
 import { endStateExecution } from "../interpretorService";
 import { ExecutionStatus } from "@App/components/execution/execution.interfaces";
@@ -18,22 +18,43 @@ export const processTaskState = async (task: Task, state: TaskState, effectiveIn
         throw new TaskResourceDoesNotExistsError(`The activity ${resource} does not exist.`);
     }
 
+    const heartbeatSeconds = getSecondsFromFieldOrPath(state.HeartbeatSeconds, state.HeartbeatSecondsPath, effectiveInput);
+    const timeoutSeconds = getSecondsFromFieldOrPath(state.TimeoutSeconds, state.TimeoutSecondsPath, effectiveInput);
+
     const activityTask: ActivityTask = {...task, ...state, input: effectiveInput, token, status: ActivityTaskStatus.Waiting}
     await TaskService.addActivityTask(resource, activityTask);
-    if (state.TimeoutSeconds) {
+
+    await Event.activityScheduledEvent.emit({executionArn: task.executionArn, resource, heartbeatSeconds: (heartbeatSeconds as number), 
+        input: effectiveInput, timeoutSeconds: (timeoutSeconds as number)});
+}
+
+const getSecondsFromFieldOrPath = (field: number, path: string, input: StateInput): number | void => {
+    if (path != null) {
+        const toReturn = retrieveField<number>(input, path);
+        if (!Number.isInteger(toReturn) || toReturn < 0) {
+            throw new InvalidPathError(`Invalid path '${path}' : No valid results for path: '${path}'`)
+        }
+        return toReturn;
+    }
+    return field
+}
+
+export const processActivityTaskStarted = async (input: Event.ActivityStartedEventInput): Promise<void> => {
+    const activityTask = input.task;
+    const heartbeatSeconds = getSecondsFromFieldOrPath(activityTask.HeartbeatSeconds, activityTask.HeartbeatSecondsPath, activityTask.input);
+    const timeoutSeconds = getSecondsFromFieldOrPath(activityTask.TimeoutSeconds, activityTask.TimeoutSecondsPath, activityTask.input);
+
+    if (timeoutSeconds != null) {
         const time = new Date();
-        time.setSeconds(time.getSeconds() + state.TimeoutSeconds);
+        time.setSeconds(time.getSeconds() + (timeoutSeconds as number));
         await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.TaskTimeout}})
     }
 
-    if (state.HeartbeatSeconds) {
+    if (heartbeatSeconds != null) {
         const time = new Date();
-        time.setSeconds(time.getSeconds() + state.HeartbeatSeconds);
+        time.setSeconds(time.getSeconds() + (heartbeatSeconds as number));
         await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
     }
-
-    await Event.activityScheduledEvent.emit({executionArn: task.executionArn, resource, heartbeatSeconds: state.HeartbeatSeconds, 
-        input: effectiveInput, timeoutSeconds: state.TimeoutSeconds});
 }
 
 export const processTaskStateDone = async (activityTask: ActivityTask): Promise<void> => {
@@ -67,7 +88,11 @@ export const processTaskHeartbeat = async (activityTask: ActivityTask): Promise<
     if (activityTask.status === ActivityTaskStatus.TimedOut) {
         throw new Error('todo');
     }
+    const heartbeatSeconds = getSecondsFromFieldOrPath(activityTask.HeartbeatSeconds, activityTask.HeartbeatSecondsPath, activityTask.input)
+    if (heartbeatSeconds == null) {
+        return;
+    }
     const time = new Date();
-    time.setSeconds(time.getSeconds() + activityTask.HeartbeatSeconds);
+    time.setSeconds(time.getSeconds() + (heartbeatSeconds as number));
     await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
 }

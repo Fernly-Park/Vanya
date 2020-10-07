@@ -1,0 +1,430 @@
+{
+    "describe": "simple state machine with a single task state and a TimeoutSecondsPath of 'timeout'", 
+    "tests": [
+        {
+            "input": {"timeout": 1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello": "world"},
+            "describe": "should succeed if the worker the timeout key is 1 and the worker takes less than 1 seconds to finish",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": 1},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T15:43:51.329Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:43:51.349Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:43:51.349Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"timeout\":1}",
+                  "timeoutInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:43:51.539Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T15:43:51.928Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:43:51.928Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:43:51.928Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":\"world\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timeout": 1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the timeout received is 1 second and the worker takes 2 second to respond",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": 1},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T15:49:29.732Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:49:29.754Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:49:29.754Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"timeout\":1}",
+                  "timeoutInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:49:29.942Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T15:49:30.943Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:49:30.943Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "cause": "An error occurred while executing the state 'Hello'. ",
+                  "error": "States.Timeout"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input does not contain a timeout key",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T15:55:45.581Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:55:45.600Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T15:55:45.600Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.timeout' : No valid results for path: '$.timeout'"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timeout": 0},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should immediatly fail if the input key has a value of 0",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": 0},
+                    "workDurationSeconds" : 1,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T16:01:11.989Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:01:12.012Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:01:12.012Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"timeout\":0}",
+                  "timeoutInSeconds": 0
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:01:12.294Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T16:01:12.300Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:01:12.300Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "cause": "An error occurred while executing the state 'Hello'. ",
+                  "error": "States.Timeout"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timeout": "1"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the timeout key is the STRING '1'",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": "1"},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T16:08:45.925Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":\"1\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:08:45.944Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":\"1\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:08:45.944Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.timeout' : No valid results for path: '$.timeout'"                
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timeout": 1.5},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the timeout key is the a deciman number (1.5)",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": 1.5},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T16:12:00.058Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":1.5}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:12:00.081Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":1.5}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:12:00.081Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.timeout' : No valid results for path: '$.timeout'"                
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timeout": -1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the timeout key is a negative number (-1)",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": 1.5},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T16:13:31.649Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":-1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:13:31.674Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":-1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T16:13:31.674Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.timeout' : No valid results for path: '$.timeout'"                
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "TimeoutSecondsPath": "$.timeout",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true
+            }
+        }
+    }    
+}
+

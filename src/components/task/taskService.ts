@@ -12,7 +12,7 @@ import { ActivityService } from "../activity";
 export const taskOutputMaxLength = 262144;
 export const taskTokenMaxLength = 1024;
 
-export const addTask = async (task: Task): Promise<void> => {
+export const addGeneralTask = async (task: Task): Promise<void> => {
     // TODO 
     await TaskDAL.addToGeneralTaskQueue(task);
 }
@@ -25,12 +25,9 @@ export const numberOfGeneralTask = async (): Promise<number> => {
     return await TaskDAL.lengthOfGeneralTaskQueue();
 }
 
-export const addActivityTask = async (activityArn: string, input: ActivityTask): Promise<void> => {
-    await TaskDAL.addActivityTaskToActivityQueue(activityArn, input);
-}
-
-export const removeActivityTask = async (input: ActivityTask): Promise<number> => {
-    return await TaskDAL.removeActivityTaskFromActivityQueue(input.Resource, input);
+export const addActivityTask = async (activityArn: string, task: ActivityTask): Promise<void> => {
+    await TaskDAL.addActivityTaskKeyValue(task);
+    await TaskDAL.addActivityTaskToActivityQueue(activityArn, task);
 }
 
 export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetActivityTaskOutput> => {
@@ -41,9 +38,8 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
     //todo timeout
     const task = await TaskDAL.popActivityTask(req.activityArn);
     if (task) {
-        task.status = ActivityTaskStatus.Running;
-        await TaskDAL.addActivityTaskToInProgress(task);
-        await Event.activityStartedEvent.emit({executionArn: task.executionArn, workerName: req.workerName})
+        await TaskDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
+        await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})
     }
     return {
         input: task === null ? null : JSON.stringify(task.input),
@@ -54,6 +50,7 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
 export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<void> => {
     ensureTaskTokenIsValid(req?.taskToken);
     const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
+
     if (!activityTask) {
         throw new TaskDoesNotExistError(req.taskToken);
     }
