@@ -128,7 +128,7 @@ export const mockDateNow = '2020-06-07T00:00:01.000Z'
 export type TestStateMachineTestCase = {
     input: Record<string, unknown>,
     expectedStateMachineStatus: StateMachineStatus,
-    expectedOutput: string,
+    expectedOutput: string | Record<string, unknown>,
     describe: string,
     executionName: string,
     activitiesToCreate?: ActivitiyToCreateForTests[],

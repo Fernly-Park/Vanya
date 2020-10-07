@@ -2,7 +2,7 @@
 import { Task, StateInput, StateOutput } from '../task/task.interfaces';
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
-import { applyPath, applyParameters, applyResultPath } from './path';
+import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
 import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivityTimeoutEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
@@ -66,7 +66,7 @@ const processTask = async (task: Task): Promise<void> => {
             default: 
                 throw new Error();
         }
-        effectiveOutput = filterOutput(effectiveInput, result, state);
+        effectiveOutput = await filterOutput(effectiveInput, result, state, task);
     } catch (err) {
         console.log(err)
         await Event.executionFailedEvent.emit({...task, description: (err as Error)?.message})
@@ -92,25 +92,27 @@ const filterInput = async (task: Task, state: StateMachineStateValue): Promise<S
     const asPassState = state as PassState;
     let toReturn = applyPath(task.input, asPassState.InputPath);
     const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
-    toReturn = await applyParameters(contextObject, toReturn, asPassState.Parameters)
+    toReturn = await applyPayloadTemplate(contextObject, toReturn, asPassState.Parameters)
     return toReturn;
 }
 
-const filterOutput = (input: StateInput, output: StateOutput, state: StateMachineStateValue) => {
-    const asPassState = state as PassState;
-    let toReturn = applyResultPath(input, output, asPassState.ResultPath);
-    toReturn = applyPath(toReturn, asPassState.OutputPath);
+export const filterOutput = async (effectiveInput: StateInput, output: StateOutput, state: StateMachineStateValue, task: Task): Promise<StateOutput> => {
+    const asTaskState = state as TaskState;
+    const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
+    let toReturn = applyPayloadTemplate(contextObject, output, asTaskState.ResultSelector)
+    toReturn = applyResultPath(effectiveInput, toReturn, asTaskState.ResultPath);
+    toReturn = applyPath(toReturn, asTaskState.OutputPath);
     return toReturn;
 };
 
 const registerEvents = (): void => {
-    Event.activityTaskSucceededEvent.on(processTaskStateDone);
+    Event.workerOutputReceivedEvent.on(processTaskStateDone);
     Event.stateEnteredEvent.on(onStateEnteredEvent);
     Event.stateExitedEvent.on(onStateExitedEvent);
     Event.activityScheduledEvent.on(onActivityScheduledEvent);
     Event.activityStartedEvent.on(onActivityStartedEvent);
     Event.activityStartedEvent.on(processActivityTaskStarted)
-    Event.activitySucceededEvent.on(onActivitySucceededEvent);
+    Event.workerOutputReceivedEvent.on(onActivitySucceededEvent);
     Event.executionFailedEvent.on(onExecutionFailedEvent);
     Event.executionSucceededEvent.on(onExecutionSucceededEvent);
     Event.activityTimeoutEvent.on(onActivityTimeoutEvent);
@@ -121,13 +123,13 @@ const registerEvents = (): void => {
 }
 
 const unregisterEvents = (): void => {
-    Event.activityTaskSucceededEvent.removeListener(processTaskStateDone);
+    Event.workerOutputReceivedEvent.removeListener(processTaskStateDone);
     Event.stateEnteredEvent.removeListener(onStateEnteredEvent);
     Event.stateExitedEvent.removeListener(onStateExitedEvent);
     Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
     Event.activityStartedEvent.removeListener(onActivityStartedEvent);
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)
-    Event.activitySucceededEvent.removeListener(onActivitySucceededEvent);
+    Event.workerOutputReceivedEvent.removeListener(onActivitySucceededEvent);
     Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
     Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
     Event.activityTimeoutEvent.removeListener(onActivityTimeoutEvent);

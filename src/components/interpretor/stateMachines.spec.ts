@@ -98,7 +98,11 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         expect(numberOfRemainingTasks).toBe(0);
         expect(numberOfDelayedTask).toBe(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
-        expect(finishedExecution.output).toBe(isAnObject(currentTest.expectedOutput) ? JSON.stringify(currentTest.expectedOutput): currentTest.expectedOutput);
+        if (typeof currentTest.expectedOutput === 'object') {
+            expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
+        } else {
+            expect(finishedExecution.output).toBe(currentTest.expectedOutput);
+        }
         expect(finishedExecution.stopDate).toBeDefined();
         expect(finishedExecution.input).toStrictEqual(currentTest.input)
         if (currentTest.events) {
@@ -179,4 +183,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests();
+generateStateMachinesTests({stateMachineName: 'task-resultSelector'});

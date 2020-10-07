@@ -23,6 +23,7 @@ export enum CustomEvents {
     WaitingStateDone = 'WaitingStateDone',
     TaskTimeout = 'TaskTimeout',
     StopListeningToEvents = 'StopListeningToEvents',
+    WorkerOutputReceived = 'WorkerOutputReceived',
     ActivityTaskSucceeded = 'ActivityTaskSucceeded',
     activityTaskHeartbeat = 'ActivityTaskHeartbeat',
     ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout'
@@ -74,7 +75,8 @@ const factoryCustomEvent = <T>(eventName: string) => {
 }
 
 export const stateEnteredEvent = factoryCustomEvent<StateEnteredEventInput>(HistoryEventType.StateEntered);
-export const activityTaskSucceededEvent = factoryCustomEvent<ActivityTask>(CustomEvents.ActivityTaskSucceeded);
+export const workerOutputReceivedEvent = factoryCustomEvent<ActivityTask>(CustomEvents.WorkerOutputReceived);
+export const activityTaskSucceededEvent = factoryCustomEvent<ActivityTask>(CustomEvents.ActivityTaskSucceeded)
 export const stateExitedEvent = factoryCustomEvent<StateExitedEventInput>(HistoryEventType.StateExited);
 export const activityScheduledEvent = factoryCustomEvent<ActivityScheduledEventInput>(HistoryEventType.ActivityScheduled);
 export const activityStartedEvent = factoryCustomEvent<ActivityStartedEventInput>(HistoryEventType.ActivityStarted);

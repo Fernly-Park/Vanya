@@ -1,0 +1,175 @@
+{
+    "describe": "simple state machine with a single task state containing a resultSelector", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"numbers": [1,2],"constant":"constant","output":{"numbers":[1,2]},"stateName":"Hello",   "shouldNotChange": "$.numbers"},
+            "describe": "should succeed if the worker send a numbers key in the output",
+            "activitiesToCreate": [
+                {
+                    "name": "activity",
+                    "expectedInput": {},
+                    "output": {"numbers": [1,2]}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T18:28:05.234Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:28:05.263Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:28:05.263Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:activity",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:28:05.476Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T18:28:05.834Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"numbers\":[1,2]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:28:05.834Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"stateName\":\"Hello\",\"output\":{\"numbers\":[1,2]},\"numbers\":[1,2],\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:28:05.834Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                    "output": "{\"stateName\":\"Hello\",\"output\":{\"numbers\":[1,2]},\"numbers\":[1,2],\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the worker does not send a numbers key in the output",
+            "activitiesToCreate": [
+                {
+                    "name": "activity",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T18:45:14.750Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:45:14.774Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:45:14.774Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:activity",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:45:14.986Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T18:45:15.342Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T18:45:15.342Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. The JSONPath '$.numbers' could not be found in the input"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "ResultSelector": {
+                    "stateName.$": "$$.State.Name",
+                    "output.$": "$",
+                    "numbers.$": "$.numbers",
+                    "constant": "constant",
+                    "shouldNotChange": "$.numbers"
+                },
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:activity",
+                "End": true
+            }
+        }
+    }    
+}
+

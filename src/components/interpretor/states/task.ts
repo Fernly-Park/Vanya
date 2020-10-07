@@ -4,7 +4,7 @@ import { InvalidPathError, TaskResourceDoesNotExistsError } from "@App/errors/cu
 import * as Event from '@App/components/events';
 import { applyPath, retrieveField } from "../path";
 import { ExecutionService } from "@App/components/execution";
-import { endStateExecution } from "../interpretorService";
+import { endStateExecution, filterOutput } from "../interpretorService";
 import { ExecutionStatus } from "@App/components/execution/execution.interfaces";
 import { TaskService } from "@App/components/task";
 import { ActivityService } from "@App/components/activity";
@@ -61,7 +61,7 @@ export const processTaskStateDone = async (activityTask: ActivityTask): Promise<
     // outputPath
     let output: StateOutput;
     try {
-        output = applyPath(activityTask.output, activityTask.OutputPath);
+        output = await filterOutput(activityTask.input, activityTask.output, activityTask, activityTask);
     } catch (err) {
         await TaskService.modifyActivityTaskStatus(activityTask, ActivityTaskStatus.TimedOut);
         await Event.executionFailedEvent.emit({...activityTask, description: (err as Error)?.message});

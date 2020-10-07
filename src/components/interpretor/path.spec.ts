@@ -1,7 +1,7 @@
 import { InvalidPathError } from "@App/errors/customErrors";
 import { dummyExecutionArn, dummyRoleARN, dummyStateMachineArn } from "@Tests/testHelper";
 import { ContextObject } from "../execution/execution.interfaces";
-import { applyPath, applyParameters, applyResultPath, } from './path';
+import { applyPath, applyPayloadTemplate, applyResultPath, } from './path';
 
 describe('inputPath tests', () => {
 
@@ -64,7 +64,7 @@ describe('parameters', () => {
             StateMachine: {Id: dummyStateMachineArn, Name: 'smName'},
             State: {EnteredTime, Name: 'HelloWorld', RetryCount: 0}
         };
-        const output = applyParameters(contextObj, parsedInput, parameters);
+        const output = applyPayloadTemplate(contextObj, parsedInput, parameters);
         expect(output).toStrictEqual({
             CadContextObj: '$$',
             ContextObjectStateName: 'HelloWorld',

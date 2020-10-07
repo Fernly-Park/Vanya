@@ -3,6 +3,7 @@ import { StateType } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEventType } from '../execution/execution.interfaces';
 import { ActivityScheduledEventInput, ActivityStartedEventInput, ActivitySucceededEventInput, ActivityTimeoutEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
 import { ExecutionService } from '../execution';
+import { ActivityTask } from '../task/task.interfaces';
 
 export enum InterpretorEvents {
     ActivityScheduled = 'ActivityScheduled',
@@ -51,7 +52,7 @@ export const onActivityStartedEvent = async (req: ActivityStartedEventInput): Pr
     }});
 }
 
-export const onActivitySucceededEvent = async (req: ActivitySucceededEventInput): Promise<void> => {
+export const onActivitySucceededEvent = async (req: ActivityTask): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event : {
         type: HistoryEventType.ActivitySucceeded as HistoryEventType,
         activitySucceededEventDetails: {

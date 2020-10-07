@@ -25,7 +25,7 @@ export const applyPath = (rawInput: StateInput | StateOutput, path: string): Sta
     return toReturn ?? rawInput;
 }
 
-export const applyParameters = (contextObject: ContextObject, input: StateInput, parameters: Record<string, unknown>): StateInput => {
+export const applyPayloadTemplate = (contextObject: ContextObject, input: StateInput, parameters: Record<string, unknown>): StateInput => {
     if(!parameters) {
         return input;
     }
@@ -39,7 +39,6 @@ export const applyParameters = (contextObject: ContextObject, input: StateInput,
             toReturn[key] = val;
         }
     }
-
     return toReturn;
 }
 

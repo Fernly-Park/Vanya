@@ -72,6 +72,7 @@ export interface TaskState extends StateMachineStateValue {
     InputPath?: string,
     OutputPath?: string,
     ResultPath?: string,
+    ResultSelector?: Record<string, unknown>
     Parameters?: unknown,
     Next?: string,
     End?: boolean,
