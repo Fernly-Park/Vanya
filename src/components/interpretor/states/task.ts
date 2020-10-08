@@ -3,13 +3,12 @@ import { ActivityTask, ActivityTaskStatus, StateInput, StateOutput, Task } from 
 import { InvalidPathError, TaskResourceDoesNotExistsError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
 import { retrieveField } from "../path";
-import { ExecutionService } from "@App/components/execution";
-import { endStateExecution, filterOutput } from "../interpretorService";
-import { ExecutionStatus } from "@App/components/execution/execution.interfaces";
+import { endStateExecution, filterOutput, stateFailed } from "../interpretorService";
 import { TaskService } from "@App/components/task";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
 import { AWSConstant } from "@App/utils/constants";
+import { SendTaskFailureEventInput } from "@App/components/events";
 
 export const processTaskState = async (task: Task, state: TaskState, effectiveInput: StateInput, token: string): Promise<void> => {
     const resource = state.Resource;
@@ -64,8 +63,10 @@ export const processTaskStateDone = async (activityTask: ActivityTask): Promise<
         output = await filterOutput(activityTask.rawInput, activityTask.output, activityTask, activityTask);
     } catch (err) {
         await TaskService.modifyActivityTaskStatus(activityTask, ActivityTaskStatus.TimedOut);
-        await Event.executionFailedEvent.emit({...activityTask, description: (err as Error)?.message});
-        return await ExecutionService.endExecution({executionArn: activityTask.executionArn, status: ExecutionStatus.failed});
+        return await stateFailed({task: activityTask, 
+            cause: `An error occurred while executing the state '${activityTask.stateName}'. ${(err as Error)?.message ?? ''}`,
+            error: AWSConstant.error.STATE_RUNTIME
+        })
     }
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
@@ -76,12 +77,33 @@ export const processTaskStateDone = async (activityTask: ActivityTask): Promise<
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
     const activityTask = await TaskService.getActivityTaskFromToken(activityTaskToken)
+    await cleanTaskStateFailedHelper(activityTask);
+    await Event.activityTimeoutEvent.emit({executionArn: activityTask.executionArn});
+    await stateFailed({task: activityTask,
+        error: AWSConstant.error.STATE_TIMEOUT,
+        cause: `An error occurred while executing the state '${activityTask.stateName}'. `,
+    })
+}
+
+export const processTaskFailed = async (input: SendTaskFailureEventInput): Promise<void> => {
+    const {activityTask} = input;
+
+    if (activityTask.status === ActivityTaskStatus.TimedOut) {
+        throw new Error('todo');
+    }
+
+    await cleanTaskStateFailedHelper(activityTask);
+    await Event.activityFailureEvent.emit(input);
+    await stateFailed({task: activityTask, 
+        cause: input.cause,
+        error: input.error
+    });
+};
+
+const cleanTaskStateFailedHelper = async (activityTask: ActivityTask) => {
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
     await TaskService.modifyActivityTaskStatus(activityTask, ActivityTaskStatus.TimedOut);
-    await Event.activityTimeoutEvent.emit({executionArn: activityTask.executionArn});
-    await Event.executionFailedEvent.emit({...activityTask, error: AWSConstant.error.STATE_TIMEOUT});
-    await ExecutionService.endExecution({executionArn: activityTask.executionArn, status: ExecutionStatus.failed});
 }
 
 export const processTaskHeartbeat = async (activityTask: ActivityTask): Promise<void> => {

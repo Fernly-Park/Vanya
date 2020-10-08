@@ -13,8 +13,9 @@ export type ActivityScheduledEventInput = {executionArn: string, heartbeatSecond
 export type ActivityStartedEventInput = {task: ActivityTask, workerName?: string};
 export type ActivitySucceededEventInput = {executionArn: string, output: unknown};
 export type ActivityTimeoutEventInput = {executionArn: string, cause?: string};
-export type ExecutionFailedEventInput = {executionArn: string, stateName: string, description?: string, error?: string};
+export type ExecutionFailedEventInput = {executionArn: string, stateName: string, error?: string, cause?: string};
 export type ExecutionSucceededEventInput = {executionArn: string, result: unknown};
+export type ActivityFailedEventInput = SendTaskFailureEventInput;
 
 type EventCallback = (...args: any[]) => Promise<void>;
 let events: Record<string, EventCallback[]> = {};
@@ -28,7 +29,8 @@ export enum CustomEvents {
     ActivityTaskSucceeded = 'ActivityTaskSucceeded',
     ActivityTaskHeartbeat = 'ActivityTaskHeartbeat',
     ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout',
-    SendTaskFailure = 'SendTaskFailure'
+    SendTaskFailure = 'SendTaskFailure',
+    ActivityFailure = 'ActivityFailure'
 }
 
 export const on = (eventName: string, callback: EventCallback): void => {
@@ -87,4 +89,5 @@ export const executionFailedEvent = factoryCustomEvent<ExecutionFailedEventInput
 export const executionSucceededEvent = factoryCustomEvent<ExecutionSucceededEventInput>(HistoryEventType.ExecutionSucceeded);
 export const activityTimeoutEvent = factoryCustomEvent<ActivityTimeoutEventInput>(HistoryEventType.ActivityTimedOut);
 export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.ActivityTaskHeartbeat);
+export const activityFailureEvent = factoryCustomEvent<ActivityFailedEventInput>(CustomEvents.ActivityFailure)
 export const sendTaskFailureEvent = factoryCustomEvent<SendTaskFailureEventInput>(CustomEvents.SendTaskFailure);

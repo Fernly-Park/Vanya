@@ -3,16 +3,17 @@ import { Task, StateInput, StateOutput } from '../task/task.interfaces';
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
-import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivityTimeoutEvent } from './historyEvent';
+import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivityTimeoutEvent, onActivityFailedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
-import { processActivityTaskStarted, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
+import { processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
 import * as Event from '../events';
 import { TaskService } from '../task';
 import { ExecutionService } from '../execution';
 import { StateMachineService } from '../stateMachines';
 import { TimerService } from '../timer';
+import { AWSConstant } from '@App/utils/constants';
 
 let interpretor = true;
 export const startInterpretor = (): void => {
@@ -69,8 +70,10 @@ const processTask = async (task: Task): Promise<void> => {
         effectiveOutput = await filterOutput(task.rawInput, result, state, task);
     } catch (err) {
         console.log(err)
-        await Event.executionFailedEvent.emit({...task, description: (err as Error)?.message})
-        return await ExecutionService.endExecution({executionArn: task.executionArn, status: ExecutionStatus.failed})
+        return await stateFailed({task, 
+            cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
+            error: AWSConstant.error.STATE_RUNTIME
+        })
     }
     
     await endStateExecution({...task, output: effectiveOutput, nextStateName: next, stateType: state.Type});
@@ -86,6 +89,11 @@ export const endStateExecution = async (req: {executionArn: string, stateMachine
         await Event.executionSucceededEvent.emit({result: req.output, executionArn: req.executionArn})
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
     }   
+}
+
+export const stateFailed = async (req: {task: Task, cause?: string, error?: string}): Promise<void> => {
+    await Event.executionFailedEvent.emit({...req.task, cause: req.cause, error: req.error})
+    return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
 }
 
 const filterInput = async (task: Task, state: StateMachineStateValue): Promise<StateInput> => {
@@ -106,6 +114,7 @@ export const filterOutput = async (rawInput: StateInput, output: StateOutput, st
 };
 
 const registerEvents = (): void => {
+    Event.sendTaskFailureEvent.on(processTaskFailed);
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
     Event.stateEnteredEvent.on(onStateEnteredEvent);
     Event.stateExitedEvent.on(onStateExitedEvent);
@@ -117,15 +126,18 @@ const registerEvents = (): void => {
     Event.executionSucceededEvent.on(onExecutionSucceededEvent);
     Event.activityTimeoutEvent.on(onActivityTimeoutEvent);
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
+    Event.activityFailureEvent.on(onActivityFailedEvent);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
 }
 
 const unregisterEvents = (): void => {
+    Event.sendTaskFailureEvent.removeListener(processTaskFailed);
     Event.workerOutputReceivedEvent.removeListener(processTaskStateDone);
     Event.stateEnteredEvent.removeListener(onStateEnteredEvent);
     Event.stateExitedEvent.removeListener(onStateExitedEvent);
+    Event.activityFailureEvent.removeListener(onActivityFailedEvent);
     Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
     Event.activityStartedEvent.removeListener(onActivityStartedEvent);
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)

@@ -412,6 +412,84 @@
                  }
                 }
             ]
+        },
+        {
+            "input": {"timeout": 1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the worker the timeout key is 1 and the workers send a task failure before 1 second",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"timeout": 1},
+                    "workDurationSeconds" : 0,
+                    "output": {"hello": "world"},
+                    "fail": {
+                        "cause": "hello"
+                    },
+                    "workerName": "hello"
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T21:13:58.161Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timeout\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:13:58.183Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timeout\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:13:58.183Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"timeout\":1}",
+                  "timeoutInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:13:58.466Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {
+                  "workerName": "hello"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:13:58.666Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "cause": "hello"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:13:58.666Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "cause": "hello"
+                 }
+                }
+            ]
         }
     ],
     "definition": {

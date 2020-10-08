@@ -214,31 +214,33 @@
         },
         {
             "input": {},
-            "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {},
-            "describe": "should succeed if heartbeat are send even if not required",
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if a sendTaskFailure is sent",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
                     "expectedInput": {},
-                    "workDurationSeconds" : 1,
-                    "output": {},
-                    "heartbeatIntervalSeconds": 0.5
+                    "workDurationSeconds" : 0,
+                    "fail": {
+                        "cause": "customCause",
+                        "error": "customError"
+                    }
                 }
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-02T20:51:57.827Z",
+                 "timestamp": "2020-10-08T17:59:04.913Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
                  "executionStartedEventDetails": {
-                    "input": "{}",
-                    "roleArn": "todo"
+                  "input": "{}",
+                  "roleArn": "todo"
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:51:57.866Z",
+                 "timestamp": "2020-10-08T17:59:04.944Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -248,48 +250,41 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:51:57.866Z",
+                 "timestamp": "2020-10-08T17:59:04.944Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
                  "activityScheduledEventDetails": {
                   "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
-                  "input": "{}"                 }
+                  "input": "{}"
+                 }
                 },
                 {
-                 "timestamp": "2020-10-02T20:52:36.331Z",
+                 "timestamp": "2020-10-08T17:59:05.152Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
                  "activityStartedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-02T20:52:36.511Z",
-                 "type": "ActivitySucceeded",
+                 "timestamp": "2020-10-08T17:59:05.329Z",
+                 "type": "ActivityFailed",
                  "id": 5,
                  "previousEventId": 4,
-                 "activitySucceededEventDetails": {
-                  "output": "{}"
+                 "activityFailedEventDetails": {
+                  "error": "customError",
+                  "cause": "customCause"
                  }
                 },
                 {
-                 "timestamp": "2020-10-02T20:52:36.511Z",
-                 "type": "TaskStateExited",
+                 "timestamp": "2020-10-08T17:59:05.329Z",
+                 "type": "ExecutionFailed",
                  "id": 6,
                  "previousEventId": 5,
-                 "stateExitedEventDetails": {
-                  "name": "Hello",
-                  "output": "{}"
+                 "executionFailedEventDetails": {
+                  "error": "customError",
+                  "cause": "customCause"
                  }
-                },
-                {
-                 "timestamp": "2020-10-02T20:52:36.511Z",
-                 "type": "ExecutionSucceeded",
-                 "id": 7,
-                 "previousEventId": 6,
-                 "executionSucceededEventDetails": {
-                    "output": "{}"
-                }
                 }
             ]
         }

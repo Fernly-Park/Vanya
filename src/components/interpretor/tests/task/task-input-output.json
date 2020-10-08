@@ -88,6 +88,88 @@
             ]
         },
         {
+            "input": {
+                "random": "toDelete",
+                "Important" : {
+                    "inTheOutput": "hello"
+                },  
+                "numbers": [1,3]
+            },
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if there is a 'numbers' key in the input but the worker send a task failure",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"constant":"constant","shouldNotChange":"$.numbers","Important":{"shouldBe":"deleted"},"input":[1,3],"stateName":"Hello"},
+                    "output": {"output": 45},
+                    "fail": {
+                        "error": "myError"
+                    },
+                    "workerName": "hello"
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T21:19:42.482Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"random\":\"toDelete\",\"Important\":{\"inTheOutput\":\"hello\"},\"numbers\":[1,3]}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:19:42.525Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"random\":\"toDelete\",\"Important\":{\"inTheOutput\":\"hello\"},\"numbers\":[1,3]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:19:42.525Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"stateName\":\"Hello\",\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\",\"input\":[1,3],\"Important\":{\"shouldBe\":\"deleted\"}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:19:42.730Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {
+                  "workerName": "hello"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:19:42.914Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "myError"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:19:42.914Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "error": "myError"
+                 }
+                }
+            ]
+        },
+        {
             "input": {},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,

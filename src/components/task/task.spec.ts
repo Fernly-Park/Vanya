@@ -186,7 +186,7 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             await expect(TaskService.sendTaskFailure({taskToken: 'hello'})).rejects.toThrow(TaskDoesNotExistError);
         });
 
-        it.each([null, 0, 0.1, {}])('should fail if the cause is %p', async (cause: string) => {
+        it.each([0, 0.1, {}])('should fail if the cause is %p', async (cause: string) => {
             expect.assertions(1);
 
             const {result} = await createAndGetActivityTaskHelper();
@@ -200,7 +200,7 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             await expect(TaskService.sendTaskFailure({taskToken: result.taskToken, cause: 'a'.repeat(32769)})).rejects.toThrow(ValidationExceptionError);
         });
 
-        it.each([null, 0, 0.1, {}])('should fail if the error is %p', async (error: string) => {
+        it.each([0, 0.1, {}])('should fail if the error is %p', async (error: string) => {
             expect.assertions(1);
 
             const {result} = await createAndGetActivityTaskHelper();

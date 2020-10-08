@@ -88,6 +88,76 @@
             "input": {},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
+            "describe": "should succeed if the worker send a heartbeat every 0.5 seconds and the task lasts for 2 seconds but sends a failure in the end",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5,
+                    "fail": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T21:26:46.030Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:26:46.050Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:26:46.050Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}",
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T21:26:46.241Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T21:26:46.441Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T21:26:46.441Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {}
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
             "describe": "should fail if the interval between heartbeat is 2 second",
             "activitiesToCreate": [
                 {

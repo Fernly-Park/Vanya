@@ -59,33 +59,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         let finishedExecution = await ExecutionService.describeExecution(execution);
         while (finishedExecution.status === ExecutionStatus.running) {
             finishedExecution = await ExecutionService.describeExecution(execution);
-            if (activities) {
-                for(const activity of activities) {
-                    activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
-                    const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
-                    if (res.input) {
-                            const interval = activity.heartbeatIntervalSeconds 
-                            ? setInterval(() => {
-                                // eslint-disable-next-line jest/valid-expect-in-promise
-                                void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch((err) => {
-                                    console.log(err);
-                                    return clearInterval(interval);
-                                })
-                            }, activity.heartbeatIntervalSeconds * 1000)
-                            : undefined;
-                        expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
-                        if (activity.workDurationSeconds) {
-                            await TestHelper.sleep(activity.workDurationSeconds * 1000)
-                        }
-                        try {
-                            interval ? clearInterval(interval) : false
-                            await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
-                        // eslint-disable-next-line no-empty
-                        } catch {
-                        }
-                    }
-                }
-            }
+            await manageWorkers(activities);
         }
         const numberOfRemainingTasks = await TaskService.numberOfGeneralTask();
         const numberOfDelayedTask = await TimerService.numberOfTimedTask();
@@ -107,6 +81,43 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         }
     });
 }
+
+const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityArn: string})[]) => {
+    if (!activities) {
+        return;
+    }
+    for(const activity of activities) {
+        activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
+        const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
+        if (res.input) {
+            const interval = activity.heartbeatIntervalSeconds 
+            ? setInterval(() => {
+                // eslint-disable-next-line jest/valid-expect-in-promise
+                void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch((err) => {
+                    console.log(err);
+                    return clearInterval(interval);
+                })
+            }, activity.heartbeatIntervalSeconds * 1000)
+            : undefined;
+            expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
+            if (activity.workDurationSeconds) {
+                await TestHelper.sleep(activity.workDurationSeconds * 1000)
+            }
+            try {
+                interval ? clearInterval(interval) : false
+                if (activity.fail) {
+                    await TaskService.sendTaskFailure({taskToken: res.taskToken, cause: activity.fail.cause, error: activity.fail.error});
+                } else {
+                    await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
+                }
+            // eslint-disable-next-line no-empty
+            } catch (err){
+                console.log('error sending : ', err)
+            }
+        }
+    }
+}
+
 const createActivities = async (activities: ActivitiyToCreateForTests[], userId: string): Promise<(ActivitiyToCreateForTests & {activityArn: string})[]> => {
     if (!activities) return;
 

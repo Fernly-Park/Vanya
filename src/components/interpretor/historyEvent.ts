@@ -1,7 +1,7 @@
 import { AWSConstant } from '@App/utils/constants';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEventType } from '../execution/execution.interfaces';
-import { ActivityScheduledEventInput, ActivityStartedEventInput, ActivitySucceededEventInput, ActivityTimeoutEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
+import { ActivityFailedEventInput, ActivityScheduledEventInput, ActivityStartedEventInput, ActivitySucceededEventInput, ActivityTimeoutEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
 import { ExecutionService } from '../execution';
 import { ActivityTask } from '../task/task.interfaces';
 
@@ -75,8 +75,8 @@ export const onExecutionFailedEvent = async (req: ExecutionFailedEventInput): Pr
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionFailed,
         executionFailedEventDetails: {
-            cause: `An error occurred while executing the state '${req.stateName}'. ${req.description ?? ''}`,
-            error: req.error ?? AWSConstant.error.STATE_RUNTIME
+            cause: req.cause === null ? undefined : req.cause, 
+            error: req.error === null ? undefined : req.error
         }
     }});
 }
@@ -86,6 +86,16 @@ export const onExecutionSucceededEvent = async (req: ExecutionSucceededEventInpu
         type: HistoryEventType.ExecutionSucceeded,
         executionSucceededEventDetails: {
             output: JSON.stringify(req.result),
+        }
+    }});
+}
+
+export const onActivityFailedEvent = async (req: ActivityFailedEventInput): Promise<void> => {
+    return await ExecutionService.addEvent({executionArn: req.activityTask.executionArn, event: {
+        type: HistoryEventType.ActivityFailed,
+        activityFailedEventDetails: {
+            cause: req.cause === null ? undefined : req.cause, 
+            error: req.error === null ? undefined : req.error
         }
     }});
 }

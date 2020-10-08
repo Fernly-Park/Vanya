@@ -154,6 +154,10 @@ export type ActivitiyToCreateForTests = {
     output: string,
     expectedInput: Record<string, unknown>,
     workDurationSeconds?: number,
+    fail?: {
+        cause?: string,
+        error?: string
+    }
     waitBeforeGetActivityTaskSeconds?: number,
     workerName: string
     heartbeatIntervalSeconds?: number

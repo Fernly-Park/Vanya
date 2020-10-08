@@ -194,7 +194,9 @@ const putPreviousEventIdsForTaskStateHelper = (events: HistoryEvent[], lastEvent
             activityStarted.previousEventId = lastEventId;
             lastEventId = activityStarted.id;
 
-            const activityFinished = events.find(x => x.type === HistoryEventType.ActivitySucceeded || x.type === HistoryEventType.ActivityTimedOut);
+            const activityFinished = events.find(x => x.type === HistoryEventType.ActivitySucceeded 
+                || x.type === HistoryEventType.ActivityTimedOut 
+                || x.type === HistoryEventType.ActivityFailed);
             activityFinished.previousEventId = lastEventId;
             lastEventId = activityFinished.id;
         }

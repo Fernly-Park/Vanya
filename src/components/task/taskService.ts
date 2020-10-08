@@ -84,26 +84,26 @@ export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> 
     ensureSendTaskFailureInputIsValid(req);
     const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
     if (!activityTask) {
+        
         throw new TaskDoesNotExistError(req.taskToken);
     }
-
     await Event.sendTaskFailureEvent.emit({activityTask, cause: req.cause, error: req.error})
 }
 
 const ensureSendTaskFailureInputIsValid = (req: SendTaskFailureInput): void => {
     ensureTaskTokenIsValid(req?.taskToken);
-    if (req?.cause !== undefined && !isAString(req.cause)) {
+    if (req?.cause != null && !isAString(req.cause)) {
         throw new InvalidParameterTypeError('Expected params.cause to be a string');
     }
-    if (req?.cause !== undefined && req.cause.length > causeMaxLength) {
+    if (req?.cause != null && req.cause.length > causeMaxLength) {
         throw new ValidationExceptionError("Value at 'cause' failed to satisfy constraint: Member must have length less than or equal to 32768")
     }
 
-    if (req?.error !== undefined && !isAString(req.error)){
+    if (req?.error != null && !isAString(req.error)){
         throw new InvalidParameterTypeError('Expected params.error to be a string');
     }
 
-    if (req?.error !== undefined && req.error.length > causeMaxLength) {
+    if (req?.error != null && req.error.length > causeMaxLength) {
         throw new ValidationExceptionError("Value at 'error' failed to satisfy constraint: Member must have length less than or equal to 256")
     }
 }
