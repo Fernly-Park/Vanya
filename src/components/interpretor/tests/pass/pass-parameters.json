@@ -38,6 +38,100 @@
                     }
                 }
             ]
+        },
+        {
+            "input": {"numbers": [1,2]},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Numbers": [1,2]},
+            "describe": "should succeed if the 'numbers' key is in the input",
+            "events":[
+                {
+                 "timestamp": "2020-10-08T14:05:04.963Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":[1,2]}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:05:04.999Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "HelloWorld",
+                  "input": "{\"numbers\":[1,2]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:05:04.999Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "HelloWorld",
+                  "output": "{\"Numbers\":[1,2]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:05:04.999Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Numbers\":[1,2]}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numbers": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Numbers": null},
+            "describe": "should succeed if the 'numbers' key is in the input even if it's value is null",
+            "events":[
+                {
+                 "timestamp": "2020-10-08T14:08:26.961Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:08:26.981Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "HelloWorld",
+                  "input": "{\"numbers\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:08:26.981Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "HelloWorld",
+                  "output": "{\"Numbers\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:08:26.981Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Numbers\":null}"
+                 }
+                }
+            ]
         }
     ],
     "definition": {

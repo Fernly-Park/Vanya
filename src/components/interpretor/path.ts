@@ -31,7 +31,9 @@ export const applyPayloadTemplate = (contextObject: ContextObject, input: StateI
     }
     const toReturn: Record<string, unknown> = {};
     for(const [key, val] of Object.entries(parameters)) {
-        if (key.endsWith('.$')) {
+        if(typeof val === 'object') {
+            toReturn[key] = applyPayloadTemplate(contextObject, input, val as Record<string, unknown>)
+        } else if (key.endsWith('.$')) {
             const value = val as string;
             const result = calculateParameterValue(input, value, contextObject);
             toReturn[key.substring(0, key.length - 2)] = result;
@@ -39,6 +41,7 @@ export const applyPayloadTemplate = (contextObject: ContextObject, input: StateI
             toReturn[key] = val;
         }
     }
+    console.log('toReturn: ', toReturn)
     return toReturn;
 }
 

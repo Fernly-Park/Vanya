@@ -43,7 +43,7 @@
             "input": {"hello": "world"},
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": "world",
-            "describe": "should fail if the inputPath is not in the input",
+            "describe": "should succeed if the 'hello' key is in the input",
             "events": [
                 {
                  "timestamp": "2020-10-02T14:15:40.620Z",
@@ -82,6 +82,53 @@
                  "previousEventId": 3,
                  "executionSucceededEventDetails": {
                   "output": "\"world\""
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"hello": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": null,
+            "describe": "should succeed if the inputPath is in the input with the value null",
+            "events": [
+                {
+                 "timestamp": "2020-10-08T13:56:34.611Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T13:56:34.641Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "HelloWorld",
+                  "input": "{\"hello\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T13:56:34.641Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "HelloWorld",
+                  "output": "null"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T13:56:34.641Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "null"
                  }
                 }
             ]

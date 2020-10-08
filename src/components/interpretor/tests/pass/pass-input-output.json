@@ -1,0 +1,111 @@
+{
+    "describe": "state machine with a single pass state containing InputPath, Parameters, ResultPath, OutputPath", 
+    "tests": [
+        {
+            "input": {"numbers":[0,1]},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"passOutput": {"Important": {"alsoInParam": "hello","input": [0,1]},"notImportant": "notTwice"}},
+            "describe": "should succeed if the input contains the 'numbers' key",
+            "events": [
+                {
+                 "timestamp": "2020-10-08T14:17:55.290Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":[0,1]}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:17:55.320Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numbers\":[0,1]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:17:55.320Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"passOutput\":{\"Important\":{\"input\":[0,1],\"alsoInParam\":\"hello\"},\"notImportant\":\"notTwice\"}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:17:55.320Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                    "output": "{\"passOutput\":{\"Important\":{\"input\":[0,1],\"alsoInParam\":\"hello\"},\"notImportant\":\"notTwice\"}}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input does not contains the 'numbers' key",
+            "events": [
+                {
+                 "timestamp": "2020-10-08T14:40:34.690Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:40:34.710Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T14:40:34.710Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.numbers' : No valid results for path: '$.numbers'"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+          "Hello": {
+            "Type": "Pass",
+            "InputPath": "$.numbers",
+            "Parameters": {
+              "Important": {
+                "input.$": "$",
+                "alsoInParam": "hello"
+              },
+              "notImportant": "notTwice"
+            },
+            "ResultPath": "$.Important.passOutput",
+            "OutputPath": "$.Important",
+            "End": true
+          }
+        }
+    }  
+}
+

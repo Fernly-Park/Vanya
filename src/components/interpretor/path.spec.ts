@@ -120,6 +120,46 @@ describe('parameters', () => {
         const output = applyPayloadTemplate(contextObj, parsedInput, parameters);
         expect(output).toStrictEqual({Numbers: null})
     });
+
+    it('should work using $', () => {
+        expect.assertions(1);
+
+        const parameters = {
+            "Numbers.$": "$",
+        };
+
+        const StartTime = new Date();
+        const EnteredTime = new Date();        
+        const parsedInput: Record<string, unknown> = {"hello": "world"};
+        const contextObj: ContextObject = {
+            Execution: {Id: dummyExecutionArn, Input: parsedInput, Name: 'executionName', RoleArn: dummyRoleARN, StartTime},
+            StateMachine: {Id: dummyStateMachineArn, Name: 'smName'},
+            State: {EnteredTime, Name: 'HelloWorld', RetryCount: 0}
+        };
+        const output = applyPayloadTemplate(contextObj, parsedInput, parameters);
+        expect(output).toStrictEqual({Numbers: parsedInput})
+    })
+
+    it('should work even if the key are nested', () => {
+        expect.assertions(1);
+
+        const parameters = {
+            "Numbers": {
+                "input.$": "$"
+            },
+        };
+
+        const StartTime = new Date();
+        const EnteredTime = new Date();        
+        const parsedInput: Record<string, unknown> = {"hello": "world"};
+        const contextObj: ContextObject = {
+            Execution: {Id: dummyExecutionArn, Input: parsedInput, Name: 'executionName', RoleArn: dummyRoleARN, StartTime},
+            StateMachine: {Id: dummyStateMachineArn, Name: 'smName'},
+            State: {EnteredTime, Name: 'HelloWorld', RetryCount: 0}
+        };
+        const output = applyPayloadTemplate(contextObj, parsedInput, parameters);
+        expect(output).toStrictEqual({Numbers: {input: parsedInput}})
+    });
 });
 
 describe('result path', () => {
