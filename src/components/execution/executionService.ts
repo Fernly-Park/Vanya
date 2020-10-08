@@ -55,7 +55,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         },
     });
 
-    await TaskService.addGeneralTask({ stateName: firstStateName, input: result.input, executionArn, stateMachineArn: stateMachine.arn});
+    await TaskService.addGeneralTask({ stateName: firstStateName, rawInput: result.input, executionArn, stateMachineArn: stateMachine.arn});
     await addEvent({executionArn, event: {
         executionStartedEventDetails: {
             input: JSON.stringify(result.input),

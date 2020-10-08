@@ -1,0 +1,178 @@
+{
+    "describe": "simple state machine with a single task state containing a resultPath of 'hello'", 
+    "tests": [
+        {
+            "input": {"firstKey": "firstKeyVal"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"firstKey":"firstKeyVal","hello":{"worker":"result"}},
+            "describe": "should succeed and create a 'hello' key in the output",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"firstKey": "firstKeyVal"},
+                    "output": {"worker": "result"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T19:15:13.143Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"firstKey\":\"firstKeyVal\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:15:13.165Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"firstKey\":\"firstKeyVal\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:15:13.165Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"firstKey\":\"firstKeyVal\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:15:13.374Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T19:15:13.711Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"worker\":\"result\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:15:13.711Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"firstKey\":\"firstKeyVal\",\"hello\":{\"worker\":\"result\"}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:15:13.711Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"firstKey\":\"firstKeyVal\",\"hello\":{\"worker\":\"result\"}}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"hello": "toBeOverride"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello":{"worker":"result"}},
+            "describe": "should succeed override the 'hello' key from the input",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"hello": "toBeOverride"},
+                    "output": {"worker": "result"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T19:18:03.449Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":\"toBeOverride\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:18:03.472Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"hello\":\"toBeOverride\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:18:03.472Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"hello\":\"toBeOverride\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:18:03.674Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T19:18:04.020Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"worker\":\"result\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:18:04.020Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":{\"worker\":\"result\"}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:18:04.020Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":{\"worker\":\"result\"}}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "ResultPath": "$.hello",
+                "End": true
+            }
+        }
+    }    
+}
+

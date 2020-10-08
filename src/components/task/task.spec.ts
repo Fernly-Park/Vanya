@@ -10,12 +10,12 @@ import { TaskService } from '.';
 import { ActivityService } from '../activity';
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
-    const activityTask: ActivityTask = {token: 'token', input: {hello: 'world'}, Type: StateType.Pass, executionArn: dummyExecutionArn, 
-    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, Resource: dummyActivityArn, status: ActivityTaskStatus.Running};
+    const activityTask: ActivityTask = {token: 'token', rawInput: {hello: 'world'}, Type: StateType.Pass, executionArn: dummyExecutionArn, 
+    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, Resource: dummyActivityArn, status: ActivityTaskStatus.Running, effectiveInput: {hello: 'world'}};
 
     const createAndGetActivityTaskHelper = async (req?: {input?: Record<string, unknown>, token?: string}) => {
         const activity = await ActivityService.createActivity(getUser().id, 'tmp');
-        const input: ActivityTask = {...activityTask, token: req?.token ?? 'token', input: req?.input ?? {hello: 'world'}, Resource: activity.activityArn};
+        const input: ActivityTask = {...activityTask, token: req?.token ?? 'token', rawInput: req?.input ?? {hello: 'world'}, Resource: activity.activityArn};
         await TaskService.addActivityTask(activity.activityArn, input);
         const result = await TaskService.getActivityTask(activity);
         return {
@@ -54,7 +54,7 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
 
             const input = {hello: 'world'};
             const activity = await ActivityService.createActivity(getUser().id, 'tmp');
-            await TaskService.addActivityTask(activity.activityArn, {...activityTask, input, token: 'token'});
+            await TaskService.addActivityTask(activity.activityArn, {...activityTask, rawInput: input, token: 'token'});
             const first = await TaskService.getActivityTask(activity);
             const second = await TaskService.getActivityTask(activity);
 
@@ -70,8 +70,8 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             const firstActivity = await ActivityService.createActivity(getUser().id, 'first');
             const secondActivity = await ActivityService.createActivity(getUser().id, 'second');
             const before = new Date();
-            await TaskService.addActivityTask(firstActivity.activityArn, {...activityTask, input: firstInput, token: 'token'});
-            await TaskService.addActivityTask(secondActivity.activityArn, {...activityTask, token: 'token', input: secondInput});
+            await TaskService.addActivityTask(firstActivity.activityArn, {...activityTask, rawInput: firstInput, token: 'token'});
+            await TaskService.addActivityTask(secondActivity.activityArn, {...activityTask, token: 'token', rawInput: secondInput});
             
             const firstActivityTask1 = await TaskService.getActivityTask(firstActivity);
             const firstActivityTask2 = await TaskService.getActivityTask(firstActivity);

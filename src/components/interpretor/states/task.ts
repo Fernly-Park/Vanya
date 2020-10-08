@@ -2,7 +2,7 @@ import { TaskState } from "@App/components/stateMachines/stateMachine.interfaces
 import { ActivityTask, ActivityTaskStatus, StateInput, StateOutput, Task } from "@App/components/task/task.interfaces";
 import { InvalidPathError, TaskResourceDoesNotExistsError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
-import { applyPath, retrieveField } from "../path";
+import { retrieveField } from "../path";
 import { ExecutionService } from "@App/components/execution";
 import { endStateExecution, filterOutput } from "../interpretorService";
 import { ExecutionStatus } from "@App/components/execution/execution.interfaces";
@@ -21,7 +21,7 @@ export const processTaskState = async (task: Task, state: TaskState, effectiveIn
     const heartbeatSeconds = getSecondsFromFieldOrPath(state.HeartbeatSeconds, state.HeartbeatSecondsPath, effectiveInput);
     const timeoutSeconds = getSecondsFromFieldOrPath(state.TimeoutSeconds, state.TimeoutSecondsPath, effectiveInput);
 
-    const activityTask: ActivityTask = {...task, ...state, input: effectiveInput, token, status: ActivityTaskStatus.Waiting}
+    const activityTask: ActivityTask = {...task, ...state, token, status: ActivityTaskStatus.Waiting, effectiveInput}
     await TaskService.addActivityTask(resource, activityTask);
 
     await Event.activityScheduledEvent.emit({executionArn: task.executionArn, resource, heartbeatSeconds: (heartbeatSeconds as number), 
@@ -41,8 +41,8 @@ const getSecondsFromFieldOrPath = (field: number, path: string, input: StateInpu
 
 export const processActivityTaskStarted = async (input: Event.ActivityStartedEventInput): Promise<void> => {
     const activityTask = input.task;
-    const heartbeatSeconds = getSecondsFromFieldOrPath(activityTask.HeartbeatSeconds, activityTask.HeartbeatSecondsPath, activityTask.input);
-    const timeoutSeconds = getSecondsFromFieldOrPath(activityTask.TimeoutSeconds, activityTask.TimeoutSecondsPath, activityTask.input);
+    const heartbeatSeconds = getSecondsFromFieldOrPath(activityTask.HeartbeatSeconds, activityTask.HeartbeatSecondsPath, activityTask.rawInput);
+    const timeoutSeconds = getSecondsFromFieldOrPath(activityTask.TimeoutSeconds, activityTask.TimeoutSecondsPath, activityTask.rawInput);
 
     if (timeoutSeconds != null) {
         const time = new Date();
@@ -61,7 +61,7 @@ export const processTaskStateDone = async (activityTask: ActivityTask): Promise<
     // outputPath
     let output: StateOutput;
     try {
-        output = await filterOutput(activityTask.input, activityTask.output, activityTask, activityTask);
+        output = await filterOutput(activityTask.rawInput, activityTask.output, activityTask, activityTask);
     } catch (err) {
         await TaskService.modifyActivityTaskStatus(activityTask, ActivityTaskStatus.TimedOut);
         await Event.executionFailedEvent.emit({...activityTask, description: (err as Error)?.message});
@@ -88,7 +88,7 @@ export const processTaskHeartbeat = async (activityTask: ActivityTask): Promise<
     if (activityTask.status === ActivityTaskStatus.TimedOut) {
         throw new Error('todo');
     }
-    const heartbeatSeconds = getSecondsFromFieldOrPath(activityTask.HeartbeatSeconds, activityTask.HeartbeatSecondsPath, activityTask.input)
+    const heartbeatSeconds = getSecondsFromFieldOrPath(activityTask.HeartbeatSeconds, activityTask.HeartbeatSecondsPath, activityTask.rawInput)
     if (heartbeatSeconds == null) {
         return;
     }

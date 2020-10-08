@@ -18,11 +18,11 @@ export const applyPath = (rawInput: StateInput | StateOutput, path: string): Sta
     if (path && path != '$') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         toReturn = JSONPath({json: rawInput as any, path: path, wrap: false});
-        if (!toReturn) {
+        if (toReturn === undefined) {
             throw new InvalidPathError(`Invalid path '${path}' : No valid results for path: '${path}'`);
         }
     }
-    return toReturn ?? rawInput;
+    return toReturn === undefined ? rawInput : toReturn;
 }
 
 export const applyPayloadTemplate = (contextObject: ContextObject, input: StateInput, parameters: Record<string, unknown>): StateInput => {
@@ -61,7 +61,7 @@ const calculateParameterValue = (input: StateInput, path: string, contextObject:
         toReturn = (JSONPath({json: input as string, path: path}) as Record<string, unknown>[])[0]
     } 
 
-    if (!toReturn) {
+    if (toReturn === undefined) {
         throw new InvalidParameterError(`The JSONPath '${path ?? ''}' could not be found in the input`); // TODO
     }
     return toReturn;

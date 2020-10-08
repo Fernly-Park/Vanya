@@ -6,7 +6,7 @@ export type WaitStateTaskInfo = Task & WaitState
 
 export interface Task {
     stateName: string,
-    input: StateInput,
+    rawInput: StateInput,
     executionArn: string,
     stateMachineArn: string,
     previousStateName?: string
@@ -15,7 +15,8 @@ export interface Task {
 export type ActivityTask = Task & TaskState & {
     token: string,
     output?: Record<string, unknown>,
-    status: ActivityTaskStatus
+    status: ActivityTaskStatus,
+    effectiveInput: StateInput
 }
 
 export enum ActivityTaskStatus {

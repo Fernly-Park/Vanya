@@ -1,0 +1,228 @@
+{
+    "describe": "simple state machine with parameters", 
+    "tests": [
+        {
+            "input": {"numbers": 1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should succeed if the input contains the 'numbers' key",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"constant":"constant","shouldNotChange":"$.numbers","output":{"numbers":1},"stateName":"Hello","numbers":1},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T19:59:53.009Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:59:53.030Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numbers\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:59:53.030Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"stateName\":\"Hello\",\"output\":{\"numbers\":1},\"numbers\":1,\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\"}"                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:59:53.254Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-07T19:59:53.669Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:59:53.669Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T19:59:53.669Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numbers": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"output": 42},
+            "describe": "should succeed if the input contains the 'numbers' key whose value is null",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"constant":"constant","shouldNotChange":"$.numbers","output":{"numbers": null},"stateName":"Hello","numbers":null},
+                    "output": {"output": 42}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T12:40:39.619Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:40:39.651Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numbers\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:40:39.651Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"stateName\":\"Hello\",\"output\":{\"numbers\":null},\"numbers\":null,\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:40:39.858Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T12:40:40.245Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"output\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:40:40.245Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"output\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:40:40.245Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"output\":42}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input does not contains the 'numbers' key",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-07T20:05:24.006Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T20:05:24.029Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-07T20:05:24.029Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. The JSONPath '$.numbers' could not be found in the input"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Parameters": {
+                    "stateName.$": "$$.State.Name",
+                    "output.$": "$",
+                    "numbers.$": "$.numbers",
+                    "constant": "constant",
+                    "shouldNotChange": "$.numbers"
+                },
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true
+            }
+        }
+    }    
+}
+

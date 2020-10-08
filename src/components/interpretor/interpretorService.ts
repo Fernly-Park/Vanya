@@ -49,7 +49,7 @@ const processTask = async (task: Task): Promise<void> => {
         Name: task.stateName,
     }, taskToken, previousState: task.previousStateName});
     let effectiveOutput: StateOutput;
-    await Event.stateEnteredEvent.emit({executionArn: task.executionArn, stateName: task.stateName, stateType: state.Type, input: task.input})
+    await Event.stateEnteredEvent.emit({executionArn: task.executionArn, stateName: task.stateName, stateType: state.Type, input: task.rawInput})
 
     try {
         
@@ -66,7 +66,7 @@ const processTask = async (task: Task): Promise<void> => {
             default: 
                 throw new Error();
         }
-        effectiveOutput = await filterOutput(effectiveInput, result, state, task);
+        effectiveOutput = await filterOutput(task.rawInput, result, state, task);
     } catch (err) {
         console.log(err)
         await Event.executionFailedEvent.emit({...task, description: (err as Error)?.message})
@@ -81,7 +81,7 @@ export const endStateExecution = async (req: {executionArn: string, stateMachine
     await Event.stateExitedEvent.emit(req);
     if (req.nextStateName) {
         await TaskService.addGeneralTask({executionArn: req.executionArn, stateName: req.nextStateName, 
-            input: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
+            rawInput: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
     } else {
         await Event.executionSucceededEvent.emit({result: req.output, executionArn: req.executionArn})
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
@@ -90,17 +90,17 @@ export const endStateExecution = async (req: {executionArn: string, stateMachine
 
 const filterInput = async (task: Task, state: StateMachineStateValue): Promise<StateInput> => {
     const asPassState = state as PassState;
-    let toReturn = applyPath(task.input, asPassState.InputPath);
+    let toReturn = applyPath(task.rawInput, asPassState.InputPath);
     const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
     toReturn = await applyPayloadTemplate(contextObject, toReturn, asPassState.Parameters)
     return toReturn;
 }
 
-export const filterOutput = async (effectiveInput: StateInput, output: StateOutput, state: StateMachineStateValue, task: Task): Promise<StateOutput> => {
+export const filterOutput = async (rawInput: StateInput, output: StateOutput, state: StateMachineStateValue, task: Task): Promise<StateOutput> => {
     const asTaskState = state as TaskState;
     const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
     let toReturn = applyPayloadTemplate(contextObject, output, asTaskState.ResultSelector)
-    toReturn = applyResultPath(effectiveInput, toReturn, asTaskState.ResultPath);
+    toReturn = applyResultPath(rawInput, toReturn, asTaskState.ResultPath);
     toReturn = applyPath(toReturn, asTaskState.OutputPath);
     return toReturn;
 };

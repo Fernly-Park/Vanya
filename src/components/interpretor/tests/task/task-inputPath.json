@@ -1,0 +1,303 @@
+{
+    "describe": "simple state machine with a single task state and an inputPath of '$.hello'", 
+    "tests": [
+        {
+            "input": {"hello": "world"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"output": 45},
+            "describe": "should succeed if the input contains the 'hello' key whose value is 'world'",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": "world",
+                    "output": {"output": 45}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T12:09:07.755Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":\"world\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:09:07.788Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"hello\":\"world\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:09:07.788Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "\"world\""
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:09:07.997Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T12:09:08.394Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:09:08.394Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:09:08.394Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"hello": [1, 2]},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"output": 45},
+            "describe": "should succeed if the input contains the 'hello' key whose value is [1,2]",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": [1, 2],
+                    "output": {"output": 45}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T12:16:34.412Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":[1,2]}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:16:34.433Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"hello\":[1,2]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:16:34.433Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "[1,2]"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:16:34.662Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T12:16:35.036Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:16:35.036Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:16:35.036Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"hello": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"output": 45},
+            "describe": "should succeed if the input contains the 'hello' key whose value is null",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": null,
+                    "output": {"output": 45}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T12:17:57.789Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:17:57.810Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"hello\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:17:57.810Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "null"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:17:58.000Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T12:17:58.368Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:17:58.368Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:17:58.368Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input does not contains the 'hello' key",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T12:00:20.322Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:00:20.344Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:00:20.344Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.hello' : No valid results for path: '$.hello'"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "InputPath": "$.hello",
+                "End": true
+            }
+        }
+    }    
+}
+

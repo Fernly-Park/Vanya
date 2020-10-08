@@ -42,7 +42,7 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
         await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})
     }
     return {
-        input: task === null ? null : JSON.stringify(task.input),
+        input: task === null ? null : JSON.stringify(task.effectiveInput),
         taskToken: task === null ? null : task.token
     }
 }

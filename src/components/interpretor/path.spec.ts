@@ -39,6 +39,13 @@ describe('inputPath tests', () => {
         const result = applyPath({ "a": [1, 2, 3, 4] }, '$.a[0,1]');
         expect(result).toStrictEqual([1, 2]);
     });
+
+    it('should work if the path is correct and the value is the input is null', () => {
+        expect.assertions(1);
+
+        const result = applyPath({numbers: null}, "$.numbers");
+        expect(result).toBeNull();
+    });
 });
 
 describe('parameters', () => {
@@ -94,6 +101,25 @@ describe('parameters', () => {
             }
         })
     })
+
+    it('should work if the value in the input is null', () => {
+        expect.assertions(1);
+
+        const parameters = {
+            "Numbers.$": "$.numbers",
+        };
+
+        const StartTime = new Date();
+        const EnteredTime = new Date();        
+        const parsedInput: Record<string, unknown> = {numbers: null};
+        const contextObj: ContextObject = {
+            Execution: {Id: dummyExecutionArn, Input: parsedInput, Name: 'executionName', RoleArn: dummyRoleARN, StartTime},
+            StateMachine: {Id: dummyStateMachineArn, Name: 'smName'},
+            State: {EnteredTime, Name: 'HelloWorld', RetryCount: 0}
+        };
+        const output = applyPayloadTemplate(contextObj, parsedInput, parameters);
+        expect(output).toStrictEqual({Numbers: null})
+    });
 });
 
 describe('result path', () => {

@@ -1,0 +1,164 @@
+{
+    "describe": "simple state machine with a single task state having an inputPath, parameters, resultSelector, resultPath, outputPath", 
+    "tests": [
+        {
+            "input": {
+                "random": "toDelete",
+                "Important" : {
+                    "inTheOutput": "hello"
+                },  
+                "numbers": [1,3]
+            },
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"inTheOutput":"hello","taskOutput":{"workerOutput":{"output":45},"stateName":"Hello"}},
+            "describe": "should succeed if there is a 'numbers' key in the input",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"constant":"constant","shouldNotChange":"$.numbers","Important":{"shouldBe":"deleted"},"input":[1,3],"stateName":"Hello"},
+                    "output": {"output": 45}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T11:33:08.218Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"random\":\"toDelete\",\"Important\":{\"inTheOutput\":\"hello\"},\"numbers\":[1,3]}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T11:33:08.248Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"random\":\"toDelete\",\"Important\":{\"inTheOutput\":\"hello\"},\"numbers\":[1,3]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T11:33:08.248Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"stateName\":\"Hello\",\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\",\"input\":[1,3],\"Important\":{\"shouldBe\":\"deleted\"}}"                 
+                }
+                },
+                {
+                 "timestamp": "2020-10-08T11:33:08.461Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-08T11:33:08.843Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"output\":45}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T11:33:08.843Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"inTheOutput\":\"hello\",\"taskOutput\":{\"workerOutput\":{\"output\":45},\"stateName\":\"Hello\"}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T11:33:08.843Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"inTheOutput\":\"hello\",\"taskOutput\":{\"workerOutput\":{\"output\":45},\"stateName\":\"Hello\"}}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input does not contain a 'numbers' key",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-08T12:00:20.322Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:00:20.344Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-08T12:00:20.344Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.numbers' : No valid results for path: '$.numbers'"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "InputPath": "$.numbers",
+                "Parameters": {
+                      "stateName.$": "$$.State.Name",
+                    "constant": "constant",
+                    "shouldNotChange": "$.numbers",
+                    "input.$": "$",
+                  "Important": {
+                    "shouldBe": "deleted"
+                  }
+                },
+                "ResultSelector": {
+                  "workerOutput.$":"$",
+                  "stateName.$": "$$.State.Name"
+                },
+                "ResultPath": "$.Important.taskOutput",
+                "OutputPath": "$.Important",
+                "End": true
+            }
+        }
+    }    
+}
+

@@ -10,7 +10,6 @@ import { ExecutionStatus } from '../execution/execution.interfaces';
 import { generateServiceTest } from '@Tests/testGenerator';
 import {readFileSync, readdirSync, statSync} from 'fs';
 import {basename, dirname, join} from 'path';
-import { isAnObject } from '@App/utils/objectUtils';
 import { ActivitiyToCreateForTests, EventDurationExpectedForTests, TestStateMachine, TestStateMachineTestCase } from '@Tests/testHelper';
 import { IUser } from '../user/user.interfaces';
 import { ISO8601_REGEX } from '@App/utils/validationHelper';
@@ -183,4 +182,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'task-resultSelector'});
+generateStateMachinesTests({});

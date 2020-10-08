@@ -28,14 +28,14 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
         }
         time = new Date(timestamp);
     }
-    const timerInfo: WaitStateTaskInfo = {...task, ...state, input: effectiveInput};
+    const timerInfo: WaitStateTaskInfo = {...task, ...state, rawInput: effectiveInput};
     await TimerService.addTimedTask({until: time, timedTask: {task: timerInfo, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
 }
 
 
 export const processWaitingStateDone = async (waitingState: WaitStateTaskInfo): Promise<void> => {
     try {
-        const output = applyPath(waitingState.input, waitingState.OutputPath);
+        const output = applyPath(waitingState.rawInput, waitingState.OutputPath);
         await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
     } catch (err) {
         console.log(err)
