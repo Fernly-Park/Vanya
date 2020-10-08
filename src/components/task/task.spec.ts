@@ -1,5 +1,5 @@
 import { dummyActivityArn, dummyExecutionArn, dummyStateMachineArn } from '@Tests/testHelper';
-import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidTokenError, TaskDoesNotExistError } from '@App/errors/AWSErrors';
+import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
 import { ActivityTask, ActivityTaskStatus } from './task.interfaces';
@@ -37,7 +37,8 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
 
         it('should wait 1 seconds and send null when there is task in the queue', async () => {
             expect.assertions(3);
-
+            const defaultTimeout = config.activityTaskDefaultTimeout;
+            config.activityTaskDefaultTimeout = 1
             const before = new Date();
             const activity = await ActivityService.createActivity(getUser().id, 'tmp');
             const result = await TaskService.getActivityTask(activity);
@@ -47,6 +48,8 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             expect(Math.round(durationInSeconds)).toBe(config.activityTaskDefaultTimeout)
             expect(result.input).toBeNull();
             expect(result.taskToken).toBeNull();
+            config.activityTaskDefaultTimeout = defaultTimeout;
+
         });
 
         it('should be giving a task only once', async () => {
@@ -64,7 +67,8 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
 
         it('should only be giving a task belonging to the correct activity', async () => {
             expect.assertions(4);
-
+            const defaultTimeout = config.activityTaskDefaultTimeout;
+            config.activityTaskDefaultTimeout = 1
             const firstInput = {good: 'good'};
             const secondInput = {bad: 'bad'}
             const firstActivity = await ActivityService.createActivity(getUser().id, 'first');
@@ -75,6 +79,7 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
 
             const firstActivityTask1 = await TaskService.getActivityTask(firstActivity);
             const firstActivityTask2 = await TaskService.getActivityTask(firstActivity);
+            
 
             expect(JSON.parse(firstActivityTask1.input)).toStrictEqual(firstInput);
             expect(firstActivityTask2.input).toBeNull();
@@ -83,7 +88,9 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             const after = new Date();
             const durationInSeconds = (after.getTime() - before.getTime()) / 1000;
             expect(JSON.parse(secondActivityTask.input)).toStrictEqual(secondInput);
-            expect(Math.round(durationInSeconds)).toBe(config.activityTaskDefaultTimeout)
+            expect(Math.round(durationInSeconds)).toBe(1)
+            config.activityTaskDefaultTimeout = defaultTimeout;
+
         });
         
         it('should fail if the activity arn does not exists', async () => {
@@ -106,7 +113,6 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
     });
 
     describe('send task success', () => {
-
         it('should work', async () => {
             expect.assertions(1);
             
@@ -151,6 +157,61 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             expect.assertions(1);            
             
             await expect(TaskService.sendTaskSuccess({taskToken, output: '{}'})).rejects.toThrow(InvalidTokenError);
+        }); 
+    });
+
+    describe('send task failure', () => {
+        it('should work and correctly emit an event with the activityTask', async () => {
+            expect.assertions(3);
+
+            const cause = 'cause';
+            const error = 'error';
+            let wasCalled = false;
+
+            Event.sendTaskFailureEvent.on(async (eventInput) => {
+                wasCalled = true;
+                expect(eventInput.cause).toBe(cause);
+                expect(eventInput.error).toBe(error)
+                return Promise.resolve()
+            });
+
+            const {result} = await createAndGetActivityTaskHelper();
+            await TaskService.sendTaskFailure({taskToken: result.taskToken, cause, error});
+            expect(wasCalled).toBe(true);
+        });
+
+        it('should throw if the token does not exists', async () => {
+            expect.assertions(1);
+
+            await expect(TaskService.sendTaskFailure({taskToken: 'hello'})).rejects.toThrow(TaskDoesNotExistError);
+        });
+
+        it.each([null, 0, 0.1, {}])('should fail if the cause is %p', async (cause: string) => {
+            expect.assertions(1);
+
+            const {result} = await createAndGetActivityTaskHelper();
+            await expect(TaskService.sendTaskFailure({taskToken: result.taskToken, cause})).rejects.toThrow(InvalidParameterTypeError);
+        });
+
+        it('should fail if the length of the cause is bigger than 32768 characters', async () => {
+            expect.assertions(1);
+
+            const {result} = await createAndGetActivityTaskHelper();
+            await expect(TaskService.sendTaskFailure({taskToken: result.taskToken, cause: 'a'.repeat(32769)})).rejects.toThrow(ValidationExceptionError);
+        });
+
+        it.each([null, 0, 0.1, {}])('should fail if the error is %p', async (error: string) => {
+            expect.assertions(1);
+
+            const {result} = await createAndGetActivityTaskHelper();
+            await expect(TaskService.sendTaskFailure({taskToken: result.taskToken, error})).rejects.toThrow(InvalidParameterTypeError);
+        });
+
+        it('should fail if the length of the error is bigger than 256 characters', async () => {
+            expect.assertions(1);
+
+            const {result} = await createAndGetActivityTaskHelper();
+            await expect(TaskService.sendTaskFailure({taskToken: result.taskToken, error: 'a'.repeat(32769)})).rejects.toThrow(ValidationExceptionError);
         });
     });
 }});

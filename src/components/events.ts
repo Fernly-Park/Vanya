@@ -7,6 +7,7 @@ import { ActivityTask } from './task/task.interfaces';
 export type StateEnteredEventInput = {executionArn: string, stateName: string, stateType: StateType, input: unknown};
 export type ProcessTaskDoneInput = ActivityTask;
 export type ActivityTaskHeartbeatInput = ActivityTask;
+export type SendTaskFailureEventInput = {activityTask: ActivityTask, cause?: string, error?: string};
 export type StateExitedEventInput =  {executionArn: string, stateName: string, output: unknown, stateType: StateType};
 export type ActivityScheduledEventInput = {executionArn: string, heartbeatSeconds: number, input: unknown, resource: string, timeoutSeconds: number};
 export type ActivityStartedEventInput = {task: ActivityTask, workerName?: string};
@@ -25,8 +26,9 @@ export enum CustomEvents {
     StopListeningToEvents = 'StopListeningToEvents',
     WorkerOutputReceived = 'WorkerOutputReceived',
     ActivityTaskSucceeded = 'ActivityTaskSucceeded',
-    activityTaskHeartbeat = 'ActivityTaskHeartbeat',
-    ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout'
+    ActivityTaskHeartbeat = 'ActivityTaskHeartbeat',
+    ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout',
+    SendTaskFailure = 'SendTaskFailure'
 }
 
 export const on = (eventName: string, callback: EventCallback): void => {
@@ -84,4 +86,5 @@ export const activitySucceededEvent = factoryCustomEvent<ActivitySucceededEventI
 export const executionFailedEvent = factoryCustomEvent<ExecutionFailedEventInput>(HistoryEventType.ExecutionFailed);
 export const executionSucceededEvent = factoryCustomEvent<ExecutionSucceededEventInput>(HistoryEventType.ExecutionSucceeded);
 export const activityTimeoutEvent = factoryCustomEvent<ActivityTimeoutEventInput>(HistoryEventType.ActivityTimedOut);
-export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.activityTaskHeartbeat);
+export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.ActivityTaskHeartbeat);
+export const sendTaskFailureEvent = factoryCustomEvent<SendTaskFailureEventInput>(CustomEvents.SendTaskFailure);

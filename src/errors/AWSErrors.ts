@@ -90,6 +90,12 @@ export class InvalidExecutionInputError extends AWSError {
     }
 }
 
+export class InvalidParameterTypeError extends AWSError {
+    constructor(description: string) {
+        super("Invalid Parameter Type", description, "com.amazonaws.swf.service.v2.model#InvalidParameterType");
+    }
+}
+
 export class ExecutionAlreadyExistsError extends AWSError {
     constructor(description: string) {
         super("Execution Already Exists", description, "com.amazonaws.swf.service.v2.model#ExecutionAlreadyExists");
@@ -111,5 +117,11 @@ export class InvalidOutputError extends AWSError {
 export class TaskDoesNotExistError extends AWSError {
     constructor(description: string) {
         super("TaskDoesNotExist", description, "com.amazonaws.swf.service.v2.model#TaskDoesNotExist");
+    }
+}
+
+export class ValidationExceptionError extends AWSError {
+    constructor(description: string) {
+        super("ValidationException", description, "com.amazonaws.swf.service.v2.model#ValidationException");
     }
 }
