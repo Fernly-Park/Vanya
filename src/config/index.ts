@@ -22,7 +22,7 @@ export default {
     region: process.env.REGION,
     encryptUserSecret: process.env.ENCRYPT_USER_SECRET,
     redis_prefix: process.env.REDIS_PREFIX,
-    redisBlockingTimeout: process.env.REDIS_BLOCKING_TIMEOUT ? parseInt(process.env.REDIS_BLOCKING_TIMEOUT) : 0,
-    activityTaskDefaultTimeout: process.env.ACTIVITY_TASK_DEFAULT_TIMEOUT? parseInt(process.env.ACTIVITY_TASK_DEFAULT_TIMEOUT) : 60,
+    redisBlockingTimeout: process.env.REDIS_BLOCKING_TIMEOUT ? parseFloat(process.env.REDIS_BLOCKING_TIMEOUT) : 0,
+    activityTaskDefaultTimeout: process.env.ACTIVITY_TASK_DEFAULT_TIMEOUT? parseFloat(process.env.ACTIVITY_TASK_DEFAULT_TIMEOUT) : 60,
     timerPollIntervalMs: process.env.TIMER_POLL_INTERVAL_MS ? parseInt(process.env.TIMER_POLL_INTERVAL_MS) : 500,
 }; 

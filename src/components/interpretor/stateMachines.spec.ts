@@ -57,9 +57,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         });
 
         let finishedExecution = await ExecutionService.describeExecution(execution);
-        await TestHelper.sleep(50);
         while (finishedExecution.status === ExecutionStatus.running) {
-            await TestHelper.sleep(50);
             finishedExecution = await ExecutionService.describeExecution(execution);
             if (activities) {
                 for(const activity of activities) {
