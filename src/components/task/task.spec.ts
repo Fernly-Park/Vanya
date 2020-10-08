@@ -70,9 +70,9 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             const firstActivity = await ActivityService.createActivity(getUser().id, 'first');
             const secondActivity = await ActivityService.createActivity(getUser().id, 'second');
             const before = new Date();
-            await TaskService.addActivityTask(firstActivity.activityArn, {...activityTask, rawInput: firstInput, token: 'token'});
-            await TaskService.addActivityTask(secondActivity.activityArn, {...activityTask, token: 'token', rawInput: secondInput});
-            
+            await TaskService.addActivityTask(firstActivity.activityArn, {...activityTask, rawInput: firstInput, token: 'token', effectiveInput: firstInput});
+            await TaskService.addActivityTask(secondActivity.activityArn, {...activityTask, token: 'token', rawInput: secondInput, effectiveInput: secondInput});
+
             const firstActivityTask1 = await TaskService.getActivityTask(firstActivity);
             const firstActivityTask2 = await TaskService.getActivityTask(firstActivity);
 
@@ -111,7 +111,7 @@ generateServiceTest({describeText: 'tasks', tests: (getUser) => {
             expect.assertions(1);
             
             let wasCalled = false;
-            Event.on(Event.CustomEvents.ActivityTaskSucceeded, () => {
+            Event.on(Event.CustomEvents.WorkerOutputReceived, () => {
                 wasCalled = true;
                 return Promise.resolve()
             })
