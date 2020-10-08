@@ -41,7 +41,6 @@ export const applyPayloadTemplate = (contextObject: ContextObject, input: StateI
             toReturn[key] = val;
         }
     }
-    console.log('toReturn: ', toReturn)
     return toReturn;
 }
 

@@ -96,7 +96,6 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(numberOfDelayedTask).toBe(0);
-        console.log('finishedExecution : ', finishedExecution)
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         if (typeof currentTest.expectedOutput === 'object') {
             expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
@@ -183,4 +182,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'pass-input-output'});
+generateStateMachinesTests();
