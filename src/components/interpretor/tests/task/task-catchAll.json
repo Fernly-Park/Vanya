@@ -1,0 +1,126 @@
+{
+    "describe": "state machine with a task state containing a catcher with only a 'State.ALL' whose next value is a pass state ", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Error":null,"Cause":null},
+            "describe": "should succeed even if the task fails due to a sendTaskFailure",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-09T10:50:55.706Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:55.735Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:55.735Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:55.923Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:56.094Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:56.094Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"Error\":null,\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:56.101Z",
+                 "type": "PassStateEntered",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "stateEnteredEventDetails": {
+                  "name": "World",
+                  "input": "{\"Error\":null,\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:56.101Z",
+                 "type": "PassStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "World",
+                  "output": "{\"Error\":null,\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-09T10:50:56.101Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Error\":null,\"Cause\":null}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true,
+                "Catch": [
+                    {
+                      "ErrorEquals": [ "States.ALL" ],
+                      "Next": "World"
+                    }
+                ]
+            },
+            "World": {
+              "Type": "Pass",
+              "End": true
+            }
+        }
+    }    
+}
+

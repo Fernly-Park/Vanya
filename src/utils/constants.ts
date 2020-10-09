@@ -19,7 +19,8 @@ export  const AWSConstant = {
     },
     error: {
         STATE_RUNTIME: 'States.Runtime',
-        STATE_TIMEOUT: 'States.Timeout'
+        STATE_TIMEOUT: 'States.Timeout',
+        STATE_ALL_ERROR: 'States.ALL'
     },
     serviceName: 'states'
 }

@@ -3,7 +3,7 @@ import { StateInput, Task, WaitStateTaskInfo } from "@App/components/task/task.i
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
-import { endStateExecution, stateFailed } from "../interpretorService";
+import { endStateSuccess, endStateFailed } from "../interpretorService";
 import { applyPath, retrieveField } from "../path";
 import * as Event from '../../events';
 import { AWSConstant } from "@App/utils/constants";
@@ -35,12 +35,13 @@ export const processWaitTask = async (task: Task, state: WaitState, effectiveInp
 export const processWaitingStateDone = async (waitingState: WaitStateTaskInfo): Promise<void> => {
     try {
         const output = applyPath(waitingState.rawInput, waitingState.OutputPath);
-        await endStateExecution({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
+        await endStateSuccess({...waitingState, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
     } catch (err) {
         console.log(err)
-        await stateFailed({task: waitingState, 
+        await endStateFailed({task: waitingState, 
             cause: `An error occurred while executing the state '${waitingState.stateName}'. ${(err as Error)?.message ?? ''}`,
-            error: AWSConstant.error.STATE_RUNTIME
+            error: AWSConstant.error.STATE_RUNTIME,
+            state: waitingState
         });
     }   
 }

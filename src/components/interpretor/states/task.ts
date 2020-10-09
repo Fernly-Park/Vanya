@@ -3,7 +3,7 @@ import { ActivityTask, ActivityTaskStatus, StateInput, StateOutput, Task } from 
 import { InvalidPathError, TaskResourceDoesNotExistsError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
 import { retrieveField } from "../path";
-import { endStateExecution, filterOutput, stateFailed } from "../interpretorService";
+import { endStateSuccess, filterOutput, endStateFailed } from "../interpretorService";
 import { TaskService } from "@App/components/task";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
@@ -63,25 +63,27 @@ export const processTaskStateDone = async (activityTask: ActivityTask): Promise<
         output = await filterOutput(activityTask.rawInput, activityTask.output, activityTask, activityTask);
     } catch (err) {
         await TaskService.modifyActivityTaskStatus(activityTask, ActivityTaskStatus.TimedOut);
-        return await stateFailed({task: activityTask, 
+        return await endStateFailed({task: activityTask, 
             cause: `An error occurred while executing the state '${activityTask.stateName}'. ${(err as Error)?.message ?? ''}`,
-            error: AWSConstant.error.STATE_RUNTIME
+            error: AWSConstant.error.STATE_RUNTIME,
+            state: activityTask
         })
     }
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
     await TaskService.modifyActivityTaskStatus(activityTask, ActivityTaskStatus.TimedOut);
     await Event.activitySucceededEvent.emit({executionArn: activityTask.executionArn, output});
-    await endStateExecution({...activityTask, output, nextStateName: activityTask.Next, stateType: activityTask.Type});
+    await endStateSuccess({...activityTask, output, nextStateName: activityTask.Next, stateType: activityTask.Type});
 }
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
     const activityTask = await TaskService.getActivityTaskFromToken(activityTaskToken)
     await cleanTaskStateFailedHelper(activityTask);
     await Event.activityTimeoutEvent.emit({executionArn: activityTask.executionArn});
-    await stateFailed({task: activityTask,
+    await endStateFailed({task: activityTask,
         error: AWSConstant.error.STATE_TIMEOUT,
         cause: `An error occurred while executing the state '${activityTask.stateName}'. `,
+        state: activityTask
     })
 }
 
@@ -94,9 +96,10 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
 
     await cleanTaskStateFailedHelper(activityTask);
     await Event.activityFailureEvent.emit(input);
-    await stateFailed({task: activityTask, 
+    await endStateFailed({task: activityTask, 
         cause: input.cause,
-        error: input.error
+        error: input.error,
+        state: activityTask
     });
 };
 

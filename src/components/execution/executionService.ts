@@ -135,6 +135,7 @@ export const getExecutionHistory = async (req: GetExecutionHistoryInput): Promis
     
         putPreviousEventId(stateMachine.definition, events);
     }
+    console.log('events: ', events)
     return events;
 }
 

@@ -70,16 +70,17 @@ const processTask = async (task: Task): Promise<void> => {
         effectiveOutput = await filterOutput(task.rawInput, result, state, task);
     } catch (err) {
         console.log(err)
-        return await stateFailed({task, 
+        return await endStateFailed({task, 
             cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
-            error: AWSConstant.error.STATE_RUNTIME
+            error: AWSConstant.error.STATE_RUNTIME,
+            state
         })
     }
     
-    await endStateExecution({...task, output: effectiveOutput, nextStateName: next, stateType: state.Type});
+    await endStateSuccess({...task, output: effectiveOutput, nextStateName: next, stateType: state.Type});
 };
 
-export const endStateExecution = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
+export const endStateSuccess = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
     stateName: string, output: StateOutput, nextStateName?: string}): Promise<void> => {
     await Event.stateExitedEvent.emit(req);
     if (req.nextStateName) {
@@ -91,7 +92,18 @@ export const endStateExecution = async (req: {executionArn: string, stateMachine
     }   
 }
 
-export const stateFailed = async (req: {task: Task, cause?: string, error?: string}): Promise<void> => {
+export const endStateFailed = async (req: {task: Task, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
+    const asTaskState = req.state as TaskState
+    if (asTaskState.Catch != null) {
+        for (const catcher of asTaskState.Catch) {
+            if (catcher.ErrorEquals.includes(AWSConstant.error.STATE_ALL_ERROR)) {
+                return await endStateSuccess({...req.task, stateType: req.state.Type, nextStateName: catcher.Next, output: {
+                    Cause: req.cause ?? null,
+                    Error: req.error ?? null
+                }});
+            }
+        }
+    }
     await Event.executionFailedEvent.emit({...req.task, cause: req.cause, error: req.error})
     return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
 }
