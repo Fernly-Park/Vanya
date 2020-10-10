@@ -3,7 +3,7 @@ import { RunningState, StateInput, StateOutput } from '../task/task.interfaces';
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
-import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivityTimeoutEvent, onActivityFailedEvent } from './historyEvent';
+import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityStartedEvent, onActivityFailedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
@@ -50,7 +50,7 @@ const processTask = async (task: RunningState): Promise<void> => {
         Name: task.stateName,
     }, taskToken, previousState: task.previousStateName});
     let effectiveOutput: StateOutput;
-    await Event.stateEnteredEvent.emit({executionArn: task.executionArn, stateName: task.stateName, stateType: state.Type, input: task.rawInput})
+    await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, stateType: state.Type, input: task.rawInput})
 
     try {
         
@@ -82,12 +82,12 @@ const processTask = async (task: RunningState): Promise<void> => {
 
 export const endStateSuccess = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
     stateName: string, output: StateOutput, nextStateName?: string}): Promise<void> => {
-    await Event.stateExitedEvent.emit(req);
+    await onStateExitedEvent(req);
     if (req.nextStateName) {
         await TaskService.addGeneralTask({executionArn: req.executionArn, stateName: req.nextStateName, 
             rawInput: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
     } else {
-        await Event.executionSucceededEvent.emit({result: req.output, executionArn: req.executionArn})
+        await onExecutionSucceededEvent({result: req.output, executionArn: req.executionArn});
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
     }   
 }
@@ -104,7 +104,7 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
             }
         }
     }
-    await Event.executionFailedEvent.emit({...req.task, cause: req.cause, error: req.error})
+    await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
     return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
 }
 
@@ -128,17 +128,8 @@ export const filterOutput = async (rawInput: StateInput, output: StateOutput, st
 const registerEvents = (): void => {
     Event.sendTaskFailureEvent.on(processTaskFailed);
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
-    Event.stateEnteredEvent.on(onStateEnteredEvent);
-    Event.stateExitedEvent.on(onStateExitedEvent);
-    Event.activityScheduledEvent.on(onActivityScheduledEvent);
-    Event.activityStartedEvent.on(onActivityStartedEvent);
     Event.activityStartedEvent.on(processActivityTaskStarted)
-    Event.workerOutputReceivedEvent.on(onActivitySucceededEvent);
-    Event.executionFailedEvent.on(onExecutionFailedEvent);
-    Event.executionSucceededEvent.on(onExecutionSucceededEvent);
-    Event.activityTimeoutEvent.on(onActivityTimeoutEvent);
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
-    Event.activityFailureEvent.on(onActivityFailedEvent);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
@@ -147,16 +138,7 @@ const registerEvents = (): void => {
 const unregisterEvents = (): void => {
     Event.sendTaskFailureEvent.removeListener(processTaskFailed);
     Event.workerOutputReceivedEvent.removeListener(processTaskStateDone);
-    Event.stateEnteredEvent.removeListener(onStateEnteredEvent);
-    Event.stateExitedEvent.removeListener(onStateExitedEvent);
-    Event.activityFailureEvent.removeListener(onActivityFailedEvent);
-    Event.activityScheduledEvent.removeListener(onActivityScheduledEvent);
-    Event.activityStartedEvent.removeListener(onActivityStartedEvent);
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)
-    Event.workerOutputReceivedEvent.removeListener(onActivitySucceededEvent);
-    Event.executionFailedEvent.removeListener(onExecutionFailedEvent);
-    Event.executionSucceededEvent.removeListener(onExecutionSucceededEvent);
-    Event.activityTimeoutEvent.removeListener(onActivityTimeoutEvent);
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);

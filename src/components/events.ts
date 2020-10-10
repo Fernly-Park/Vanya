@@ -1,21 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { HistoryEventType } from './execution/execution.interfaces';
-import { StateType } from './stateMachines/stateMachine.interfaces';
 import { RunningTaskState } from './task/task.interfaces';
 
-export type StateEnteredEventInput = {executionArn: string, stateName: string, stateType: StateType, input: unknown};
 export type ProcessTaskDoneInput = RunningTaskState;
 export type ActivityTaskHeartbeatInput = RunningTaskState;
 export type SendTaskFailureEventInput = {activityTask: RunningTaskState, cause?: string, error?: string};
-export type StateExitedEventInput =  {executionArn: string, stateName: string, output: unknown, stateType: StateType};
-export type ActivityScheduledEventInput = {executionArn: string, heartbeatSeconds: number, input: unknown, resource: string, timeoutSeconds: number};
-export type ActivityStartedEventInput = {task: RunningTaskState, workerName?: string};
-export type ActivitySucceededEventInput = {executionArn: string, output: unknown};
-export type ActivityTimeoutEventInput = {executionArn: string, cause?: string};
-export type ExecutionFailedEventInput = {executionArn: string, stateName: string, error?: string, cause?: string};
-export type ExecutionSucceededEventInput = {executionArn: string, result: unknown};
-export type ActivityFailedEventInput = SendTaskFailureEventInput;
 
 type EventCallback = (...args: any[]) => Promise<void>;
 let events: Record<string, EventCallback[]> = {};
@@ -78,16 +68,8 @@ const factoryCustomEvent = <T>(eventName: string) => {
     }
 }
 
-export const stateEnteredEvent = factoryCustomEvent<StateEnteredEventInput>(HistoryEventType.StateEntered);
 export const workerOutputReceivedEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.WorkerOutputReceived);
 export const activityTaskSucceededEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.ActivityTaskSucceeded)
-export const stateExitedEvent = factoryCustomEvent<StateExitedEventInput>(HistoryEventType.StateExited);
-export const activityScheduledEvent = factoryCustomEvent<ActivityScheduledEventInput>(HistoryEventType.ActivityScheduled);
-export const activityStartedEvent = factoryCustomEvent<ActivityStartedEventInput>(HistoryEventType.ActivityStarted);
-export const activitySucceededEvent = factoryCustomEvent<ActivitySucceededEventInput>(HistoryEventType.ActivitySucceeded);
-export const executionFailedEvent = factoryCustomEvent<ExecutionFailedEventInput>(HistoryEventType.ExecutionFailed);
-export const executionSucceededEvent = factoryCustomEvent<ExecutionSucceededEventInput>(HistoryEventType.ExecutionSucceeded);
-export const activityTimeoutEvent = factoryCustomEvent<ActivityTimeoutEventInput>(HistoryEventType.ActivityTimedOut);
+export const activityStartedEvent = factoryCustomEvent<{task: RunningTaskState, workerName?: string}>(HistoryEventType.ActivityStarted);
 export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.ActivityTaskHeartbeat);
-export const activityFailureEvent = factoryCustomEvent<ActivityFailedEventInput>(CustomEvents.ActivityFailure)
 export const sendTaskFailureEvent = factoryCustomEvent<SendTaskFailureEventInput>(CustomEvents.SendTaskFailure);

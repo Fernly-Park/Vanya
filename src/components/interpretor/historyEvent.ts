@@ -1,7 +1,6 @@
 import { AWSConstant } from '@App/utils/constants';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEventType } from '../execution/execution.interfaces';
-import { ActivityFailedEventInput, ActivityScheduledEventInput, ActivityStartedEventInput, ActivityTimeoutEventInput, ExecutionFailedEventInput, ExecutionSucceededEventInput, StateExitedEventInput } from '../events';
 import { ExecutionService } from '../execution';
 import { RunningTaskState } from '../task/task.interfaces';
 
@@ -20,7 +19,7 @@ export const onStateEnteredEvent = async (req: {executionArn: string, stateName:
     }}});
 }
 
-export const onActivityTimeoutEvent = async (req: ActivityTimeoutEventInput): Promise<void> => {
+export const onActivityTimeoutEvent = async (req: {executionArn: string, cause?: string}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn,
         event: {
             type: HistoryEventType.ActivityTimedOut,
@@ -31,7 +30,7 @@ export const onActivityTimeoutEvent = async (req: ActivityTimeoutEventInput): Pr
         }
     });
 }
-export const onActivityScheduledEvent = async (req: ActivityScheduledEventInput): Promise<void> => {
+export const onActivityScheduledEvent = async (req: {executionArn: string, heartbeatSeconds: number, input: unknown, resource: string, timeoutSeconds: number}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ActivityScheduled,
         activityScheduledEventDetails: {
@@ -43,7 +42,7 @@ export const onActivityScheduledEvent = async (req: ActivityScheduledEventInput)
     }});
 }
 
-export const onActivityStartedEvent = async (req: ActivityStartedEventInput): Promise<void> => {
+export const onActivityStartedEvent = async (req: {task: RunningTaskState, workerName?: string}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.task.executionArn, event: {
         type: HistoryEventType.ActivityStarted,
         activityStartedEventDetails: {
@@ -61,7 +60,7 @@ export const onActivitySucceededEvent = async (req: RunningTaskState): Promise<v
     }})
 }
 
-export const onStateExitedEvent = async (req: StateExitedEventInput): Promise<void> => {
+export const onStateExitedEvent = async (req: {executionArn: string, stateName: string, output: unknown, stateType: StateType}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: `${req.stateType}StateExited` as HistoryEventType,
         stateExitedEventDetails: {
@@ -71,7 +70,7 @@ export const onStateExitedEvent = async (req: StateExitedEventInput): Promise<vo
     }})
 }
 
-export const onExecutionFailedEvent = async (req: ExecutionFailedEventInput): Promise<void> => {
+export const onExecutionFailedEvent = async (req: {executionArn: string, stateName: string, error?: string, cause?: string}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionFailed,
         executionFailedEventDetails: {
@@ -81,7 +80,7 @@ export const onExecutionFailedEvent = async (req: ExecutionFailedEventInput): Pr
     }});
 }
 
-export const onExecutionSucceededEvent = async (req: ExecutionSucceededEventInput): Promise<void> => {
+export const onExecutionSucceededEvent = async (req: {executionArn: string, result: unknown}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionSucceeded,
         executionSucceededEventDetails: {
@@ -90,7 +89,7 @@ export const onExecutionSucceededEvent = async (req: ExecutionSucceededEventInpu
     }});
 }
 
-export const onActivityFailedEvent = async (req: ActivityFailedEventInput): Promise<void> => {
+export const onActivityFailedEvent = async (req: {activityTask: RunningTaskState, cause?: string, error?: string}): Promise<void> => {
     return await ExecutionService.addEvent({executionArn: req.activityTask.executionArn, event: {
         type: HistoryEventType.ActivityFailed,
         activityFailedEventDetails: {

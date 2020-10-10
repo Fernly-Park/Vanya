@@ -77,6 +77,7 @@ export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> 
         throw new TaskDoesNotExistError(req.taskToken);
     }
     // todo timeout
+    
     await Event.workerOutputReceivedEvent.emit({...activityTask, output: JSON.parse(req.output)})
 }
 
