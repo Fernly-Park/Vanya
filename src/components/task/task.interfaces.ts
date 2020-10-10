@@ -6,7 +6,8 @@ export interface RunningState {
     rawInput: StateInput,
     executionArn: string,
     stateMachineArn: string,
-    previousStateName?: string
+    previousStateName?: string,
+    previousEventId: number
 }
 
 export type RunningTaskState = RunningState & {

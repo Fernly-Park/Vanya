@@ -65,9 +65,9 @@ export const getActivityTaskFromToken = async (taskToken: string): Promise<Runni
     return await TaskDAL.retrieveActivityTaskInProgress(taskToken);
 }
 
-export const modifyActivityTaskStatus = async (activityTask: RunningTaskState, newStatus: ActivityTaskStatus): Promise<void> => {
+export const updateActivityTask = async (token: string, newStatus: ActivityTaskStatus, newPreviousEventId: number): Promise<void> => {
     // todo
-    return await TaskDAL.modifyActivityTaskStatus(activityTask.token, newStatus);
+    return await TaskDAL.modifyActivityTaskStatus(token, newStatus, newPreviousEventId);
 };
 
 export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {

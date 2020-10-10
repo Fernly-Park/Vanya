@@ -66,7 +66,7 @@
                  "previousEventId": 5,
                  "stateExitedEventDetails": {
                   "name": "Hello",
-                  "output": "{\"Error\":null,\"Cause\":null}"
+                  "output": "{\"Cause\":null,\"Error\":null}"
                  }
                 },
                 {
@@ -76,7 +76,7 @@
                  "previousEventId": 6,
                  "stateEnteredEventDetails": {
                   "name": "World",
-                  "input": "{\"Error\":null,\"Cause\":null}"
+                  "input": "{\"Cause\":null,\"Error\":null}"
                  }
                 },
                 {
@@ -86,7 +86,7 @@
                  "previousEventId": 7,
                  "stateExitedEventDetails": {
                   "name": "World",
-                  "output": "{\"Error\":null,\"Cause\":null}"
+                  "output": "{\"Cause\":null,\"Error\":null}"
                  }
                 },
                 {
@@ -95,7 +95,7 @@
                  "id": 9,
                  "previousEventId": 8,
                  "executionSucceededEventDetails": {
-                  "output": "{\"Error\":null,\"Cause\":null}"
+                  "output": "{\"Cause\":null,\"Error\":null}"
                  }
                 }
             ]

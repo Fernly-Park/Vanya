@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { HistoryEventType } from './execution/execution.interfaces';
+import { HistoryEventType, IExecution } from './execution/execution.interfaces';
 import { RunningTaskState } from './task/task.interfaces';
 
 export type ProcessTaskDoneInput = RunningTaskState;
 export type ActivityTaskHeartbeatInput = RunningTaskState;
 export type SendTaskFailureEventInput = {activityTask: RunningTaskState, cause?: string, error?: string};
 
-type EventCallback = (...args: any[]) => Promise<void>;
+type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};
 
 export enum CustomEvents {
+    ExecutionStarted = 'ExecutionStarted',
     StartListeningToEvents = 'StartListeningToEvents',
     WaitingStateDone = 'WaitingStateDone',
     TaskTimeout = 'TaskTimeout',
@@ -56,18 +57,19 @@ export const removeAllListeners = (): void => {
 
 const factoryCustomEvent = <T>(eventName: string) => {
     return {
-        on: (callback: (input: T) => Promise<void>) => {
+        on: (callback: (input: T) => Promise<unknown>) => {
             on(eventName, callback)
         },
         emit: async (data: T): Promise<void> => {
             await emit(eventName, data);
         },
-        removeListener: (listener: (input: T) => Promise<void>) => {
+        removeListener: (listener: (input: T) => Promise<unknown>) => {
             removeListener(eventName, listener);
         }
     }
 }
 
+export const executionStartedEvent = factoryCustomEvent<IExecution>(CustomEvents.ExecutionStarted);
 export const workerOutputReceivedEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.WorkerOutputReceived);
 export const activityTaskSucceededEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.ActivityTaskSucceeded)
 export const activityStartedEvent = factoryCustomEvent<{task: RunningTaskState, workerName?: string}>(HistoryEventType.ActivityStarted);

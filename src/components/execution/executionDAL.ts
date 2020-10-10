@@ -106,10 +106,11 @@ export const deleteContextObject = async (executionArn: string, stateName?: stri
     }
 }
 
-export const addExecutionEvent = async (req: {executionArn: string, event: Partial<HistoryEvent>}): Promise<void> => {
+export const addExecutionEvent = async (req: {executionArn: string, event: Partial<HistoryEvent>}): Promise<number> => {
     const key = Redis.getExecutionEventKey(req.executionArn);
     req.event.id = (await Redis.incrAsync(Redis.getExecutionEventCurrentIdKey(req.executionArn)));
     await Redis.rpushAsync(key, JSON.stringify(req.event));
+    return req.event.id
 }
 
 const selectListExecutionEvent = DALFactory.selectArrayOfResourcesFactory<HistoryEvent & {event: string}>(ExecutionEventTable.tableName, ExecutionEventTable.timestampColumn);

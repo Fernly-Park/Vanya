@@ -9,7 +9,7 @@ import { TaskService } from '.';
 import { ActivityService } from '../activity';
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
-    const activityTask: RunningTaskState = {token: 'token', rawInput: {hello: 'world'}, executionArn: dummyExecutionArn, 
+    const activityTask: RunningTaskState = {token: 'token', rawInput: {hello: 'world'}, executionArn: dummyExecutionArn, previousEventId: 0,
     stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, status: ActivityTaskStatus.Running, effectiveInput: {hello: 'world'}};
 
     const createAndGetActivityTaskHelper = async (req?: {input?: Record<string, unknown>, token?: string}) => {

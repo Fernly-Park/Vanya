@@ -1,6 +1,6 @@
 import { AWSConstant } from '@App/utils/constants';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
-import { HistoryEventType } from '../execution/execution.interfaces';
+import { HistoryEventType, IExecution } from '../execution/execution.interfaces';
 import { ExecutionService } from '../execution';
 import { RunningTaskState } from '../task/task.interfaces';
 
@@ -10,19 +10,33 @@ export enum InterpretorEvents {
     ActivitySucceeded = 'ActivitySucceeded'
 }
 
-export const onStateEnteredEvent = async (req: {executionArn: string, stateName: string, stateType: StateType, input: unknown}): Promise<void> => {
+export const onExecutionStartedEvent = async (req: IExecution): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
-        type: `${req.stateType}StateEntered` as HistoryEventType, 
+        previousEventId: 0,
+        executionStartedEventDetails: {
+            input: JSON.stringify(req.input),
+            roleArn: 'todo',
+        },
+        type: HistoryEventType.ExecutionStarted
+    }})
+}
+
+export const onStateEnteredEvent = async (req: {executionArn: string, stateName: string, stateType: StateType, input: unknown,
+previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: `${req.stateType}StateEntered` as HistoryEventType,
+        previousEventId: req.previousEventId,
         stateEnteredEventDetails: {
             name: req.stateName,
             input: JSON.stringify(req.input),
     }}});
 }
 
-export const onActivityTimeoutEvent = async (req: {executionArn: string, cause?: string}): Promise<void> => {
+export const onActivityTimeoutEvent = async (req: {executionArn: string, cause?: string, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn,
         event: {
             type: HistoryEventType.ActivityTimedOut,
+            previousEventId: req.previousEventId,
             activityTimedOutEventDetails: {
                 error: AWSConstant.error.STATE_TIMEOUT,
                 cause: req.cause
@@ -30,9 +44,11 @@ export const onActivityTimeoutEvent = async (req: {executionArn: string, cause?:
         }
     });
 }
-export const onActivityScheduledEvent = async (req: {executionArn: string, heartbeatSeconds: number, input: unknown, resource: string, timeoutSeconds: number}): Promise<void> => {
+export const onActivityScheduledEvent = async (req: {executionArn: string, heartbeatSeconds: number, input: unknown, resource: string, 
+    timeoutSeconds: number, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ActivityScheduled,
+        previousEventId: req.previousEventId,
         activityScheduledEventDetails: {
             resource: req.resource,
             heartbeatInSeconds: req.heartbeatSeconds,
@@ -42,17 +58,19 @@ export const onActivityScheduledEvent = async (req: {executionArn: string, heart
     }});
 }
 
-export const onActivityStartedEvent = async (req: {task: RunningTaskState, workerName?: string}): Promise<void> => {
+export const onActivityStartedEvent = async (req: {task: RunningTaskState, workerName?: string}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.task.executionArn, event: {
         type: HistoryEventType.ActivityStarted,
+        previousEventId: req.task.previousEventId,
         activityStartedEventDetails: {
             workerName: req.workerName
         }
     }});
 }
 
-export const onActivitySucceededEvent = async (req: RunningTaskState): Promise<void> => {
+export const onActivitySucceededEvent = async (req: RunningTaskState): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event : {
+        previousEventId: req.previousEventId,
         type: HistoryEventType.ActivitySucceeded as HistoryEventType,
         activitySucceededEventDetails: {
             output: JSON.stringify(req.output),
@@ -60,9 +78,10 @@ export const onActivitySucceededEvent = async (req: RunningTaskState): Promise<v
     }})
 }
 
-export const onStateExitedEvent = async (req: {executionArn: string, stateName: string, output: unknown, stateType: StateType}): Promise<void> => {
+export const onStateExitedEvent = async (req: {executionArn: string, stateName: string, output: unknown, stateType: StateType, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: `${req.stateType}StateExited` as HistoryEventType,
+        previousEventId: req.previousEventId,
         stateExitedEventDetails: {
             name: req.stateName,
             output: JSON.stringify(req.output)
@@ -70,9 +89,10 @@ export const onStateExitedEvent = async (req: {executionArn: string, stateName: 
     }})
 }
 
-export const onExecutionFailedEvent = async (req: {executionArn: string, stateName: string, error?: string, cause?: string}): Promise<void> => {
+export const onExecutionFailedEvent = async (req: {executionArn: string, stateName: string, error?: string, cause?: string, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionFailed,
+        previousEventId: req.previousEventId,
         executionFailedEventDetails: {
             cause: req.cause === null ? undefined : req.cause, 
             error: req.error === null ? undefined : req.error
@@ -80,18 +100,20 @@ export const onExecutionFailedEvent = async (req: {executionArn: string, stateNa
     }});
 }
 
-export const onExecutionSucceededEvent = async (req: {executionArn: string, result: unknown}): Promise<void> => {
+export const onExecutionSucceededEvent = async (req: {executionArn: string, result: unknown, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionSucceeded,
+        previousEventId: req.previousEventId,
         executionSucceededEventDetails: {
             output: JSON.stringify(req.result),
         }
     }});
 }
 
-export const onActivityFailedEvent = async (req: {activityTask: RunningTaskState, cause?: string, error?: string}): Promise<void> => {
+export const onActivityFailedEvent = async (req: {activityTask: RunningTaskState, cause?: string, error?: string, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.activityTask.executionArn, event: {
         type: HistoryEventType.ActivityFailed,
+        previousEventId: req.previousEventId,
         activityFailedEventDetails: {
             cause: req.cause === null ? undefined : req.cause, 
             error: req.error === null ? undefined : req.error

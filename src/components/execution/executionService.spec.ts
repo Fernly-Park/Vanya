@@ -2,11 +2,12 @@ import * as ExecutionDAL from '@App/components/execution/executionDAL';
 import db from '@App/modules/database/db';
 import * as Redis from '@App/modules/database/redis';
 import * as TestHelper from '@Tests/testHelper';
-import { ExecutionStatus } from '@App/components/execution/execution.interfaces';
+import { ExecutionStatus, HistoryEventType, IExecution } from '@App/components/execution/execution.interfaces';
 import { UserDoesNotExistsError } from '@App/errors/customErrors';
 import { InvalidExecutionInputError, InvalidNameError, InvalidArnError, StateMachineDoesNotExistsError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import { ExecutionService } from '.';
+import { executionStartedEvent } from '../events';
 
 generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
@@ -45,16 +46,16 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
         });
 
         it('should correctly send an event when starting an execution', async () => {
-            expect.assertions(6);
+            expect.assertions(1);
 
+            let executionFromEvent: IExecution;
+            executionStartedEvent.on((execution) => {
+                executionFromEvent = execution;
+                return Promise.resolve();
+            })
             const {execution} = await createSMAndStartExecutionHelper();
-            const result = await ExecutionService.getExecutionHistory(execution);
-            expect(result).toHaveLength(1);
-            expect(result[0].type).toBe('ExecutionStarted');
-            expect(result[0].id).toBe(1);
-            expect(result[0].previousEventId).toBe(0);
-            expect(result[0].timestamp).toBeDefined();
-            expect(result[0].executionStartedEventDetails.input).toBe('{}');
+            
+            expect(executionFromEvent.executionArn).toBe(execution.executionArn);
         });
 
         it.each([JSON.stringify([]), JSON.stringify([1, 2]), JSON.stringify([1, 'a'])])('should start an execution with %p as input', async (input: string) => {
@@ -208,7 +209,9 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             expect.assertions(2);
 
             const {execution} = await createSMAndStartExecutionHelper();
-
+            await ExecutionService.addEvent({executionArn: execution.executionArn, event: {
+                type: HistoryEventType.ExecutionStarted,
+            }});
             const key = Redis.getExecutionEventKey(execution.executionArn);
             const eventsFromRedisBefore = await Redis.lrangeAsync(key, 0, -1);
             await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});

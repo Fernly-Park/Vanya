@@ -3,7 +3,7 @@ import { RunningState, StateInput, StateOutput } from '../task/task.interfaces';
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
-import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onActivitySucceededEvent, onActivityStartedEvent, onActivityFailedEvent } from './historyEvent';
+import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onExecutionStartedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
@@ -50,7 +50,8 @@ const processTask = async (task: RunningState): Promise<void> => {
         Name: task.stateName,
     }, taskToken, previousState: task.previousStateName});
     let effectiveOutput: StateOutput;
-    await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, stateType: state.Type, input: task.rawInput})
+    task.previousEventId = await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, 
+        stateType: state.Type, input: task.rawInput, previousEventId: task.previousEventId})
 
     try {
         
@@ -81,13 +82,13 @@ const processTask = async (task: RunningState): Promise<void> => {
 };
 
 export const endStateSuccess = async (req: {executionArn: string, stateMachineArn: string, stateType: StateType
-    stateName: string, output: StateOutput, nextStateName?: string}): Promise<void> => {
-    await onStateExitedEvent(req);
+    stateName: string, output: StateOutput, nextStateName?: string, previousEventId: number}): Promise<void> => {
+    req.previousEventId = await onStateExitedEvent(req);
     if (req.nextStateName) {
         await TaskService.addGeneralTask({executionArn: req.executionArn, stateName: req.nextStateName, 
-            rawInput: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName})
+            rawInput: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName, previousEventId: req.previousEventId})
     } else {
-        await onExecutionSucceededEvent({result: req.output, executionArn: req.executionArn});
+        await onExecutionSucceededEvent({result: req.output, executionArn: req.executionArn, previousEventId: req.previousEventId});
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
     }   
 }
@@ -130,6 +131,7 @@ const registerEvents = (): void => {
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
     Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
+    Event.executionStartedEvent.on(onExecutionStartedEvent)
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
@@ -140,6 +142,7 @@ const unregisterEvents = (): void => {
     Event.workerOutputReceivedEvent.removeListener(processTaskStateDone);
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
+    Event.executionStartedEvent.removeListener(onExecutionStartedEvent)
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);

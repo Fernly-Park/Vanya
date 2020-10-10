@@ -48,7 +48,7 @@ export const retrieveActivityTaskInProgress = async (token: string): Promise<Run
     return toReturn ? JSON.parse(toReturn) as RunningTaskState : null;
 }
 
-export const modifyActivityTaskStatus = async (token: string, newStatus: ActivityTaskStatus): Promise<void> => {
+export const modifyActivityTaskStatus = async (token: string, newStatus: ActivityTaskStatus, previousEventId?: number): Promise<void> => {
     const key = Redis.getActivityTaskInProgressKey(token);
     await Redis.watchAsync(key, (watcher) => {
         return new Promise((resolve, reject) => {
@@ -59,6 +59,7 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
                     return reject (err);
                 }
                 activityTask.status = newStatus;
+                activityTask.previousEventId = previousEventId == null ? activityTask.previousEventId : previousEventId;
                 watcher.multi()
                 .set(key, JSON.stringify(activityTask))
                 .exec((err, results) => {
