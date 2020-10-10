@@ -1,5 +1,5 @@
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskFailureInput, SendTaskHeartbeatInput, SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
-import { ActivityTask, ActivityTaskStatus, Task } from "./task.interfaces";
+import { RunningTaskState, ActivityTaskStatus, RunningState } from "./task.interfaces";
 import * as TaskDAL from "./taskDAL";
 import { ActivityDoesNotExistError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from "@App/errors/AWSErrors";
 import Joi from "@hapi/joi";
@@ -15,12 +15,12 @@ export const taskTokenMaxLength = 1024;
 export const causeMaxLength = 32768;
 export const errorMaxLength = 256;
 
-export const addGeneralTask = async (task: Task): Promise<void> => {
+export const addGeneralTask = async (task: RunningState): Promise<void> => {
     // TODO 
     await TaskDAL.addToGeneralTaskQueue(task);
 }
 
-export const getGeneralTaskBlocking = async (): Promise<Task> => {
+export const getGeneralTaskBlocking = async (): Promise<RunningState> => {
     return await TaskDAL.popFromGeneralTaskQueue();
 }
 
@@ -28,7 +28,7 @@ export const numberOfGeneralTask = async (): Promise<number> => {
     return await TaskDAL.lengthOfGeneralTaskQueue();
 }
 
-export const addActivityTask = async (activityArn: string, task: ActivityTask): Promise<void> => {
+export const addActivityTask = async (activityArn: string, task: RunningTaskState): Promise<void> => {
     await TaskDAL.addActivityTaskKeyValue(task);
     await TaskDAL.addActivityTaskToActivityQueue(activityArn, task);
 }
@@ -61,11 +61,11 @@ export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<vo
     await Event.activityTaskHeartbeat.emit(activityTask);
 }
 
-export const getActivityTaskFromToken = async (taskToken: string): Promise<ActivityTask> => {
+export const getActivityTaskFromToken = async (taskToken: string): Promise<RunningTaskState> => {
     return await TaskDAL.retrieveActivityTaskInProgress(taskToken);
 }
 
-export const modifyActivityTaskStatus = async (activityTask: ActivityTask, newStatus: ActivityTaskStatus): Promise<void> => {
+export const modifyActivityTaskStatus = async (activityTask: RunningTaskState, newStatus: ActivityTaskStatus): Promise<void> => {
     // todo
     return await TaskDAL.modifyActivityTaskStatus(activityTask.token, newStatus);
 };

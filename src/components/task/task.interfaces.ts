@@ -1,10 +1,7 @@
-import { TaskState, WaitState } from "../stateMachines/stateMachine.interfaces";
-
 export type StateInput = unknown;
 export type StateOutput = unknown;
-export type WaitStateTaskInfo = Task & WaitState
 
-export interface Task {
+export interface RunningState {
     stateName: string,
     rawInput: StateInput,
     executionArn: string,
@@ -12,11 +9,13 @@ export interface Task {
     previousStateName?: string
 }
 
-export type ActivityTask = Task & TaskState & {
+export type RunningTaskState = RunningState & {
     token: string,
     output?: Record<string, unknown>,
     status: ActivityTaskStatus,
-    effectiveInput: StateInput
+    effectiveInput: StateInput,
+    heartbeatSeconds?: number,
+    timeoutSeconds?: number
 }
 
 export enum ActivityTaskStatus {

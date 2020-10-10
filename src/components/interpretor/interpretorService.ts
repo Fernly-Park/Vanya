@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-import { Task, StateInput, StateOutput } from '../task/task.interfaces';
+import { RunningState, StateInput, StateOutput } from '../task/task.interfaces';
 import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
@@ -39,7 +39,7 @@ const startInterpretorPoll = async (): Promise<void> => {
     }
 }
 
-const processTask = async (task: Task): Promise<void> => {
+const processTask = async (task: RunningState): Promise<void> => {
     let result: StateInput;
     let next: string;
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
@@ -92,7 +92,7 @@ export const endStateSuccess = async (req: {executionArn: string, stateMachineAr
     }   
 }
 
-export const endStateFailed = async (req: {task: Task, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
+export const endStateFailed = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
     const asTaskState = req.state as TaskState
     if (asTaskState.Catch != null) {
         for (const catcher of asTaskState.Catch) {
@@ -108,7 +108,7 @@ export const endStateFailed = async (req: {task: Task, cause?: string, error?: s
     return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
 }
 
-const filterInput = async (task: Task, state: StateMachineStateValue): Promise<StateInput> => {
+export const filterInput = async (task: RunningState, state: StateMachineStateValue): Promise<StateInput> => {
     const asPassState = state as PassState;
     let toReturn = applyPath(task.rawInput, asPassState.InputPath);
     const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
@@ -116,7 +116,7 @@ const filterInput = async (task: Task, state: StateMachineStateValue): Promise<S
     return toReturn;
 }
 
-export const filterOutput = async (rawInput: StateInput, output: StateOutput, state: StateMachineStateValue, task: Task): Promise<StateOutput> => {
+export const filterOutput = async (rawInput: StateInput, output: StateOutput, state: StateMachineStateValue, task: RunningState): Promise<StateOutput> => {
     const asTaskState = state as TaskState;
     const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
     let toReturn = applyPayloadTemplate(contextObject, output, asTaskState.ResultSelector)

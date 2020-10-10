@@ -2,20 +2,19 @@ import { dummyActivityArn, dummyExecutionArn, dummyStateMachineArn } from '@Test
 import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
-import { ActivityTask, ActivityTaskStatus } from './task.interfaces';
-import { StateType } from '../stateMachines/stateMachine.interfaces';
+import { RunningTaskState, ActivityTaskStatus } from './task.interfaces';
 import * as Event from '../events';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/components/task/taskService';
 import { TaskService } from '.';
 import { ActivityService } from '../activity';
 
 generateServiceTest({describeText: 'tasks', tests: (getUser) => {
-    const activityTask: ActivityTask = {token: 'token', rawInput: {hello: 'world'}, Type: StateType.Pass, executionArn: dummyExecutionArn, 
-    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, Resource: dummyActivityArn, status: ActivityTaskStatus.Running, effectiveInput: {hello: 'world'}};
+    const activityTask: RunningTaskState = {token: 'token', rawInput: {hello: 'world'}, executionArn: dummyExecutionArn, 
+    stateName: 'HelloWorld', stateMachineArn: dummyStateMachineArn, status: ActivityTaskStatus.Running, effectiveInput: {hello: 'world'}};
 
     const createAndGetActivityTaskHelper = async (req?: {input?: Record<string, unknown>, token?: string}) => {
         const activity = await ActivityService.createActivity(getUser().id, 'tmp');
-        const input: ActivityTask = {...activityTask, token: req?.token ?? 'token', rawInput: req?.input ?? {hello: 'world'}, Resource: activity.activityArn};
+        const input: RunningTaskState = {...activityTask, token: req?.token ?? 'token', rawInput: req?.input ?? {hello: 'world'}};
         await TaskService.addActivityTask(activity.activityArn, input);
         const result = await TaskService.getActivityTask(activity);
         return {

@@ -2,15 +2,15 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { HistoryEventType } from './execution/execution.interfaces';
 import { StateType } from './stateMachines/stateMachine.interfaces';
-import { ActivityTask } from './task/task.interfaces';
+import { RunningTaskState } from './task/task.interfaces';
 
 export type StateEnteredEventInput = {executionArn: string, stateName: string, stateType: StateType, input: unknown};
-export type ProcessTaskDoneInput = ActivityTask;
-export type ActivityTaskHeartbeatInput = ActivityTask;
-export type SendTaskFailureEventInput = {activityTask: ActivityTask, cause?: string, error?: string};
+export type ProcessTaskDoneInput = RunningTaskState;
+export type ActivityTaskHeartbeatInput = RunningTaskState;
+export type SendTaskFailureEventInput = {activityTask: RunningTaskState, cause?: string, error?: string};
 export type StateExitedEventInput =  {executionArn: string, stateName: string, output: unknown, stateType: StateType};
 export type ActivityScheduledEventInput = {executionArn: string, heartbeatSeconds: number, input: unknown, resource: string, timeoutSeconds: number};
-export type ActivityStartedEventInput = {task: ActivityTask, workerName?: string};
+export type ActivityStartedEventInput = {task: RunningTaskState, workerName?: string};
 export type ActivitySucceededEventInput = {executionArn: string, output: unknown};
 export type ActivityTimeoutEventInput = {executionArn: string, cause?: string};
 export type ExecutionFailedEventInput = {executionArn: string, stateName: string, error?: string, cause?: string};
@@ -79,8 +79,8 @@ const factoryCustomEvent = <T>(eventName: string) => {
 }
 
 export const stateEnteredEvent = factoryCustomEvent<StateEnteredEventInput>(HistoryEventType.StateEntered);
-export const workerOutputReceivedEvent = factoryCustomEvent<ActivityTask>(CustomEvents.WorkerOutputReceived);
-export const activityTaskSucceededEvent = factoryCustomEvent<ActivityTask>(CustomEvents.ActivityTaskSucceeded)
+export const workerOutputReceivedEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.WorkerOutputReceived);
+export const activityTaskSucceededEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.ActivityTaskSucceeded)
 export const stateExitedEvent = factoryCustomEvent<StateExitedEventInput>(HistoryEventType.StateExited);
 export const activityScheduledEvent = factoryCustomEvent<ActivityScheduledEventInput>(HistoryEventType.ActivityScheduled);
 export const activityStartedEvent = factoryCustomEvent<ActivityStartedEventInput>(HistoryEventType.ActivityStarted);

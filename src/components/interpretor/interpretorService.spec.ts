@@ -191,4 +191,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'task-catchAll'});
+generateStateMachinesTests({folderName: 'task'});
