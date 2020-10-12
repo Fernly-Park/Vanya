@@ -1,0 +1,245 @@
+{
+    "describe": "state machine with a task state containing and inputPath and two catcher with resultPaths", 
+    "tests": [
+        {
+            "input": {"number":42},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"number":42,"errorOfFirstCatch":{"Error":"FirstCatch","Cause":null}},
+            "describe": "should succeed if the 'FirstCatch' Error is thrown, and the error should be included in the input",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": 42,
+                    "output": {},
+                    "fail": {
+                        "error": "FirstCatch"
+                    }
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-12T08:56:25.695Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"number\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:25.726Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"number\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:25.726Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "42"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:25.934Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:26.122Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "FirstCatch"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:26.122Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"number\":42,\"errorOfFirstCatch\":{\"Error\":\"FirstCatch\",\"Cause\":null}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:26.129Z",
+                 "type": "PassStateEntered",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "stateEnteredEventDetails": {
+                  "name": "ForFirstCatch",
+                  "input": "{\"number\":42,\"errorOfFirstCatch\":{\"Error\":\"FirstCatch\",\"Cause\":null}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:26.129Z",
+                 "type": "PassStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "ForFirstCatch",
+                  "output": "{\"number\":42,\"errorOfFirstCatch\":{\"Error\":\"FirstCatch\",\"Cause\":null}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:56:26.129Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"number\":42,\"errorOfFirstCatch\":{\"Error\":\"FirstCatch\",\"Cause\":null}}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"number":42},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"number":42,"error":{"Of":{"Second":{"Catch":{"Error":"ThirdCatch","Cause":null}}}}},
+            "describe": "should succeed if the 'ThirdCatch' Error is thrown, and the error should be included in the input",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": 42,
+                    "output": {},
+                    "fail": {
+                        "error": "ThirdCatch"
+                    }
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-12T08:58:41.679Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"number\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:41.700Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"number\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:41.700Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "42"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:41.916Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:42.098Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "ThirdCatch"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:42.098Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"number\":42,\"error\":{\"Of\":{\"Second\":{\"Catch\":{\"Error\":\"ThirdCatch\",\"Cause\":null}}}}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:42.104Z",
+                 "type": "PassStateEntered",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "stateEnteredEventDetails": {
+                  "name": "ForSecondCatch",
+                  "input": "{\"number\":42,\"error\":{\"Of\":{\"Second\":{\"Catch\":{\"Error\":\"ThirdCatch\",\"Cause\":null}}}}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:42.104Z",
+                 "type": "PassStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "ForSecondCatch",
+                  "output": "{\"number\":42,\"error\":{\"Of\":{\"Second\":{\"Catch\":{\"Error\":\"ThirdCatch\",\"Cause\":null}}}}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T08:58:42.104Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"number\":42,\"error\":{\"Of\":{\"Second\":{\"Catch\":{\"Error\":\"ThirdCatch\",\"Cause\":null}}}}}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+            "InputPath": "$.number",
+            "End": true,
+            "Catch": [
+                {
+                    "ErrorEquals": [ "FirstCatch", "SecondCatch" ],
+                    "Next": "ForFirstCatch",
+                    "ResultPath": "$.errorOfFirstCatch"
+                },
+                {
+                    "ErrorEquals": [ "ThirdCatch" ],
+                    "Next": "ForSecondCatch",
+                    "ResultPath": "$.error.Of.Second.Catch"
+                }
+            ]
+            },
+            "ForFirstCatch": {
+                "Type": "Pass",
+                "End": true
+            },
+            "ForSecondCatch": {
+                "Type": "Pass",
+                "End": true
+            }
+        }
+        
+    }    
+}
+

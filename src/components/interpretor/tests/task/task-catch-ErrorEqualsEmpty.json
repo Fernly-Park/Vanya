@@ -1,11 +1,114 @@
 {
-    "describe": "state machine with a task state containing a catcher with only a 'State.ALL' whose next value is a pass state ", 
+    "describe": "state machine with a task state containing a catcher with only an empty string whose next value is a pass state ", 
     "tests": [
         {
             "input": {},
             "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {"Error":null,"Cause":null},
-            "describe": "should succeed even if the task fails due to a sendTaskFailure",
+            "expectedOutput": {"Error":"","Cause":null},
+            "describe": "should succeed even if the task fails due to a sendTaskFailure if the error is an empty string",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": {
+                        "error": ""
+                    }
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T12:11:41.451Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.473Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.473Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.672Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.855Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": ""
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.855Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"Error\":\"\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.861Z",
+                 "type": "PassStateEntered",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "stateEnteredEventDetails": {
+                  "name": "World",
+                  "input": "{\"Error\":\"\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.861Z",
+                 "type": "PassStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "World",
+                  "output": "{\"Error\":\"\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:11:41.861Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Error\":\"\",\"Cause\":null}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail even if the task fails due to a sendTaskFailure if the error is undefined",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
@@ -16,7 +119,7 @@
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-09T10:50:55.706Z",
+                 "timestamp": "2020-10-11T12:14:07.850Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
@@ -26,7 +129,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:55.735Z",
+                 "timestamp": "2020-10-11T12:14:07.872Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -36,7 +139,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:55.735Z",
+                 "timestamp": "2020-10-11T12:14:07.872Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
@@ -46,79 +149,115 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:55.923Z",
+                 "timestamp": "2020-10-11T12:14:08.085Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
                  "activityStartedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:56.094Z",
+                 "timestamp": "2020-10-11T12:14:08.257Z",
                  "type": "ActivityFailed",
                  "id": 5,
                  "previousEventId": 4,
                  "activityFailedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:56.094Z",
-                 "type": "TaskStateExited",
+                 "timestamp": "2020-10-11T12:14:08.257Z",
+                 "type": "ExecutionFailed",
                  "id": 6,
                  "previousEventId": 5,
-                 "stateExitedEventDetails": {
-                  "name": "Hello",
-                  "output": "{\"Error\":null,\"Cause\":null}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-09T10:50:56.101Z",
-                 "type": "PassStateEntered",
-                 "id": 7,
-                 "previousEventId": 6,
-                 "stateEnteredEventDetails": {
-                  "name": "World",
-                  "input": "{\"Error\":null,\"Cause\":null}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-09T10:50:56.101Z",
-                 "type": "PassStateExited",
-                 "id": 8,
-                 "previousEventId": 7,
-                 "stateExitedEventDetails": {
-                  "name": "World",
-                  "output": "{\"Error\":null,\"Cause\":null}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-09T10:50:56.101Z",
-                 "type": "ExecutionSucceeded",
-                 "id": 9,
-                 "previousEventId": 8,
-                 "executionSucceededEventDetails": {
-                  "output": "{\"Error\":null,\"Cause\":null}"
-                 }
+                 "executionFailedEventDetails": {}
                 }
             ]
         },
         {
             "input": {},
-            "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {"Error":"RandomError","Cause":"RandomCause"},
-            "describe": "should succeed even if the task fails due to a sendTaskFailure and a random error and cause",
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail even if the task fails due to a sendTaskFailure if the error is null",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
                     "expectedInput": {},
                     "output": {},
                     "fail": {
-                        "cause": "RandomCause",
+                        "error": null
+                    }
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T12:16:03.562Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:16:03.585Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:16:03.585Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:16:03.931Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:16:04.105Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:16:04.105Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {}
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail even if the task fails due to a sendTaskFailure if the error is 'RandomError'",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": {
                         "error": "RandomError"
                     }
                 }
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-11T11:53:00.362Z",
+                 "timestamp": "2020-10-11T12:17:45.367Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
@@ -128,7 +267,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.384Z",
+                 "timestamp": "2020-10-11T12:17:45.389Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -138,7 +277,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.384Z",
+                 "timestamp": "2020-10-11T12:17:45.389Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
@@ -148,139 +287,28 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.578Z",
+                 "timestamp": "2020-10-11T12:17:45.593Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
                  "activityStartedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.805Z",
+                 "timestamp": "2020-10-11T12:17:45.769Z",
                  "type": "ActivityFailed",
                  "id": 5,
                  "previousEventId": 4,
                  "activityFailedEventDetails": {
-                  "error": "RandomError",
-                  "cause": "RandomCause"
+                  "error": "RandomError"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.805Z",
-                 "type": "TaskStateExited",
+                 "timestamp": "2020-10-11T12:17:45.769Z",
+                 "type": "ExecutionFailed",
                  "id": 6,
                  "previousEventId": 5,
-                 "stateExitedEventDetails": {
-                  "name": "Hello",
-                  "output": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:53:00.811Z",
-                 "type": "PassStateEntered",
-                 "id": 7,
-                 "previousEventId": 6,
-                 "stateEnteredEventDetails": {
-                  "name": "World",
-                  "input": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:53:00.811Z",
-                 "type": "PassStateExited",
-                 "id": 8,
-                 "previousEventId": 7,
-                 "stateExitedEventDetails": {
-                  "name": "World",
-                  "output": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:53:00.811Z",
-                 "type": "ExecutionSucceeded",
-                 "id": 9,
-                 "previousEventId": 8,
-                 "executionSucceededEventDetails": {
-                  "output": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
-                 }
-                }
-            ]
-        },
-        {
-            "input": {},
-            "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {"output": 42},
-            "describe": "should succeed and not pass through the catch if the task does not fail",
-            "activitiesToCreate": [
-                {
-                    "name": "tmp",
-                    "expectedInput": {},
-                    "output": {"output": 42}
-                }
-            ],
-            "events": [
-                {
-                 "timestamp": "2020-10-11T11:48:35.038Z",
-                 "type": "ExecutionStarted",
-                 "id": 1,
-                 "previousEventId": 0,
-                 "executionStartedEventDetails": {
-                  "input": "{}",
-                  "roleArn": "todo"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:48:35.070Z",
-                 "type": "TaskStateEntered",
-                 "id": 2,
-                 "previousEventId": 0,
-                 "stateEnteredEventDetails": {
-                  "name": "Hello",
-                  "input": "{}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:48:35.070Z",
-                 "type": "ActivityScheduled",
-                 "id": 3,
-                 "previousEventId": 2,
-                 "activityScheduledEventDetails": {
-                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
-                  "input": "{}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:48:35.262Z",
-                 "type": "ActivityStarted",
-                 "id": 4,
-                 "previousEventId": 3,
-                 "activityStartedEventDetails": {}
-                },
-                {
-                 "timestamp": "2020-10-11T11:48:35.428Z",
-                 "type": "ActivitySucceeded",
-                 "id": 5,
-                 "previousEventId": 4,
-                 "activitySucceededEventDetails": {
-                  "output": "{\"output\":42}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:48:35.428Z",
-                 "type": "TaskStateExited",
-                 "id": 6,
-                 "previousEventId": 5,
-                 "stateExitedEventDetails": {
-                  "name": "Hello",
-                  "output": "{\"output\":42}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-11T11:48:35.428Z",
-                 "type": "ExecutionSucceeded",
-                 "id": 7,
-                 "previousEventId": 6,
-                 "executionSucceededEventDetails": {
-                  "output": "{\"output\":42}"
+                 "executionFailedEventDetails": {
+                  "error": "RandomError"
                  }
                 }
             ]
@@ -296,7 +324,7 @@
                 "End": true,
                 "Catch": [
                     {
-                      "ErrorEquals": [ "States.ALL" ],
+                      "ErrorEquals": [ "" ],
                       "Next": "World"
                     }
                 ]

@@ -95,13 +95,14 @@ export const endStateSuccess = async (req: {executionArn: string, stateMachineAr
 
 export const endStateFailed = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
     const asTaskState = req.state as TaskState
-    if (asTaskState.Catch != null) {
+    if (req.error != AWSConstant.error.STATE_RUNTIME && asTaskState.Catch != null) {
         for (const catcher of asTaskState.Catch) {
-            if (catcher.ErrorEquals.includes(AWSConstant.error.STATE_ALL_ERROR)) {
-                return await endStateSuccess({...req.task, stateType: req.state.Type, nextStateName: catcher.Next, output: {
+            if (catcher.ErrorEquals.includes(AWSConstant.error.STATE_ALL_ERROR) || catcher.ErrorEquals.includes(req.error)) {
+                const output = applyResultPath(req.task.rawInput, {
+                    Error: req.error ?? null,
                     Cause: req.cause ?? null,
-                    Error: req.error ?? null
-                }});
+                }, catcher.ResultPath);
+                return await endStateSuccess({...req.task, stateType: req.state.Type, nextStateName: catcher.Next, output});
             }
         }
     }

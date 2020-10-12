@@ -1,0 +1,199 @@
+{
+    "describe": "state machine with a task state containing a catcher with only a 'BadParam' error handler whose next value is a pass state ", 
+    "tests": [
+        {
+            "input": {"numbers": "bad"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Error":"BadParam","Cause":"the numbers should be a number duh"},
+            "describe": "should succeed if the task fails due to a sendTaskFailure and an error of 'BadParam' ",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"numbers": "bad"},
+                    "output": {},
+                    "fail": {
+                        "cause": "the numbers should be a number duh",
+                        "error": "BadParam"
+                    }
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T12:03:45.593Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":\"bad\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.612Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numbers\":\"bad\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.612Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"numbers\":\"bad\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.811Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.987Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "BadParam",
+                  "cause": "the numbers should be a number duh"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.987Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"Error\":\"BadParam\",\"Cause\":\"the numbers should be a number duh\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.994Z",
+                 "type": "PassStateEntered",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "stateEnteredEventDetails": {
+                  "name": "World",
+                  "input": "{\"Error\":\"BadParam\",\"Cause\":\"the numbers should be a number duh\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.994Z",
+                 "type": "PassStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "World",
+                  "output": "{\"Error\":\"BadParam\",\"Cause\":\"the numbers should be a number duh\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:03:45.994Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Error\":\"BadParam\",\"Cause\":\"the numbers should be a number duh\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numbers": "bad"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fails if the task fails due to a sendTaskFailure and an error that is not 'BadParam' ",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"numbers": "bad"},
+                    "output": {},
+                    "fail": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T12:06:25.490Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numbers\":\"bad\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:06:25.510Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numbers\":\"bad\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:06:25.510Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"numbers\":\"bad\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:06:25.708Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:06:25.895Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:06:25.895Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {}
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true,
+                "Catch": [
+                    {
+                        "ErrorEquals": [ "BadParam" ],
+                        "Next": "World"
+                    }
+                ]
+            },
+            "World": {
+              "Type": "Pass",
+              "End": true
+            }
+        }
+    }    
+}
+

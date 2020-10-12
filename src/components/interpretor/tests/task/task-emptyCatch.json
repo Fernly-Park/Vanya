@@ -1,0 +1,166 @@
+{
+    "describe": "state machine with a task state containing a catch array with no catcher", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should succeed if no error are thrown",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T12:21:33.278Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:21:33.299Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:21:33.299Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:21:33.507Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:21:33.687Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:21:33.687Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:21:33.687Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if an error is thrown",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T12:27:16.450Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:27:16.471Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:27:16.471Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T12:27:16.653Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:27:16.836Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T12:27:16.836Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {}
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true,
+                "Catch": [
+                ]
+            }
+        }
+    }    
+}
+

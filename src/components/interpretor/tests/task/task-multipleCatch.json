@@ -1,22 +1,21 @@
 {
-    "describe": "state machine with a task state containing a catcher with only a 'State.ALL' whose next value is a pass state ", 
+    "describe": "state machine with a task state containing two catcher whose next value is a pass state ", 
     "tests": [
         {
             "input": {},
             "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {"Error":null,"Cause":null},
-            "describe": "should succeed even if the task fails due to a sendTaskFailure",
+            "expectedOutput": {},
+            "describe": "should succeed if no error are thrown",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
                     "expectedInput": {},
-                    "output": {},
-                    "fail": {}
+                    "output": {}
                 }
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-09T10:50:55.706Z",
+                 "timestamp": "2020-10-11T13:53:43.698Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
@@ -26,7 +25,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:55.735Z",
+                 "timestamp": "2020-10-11T13:53:43.730Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -36,7 +35,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:55.735Z",
+                 "timestamp": "2020-10-11T13:53:43.730Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
@@ -46,56 +45,38 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:55.923Z",
+                 "timestamp": "2020-10-11T13:53:43.955Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
                  "activityStartedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:56.094Z",
-                 "type": "ActivityFailed",
+                 "timestamp": "2020-10-11T13:53:44.165Z",
+                 "type": "ActivitySucceeded",
                  "id": 5,
                  "previousEventId": 4,
-                 "activityFailedEventDetails": {}
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:56.094Z",
+                 "timestamp": "2020-10-11T13:53:44.165Z",
                  "type": "TaskStateExited",
                  "id": 6,
                  "previousEventId": 5,
                  "stateExitedEventDetails": {
                   "name": "Hello",
-                  "output": "{\"Error\":null,\"Cause\":null}"
+                  "output": "{}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-09T10:50:56.101Z",
-                 "type": "PassStateEntered",
+                 "timestamp": "2020-10-11T13:53:44.165Z",
+                 "type": "ExecutionSucceeded",
                  "id": 7,
                  "previousEventId": 6,
-                 "stateEnteredEventDetails": {
-                  "name": "World",
-                  "input": "{\"Error\":null,\"Cause\":null}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-09T10:50:56.101Z",
-                 "type": "PassStateExited",
-                 "id": 8,
-                 "previousEventId": 7,
-                 "stateExitedEventDetails": {
-                  "name": "World",
-                  "output": "{\"Error\":null,\"Cause\":null}"
-                 }
-                },
-                {
-                 "timestamp": "2020-10-09T10:50:56.101Z",
-                 "type": "ExecutionSucceeded",
-                 "id": 9,
-                 "previousEventId": 8,
                  "executionSucceededEventDetails": {
-                  "output": "{\"Error\":null,\"Cause\":null}"
+                  "output": "{}"
                  }
                 }
             ]
@@ -103,22 +84,21 @@
         {
             "input": {},
             "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {"Error":"RandomError","Cause":"RandomCause"},
-            "describe": "should succeed even if the task fails due to a sendTaskFailure and a random error and cause",
+            "expectedOutput": {"Error":"FirstCatch","Cause":null},
+            "describe": "should succeed if the error 'FirstCatch' is thrown, and should redirect to 'ForFirstCatch' state",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
                     "expectedInput": {},
                     "output": {},
                     "fail": {
-                        "cause": "RandomCause",
-                        "error": "RandomError"
+                        "error": "FirstCatch"
                     }
                 }
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-11T11:53:00.362Z",
+                 "timestamp": "2020-10-11T14:00:12.399Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
@@ -128,7 +108,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.384Z",
+                 "timestamp": "2020-10-11T14:00:12.422Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -138,7 +118,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.384Z",
+                 "timestamp": "2020-10-11T14:00:12.422Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
@@ -148,59 +128,58 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.578Z",
+                 "timestamp": "2020-10-11T14:00:12.626Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
                  "activityStartedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.805Z",
+                 "timestamp": "2020-10-11T14:00:12.820Z",
                  "type": "ActivityFailed",
                  "id": 5,
                  "previousEventId": 4,
                  "activityFailedEventDetails": {
-                  "error": "RandomError",
-                  "cause": "RandomCause"
+                  "error": "FirstCatch"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.805Z",
+                 "timestamp": "2020-10-11T14:00:12.820Z",
                  "type": "TaskStateExited",
                  "id": 6,
                  "previousEventId": 5,
                  "stateExitedEventDetails": {
                   "name": "Hello",
-                  "output": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
+                  "output": "{\"Error\":\"FirstCatch\",\"Cause\":null}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.811Z",
+                 "timestamp": "2020-10-11T14:00:12.827Z",
                  "type": "PassStateEntered",
                  "id": 7,
                  "previousEventId": 6,
                  "stateEnteredEventDetails": {
-                  "name": "World",
-                  "input": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
+                  "name": "ForFirstCatch",
+                  "input": "{\"Error\":\"FirstCatch\",\"Cause\":null}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.811Z",
+                 "timestamp": "2020-10-11T14:00:12.827Z",
                  "type": "PassStateExited",
                  "id": 8,
                  "previousEventId": 7,
                  "stateExitedEventDetails": {
-                  "name": "World",
-                  "output": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
+                  "name": "ForFirstCatch",
+                  "output": "{\"Error\":\"FirstCatch\",\"Cause\":null}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:53:00.811Z",
+                 "timestamp": "2020-10-11T14:00:12.827Z",
                  "type": "ExecutionSucceeded",
                  "id": 9,
                  "previousEventId": 8,
                  "executionSucceededEventDetails": {
-                  "output": "{\"Error\":\"RandomError\",\"Cause\":\"RandomCause\"}"
+                  "output": "{\"Error\":\"FirstCatch\",\"Cause\":null}"
                  }
                 }
             ]
@@ -208,18 +187,21 @@
         {
             "input": {},
             "expectedStateMachineStatus": "SUCCEEDED",
-            "expectedOutput": {"output": 42},
-            "describe": "should succeed and not pass through the catch if the task does not fail",
+            "expectedOutput": {"Error":"SecondCatch","Cause":null},
+            "describe": "should succeed if the error 'SecondCatch' is thrown, and should redirect to 'ForFirstCatch' state",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
                     "expectedInput": {},
-                    "output": {"output": 42}
+                    "output": {},
+                    "fail": {
+                        "error": "SecondCatch"
+                    }
                 }
             ],
             "events": [
                 {
-                 "timestamp": "2020-10-11T11:48:35.038Z",
+                 "timestamp": "2020-10-11T14:18:22.312Z",
                  "type": "ExecutionStarted",
                  "id": 1,
                  "previousEventId": 0,
@@ -229,7 +211,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:48:35.070Z",
+                 "timestamp": "2020-10-11T14:18:22.334Z",
                  "type": "TaskStateEntered",
                  "id": 2,
                  "previousEventId": 0,
@@ -239,7 +221,7 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:48:35.070Z",
+                 "timestamp": "2020-10-11T14:18:22.334Z",
                  "type": "ActivityScheduled",
                  "id": 3,
                  "previousEventId": 2,
@@ -249,38 +231,131 @@
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:48:35.262Z",
+                 "timestamp": "2020-10-11T14:18:22.533Z",
                  "type": "ActivityStarted",
                  "id": 4,
                  "previousEventId": 3,
                  "activityStartedEventDetails": {}
                 },
                 {
-                 "timestamp": "2020-10-11T11:48:35.428Z",
-                 "type": "ActivitySucceeded",
+                 "timestamp": "2020-10-11T14:18:22.696Z",
+                 "type": "ActivityFailed",
                  "id": 5,
                  "previousEventId": 4,
-                 "activitySucceededEventDetails": {
-                  "output": "{\"output\":42}"
+                 "activityFailedEventDetails": {
+                  "error": "SecondCatch"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:48:35.428Z",
+                 "timestamp": "2020-10-11T14:18:22.696Z",
                  "type": "TaskStateExited",
                  "id": 6,
                  "previousEventId": 5,
                  "stateExitedEventDetails": {
                   "name": "Hello",
-                  "output": "{\"output\":42}"
+                  "output": "{\"Error\":\"SecondCatch\",\"Cause\":null}"
                  }
                 },
                 {
-                 "timestamp": "2020-10-11T11:48:35.428Z",
-                 "type": "ExecutionSucceeded",
+                 "timestamp": "2020-10-11T14:18:22.702Z",
+                 "type": "PassStateEntered",
                  "id": 7,
                  "previousEventId": 6,
+                 "stateEnteredEventDetails": {
+                  "name": "ForFirstCatch",
+                  "input": "{\"Error\":\"SecondCatch\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T14:18:22.702Z",
+                 "type": "PassStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "ForFirstCatch",
+                  "output": "{\"Error\":\"SecondCatch\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T14:18:22.702Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 9,
+                 "previousEventId": 8,
                  "executionSucceededEventDetails": {
-                  "output": "{\"output\":42}"
+                  "output": "{\"Error\":\"SecondCatch\",\"Cause\":null}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail if it throws an error not in the catch block",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": {
+                        "error": "UnexistingError"
+                    }
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-11T14:39:19.431Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T14:39:19.454Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T14:39:19.454Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T14:39:19.631Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-11T14:39:19.833Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "UnexistingError"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-11T14:39:19.833Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "error": "UnexistingError"
                  }
                 }
             ]
@@ -291,21 +366,30 @@
         "StartAt": "Hello",
         "States": {
             "Hello": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
-                "End": true,
-                "Catch": [
-                    {
-                      "ErrorEquals": [ "States.ALL" ],
-                      "Next": "World"
-                    }
-                ]
+            "Type": "Task",
+            "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+            "End": true,
+            "Catch": [
+                {
+                    "ErrorEquals": [ "FirstCatch", "SecondCatch" ],
+                    "Next": "ForFirstCatch"
+                },
+                {
+                    "ErrorEquals": [ "ThirdCatch" ],
+                    "Next": "ForSecondCatch"
+                }
+            ]
             },
-            "World": {
-              "Type": "Pass",
-              "End": true
+            "ForFirstCatch": {
+                "Type": "Pass",
+                "End": true
+            },
+            "ForSecondCatch": {
+                "Type": "Pass",
+                "End": true
             }
         }
+        
     }    
 }
 

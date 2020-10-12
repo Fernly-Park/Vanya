@@ -1,0 +1,233 @@
+{
+    "describe": "simple state machine with a single task state having an inputPath, outputPath, and a catch for States.Runtime and States.ALL", 
+    "tests": [
+        {
+            "input": {"input": 42},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "hello",
+            "describe": "should succeed if no error are thrown",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": 42,
+                    "output": {"output": "hello"}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-12T09:21:14.980Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:21:15.011Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:21:15.011Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "42"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:21:15.193Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T09:21:15.377Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"output\":\"hello\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:21:15.377Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "\"hello\""
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:21:15.377Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "\"hello\""
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail due to a runtime error caused by the inputPath, even if it is in the catch (runtime cannot be catched)",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-12T09:22:12.794Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:22:12.815Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:22:12.815Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.input' : No valid results for path: '$.input'"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"input":42},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail due to a runtime error cause by the outputPath, even if it is in the catch (runtime cannot be catched)",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": 42,
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-12T09:24:26.632Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:24:26.652Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:24:26.652Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "42"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:24:26.842Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T09:24:27.021Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T09:24:27.021Z",
+                 "type": "ExecutionFailed",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.output' : No valid results for path: '$.output'"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "InputPath": "$.input",
+                "OutputPath": "$.output",
+                "End": true,
+                "Catch": [
+                    {
+                        "ErrorEquals": [ "States.Runtime" ],
+                        "Next": "ForFirstCatch"
+                    },
+                    {
+                        "ErrorEquals": [ "States.ALL" ],
+                        "Next": "ForSecondCatch"
+                    }
+                ]
+            },
+            "ForFirstCatch": {
+                "Type": "Pass",
+                "End": true
+              },
+              "ForSecondCatch": {
+                "Type": "Pass",
+                "End": true
+              }
+        }
+    }    
+}
+
