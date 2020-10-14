@@ -5,13 +5,16 @@ import config from '../config/index';
 import { REQUEST_ID_HEADER } from '@App/utils/constants';
 
 export const logger = pino({
-    level: config.log.level || 'info',
+    level: config.log.level || 'info'
 }, pino.destination());
     
 export const logInfo = (message: string): void =>  {
     logger.info(retrieveRequestId(), message);
 };
 
+export const logWarning = (message: string): void => {
+    logger.warn(retrieveRequestId(), message);
+}
 export const logError = (message: string | Error): void => {
     if (message instanceof Error) {
         const requestId = retrieveRequestId();

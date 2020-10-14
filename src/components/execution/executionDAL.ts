@@ -113,7 +113,7 @@ export const addExecutionEvent = async (req: {executionArn: string, event: Parti
     return req.event.id
 }
 
-const selectListExecutionEvent = DALFactory.selectArrayOfResourcesFactory<HistoryEvent & {event: string}>(ExecutionEventTable.tableName, ExecutionEventTable.timestampColumn);
+const selectListExecutionEvent = DALFactory.selectArrayOfResourcesFactory<HistoryEvent & {event: string}>(ExecutionEventTable.tableName, ExecutionEventTable.idColumn);
 
 
 export const getExecutionEvent = async (req: {executionArn: string, limit: number, offset: number, asc?: boolean}): Promise<HistoryEvent[]> => {

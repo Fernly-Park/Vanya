@@ -7,7 +7,13 @@ export interface RunningState {
     executionArn: string,
     stateMachineArn: string,
     previousStateName?: string,
-    previousEventId: number
+    previousEventId: number,
+    retry?: RetryInformation[]
+}
+
+export interface RetryInformation {
+    retryIntervalSeconds: number,
+    retryLeft: number
 }
 
 export type RunningTaskState = RunningState & {

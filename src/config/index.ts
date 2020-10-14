@@ -25,4 +25,5 @@ export default {
     redisBlockingTimeout: process.env.REDIS_BLOCKING_TIMEOUT ? parseFloat(process.env.REDIS_BLOCKING_TIMEOUT) : 0,
     activityTaskDefaultTimeout: process.env.ACTIVITY_TASK_DEFAULT_TIMEOUT? parseFloat(process.env.ACTIVITY_TASK_DEFAULT_TIMEOUT) : 60,
     timerPollIntervalMs: process.env.TIMER_POLL_INTERVAL_MS ? parseInt(process.env.TIMER_POLL_INTERVAL_MS) : 500,
+    waitScale: process.env.WAIT_SCALE ? parseFloat(process.env.WAIT_SCALE) : 1
 }; 

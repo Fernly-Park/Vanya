@@ -1,0 +1,599 @@
+{
+    "describe": "simple state machine with a single task state with a complex retry scenario", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should succeed if no error are sent",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-13T14:37:07.135Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:37:07.156Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:37:07.156Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:37:07.366Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:37:07.533Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:37:07.533Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:37:07.533Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if error A, B, C, B are sent",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 6,
+                    "expectedDurationInSeconds": 1
+                },
+                {
+                    "eventId": 9,
+                    "expectedDurationInSeconds": 2
+                },
+                {
+                    "eventId": 12,
+                    "expectedDurationInSeconds": 2
+                }
+            ],
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "fail": [{
+                            "error": "ErrorA"
+                        },{
+                            "error": "ErrorB"
+                        },{
+                            "error": "ErrorC"
+                        },{
+                            "error": "ErrorB"
+                        },
+                        {
+                            "error": "ErrorB"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-12T15:27:37.254Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:37.273Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:37.273Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:37.487Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:37.660Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorA"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:38.661Z",
+                 "type": "ActivityScheduled",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:38.694Z",
+                 "type": "ActivityStarted",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:38.883Z",
+                 "type": "ActivityFailed",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorB"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:40.883Z",
+                 "type": "ActivityScheduled",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:40.922Z",
+                 "type": "ActivityStarted",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:41.103Z",
+                 "type": "ActivityFailed",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorC"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:46.104Z",
+                 "type": "ActivityScheduled",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:46.148Z",
+                 "type": "ActivityStarted",
+                 "id": 13,
+                 "previousEventId": 12,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:46.359Z",
+                 "type": "ActivityFailed",
+                 "id": 14,
+                 "previousEventId": 13,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorB"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-12T15:27:46.359Z",
+                 "type": "ExecutionFailed",
+                 "id": 15,
+                 "previousEventId": 14,
+                 "executionFailedEventDetails": {
+                  "error": "ErrorB"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if 3 errorB are sent consequetively",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 6,
+                    "expectedDurationInSeconds": 1
+                },
+                {
+                    "eventId": 9,
+                    "expectedDurationInSeconds": 2
+                }
+            ],
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "fail": [{
+                            "error": "ErrorB"
+                        },{
+                            "error": "ErrorB"
+                        },{
+                            "error": "ErrorA"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-13T14:14:59.157Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:14:59.203Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:14:59.203Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:14:59.499Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:14:59.676Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorB"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:00.676Z",
+                 "type": "ActivityScheduled",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:00.776Z",
+                 "type": "ActivityStarted",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:00.941Z",
+                 "type": "ActivityFailed",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorB"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:02.967Z",
+                 "type": "ActivityScheduled",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:03.020Z",
+                 "type": "ActivityStarted",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:03.200Z",
+                 "type": "ActivityFailed",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorA"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:15:03.200Z",
+                 "type": "ExecutionFailed",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "executionFailedEventDetails": {
+                  "error": "ErrorA"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should Succeed if 3 errorC are sent consequetively",
+            "eventsExpectedDuration": [
+                {
+                    "eventId": 6,
+                    "expectedDurationInSeconds": 2
+                },
+                {
+                    "eventId": 9,
+                    "expectedDurationInSeconds": 4
+                },
+                {
+                    "eventId": 12,
+                    "expectedDurationInSeconds": 8
+                }
+            ],
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": [{
+                            "error": "ErrorC"
+                        },{
+                            "error": "ErrorC"
+                        },{
+                            "error": "ErrorC"
+                        }
+                    ]
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-13T14:41:31.425Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:31.452Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:31.452Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:31.639Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:31.796Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorC"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:36.796Z",
+                 "type": "ActivityScheduled",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:36.851Z",
+                 "type": "ActivityStarted",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:37.014Z",
+                 "type": "ActivityFailed",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorC"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:47.014Z",
+                 "type": "ActivityScheduled",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:47.061Z",
+                 "type": "ActivityStarted",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:41:47.289Z",
+                 "type": "ActivityFailed",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "activityFailedEventDetails": {
+                  "error": "ErrorC"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:42:07.289Z",
+                 "type": "ActivityScheduled",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:42:07.333Z",
+                 "type": "ActivityStarted",
+                 "id": 13,
+                 "previousEventId": 12,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T14:42:07.528Z",
+                 "type": "ActivitySucceeded",
+                 "id": 14,
+                 "previousEventId": 13,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:42:07.528Z",
+                 "type": "TaskStateExited",
+                 "id": 15,
+                 "previousEventId": 14,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T14:42:07.528Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 16,
+                 "previousEventId": 15,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true,
+                "Retry": [ {
+                    "ErrorEquals": [ "ErrorA", "ErrorB" ],
+                    "IntervalSeconds": 1,
+                    "BackoffRate": 2.0,
+                    "MaxAttempts": 2
+                 }, {
+                    "ErrorEquals": [ "ErrorC" ],
+                    "IntervalSeconds": 2
+                 } ]
+            }
+        }
+    }    
+}
+

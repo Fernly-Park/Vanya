@@ -1,0 +1,299 @@
+{
+    "describe": "simple state machine with a task state containing retry and catch", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should succeed if no error are sent",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-13T18:11:25.302Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:11:25.325Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:11:25.325Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:11:25.522Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T18:11:25.701Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:11:25.701Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:11:25.701Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"Error": "RandomError","Cause": null},
+            "describe": "should succeed if 4 RandomError are send thanks to the catch",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {},
+                    "fail": [
+                        {"error": "RandomError"},
+                        {"error": "RandomError"},
+                        {"error": "RandomError"},
+                        {"error": "RandomError"}
+                    ]
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-13T18:16:12.336Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:12.367Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:12.367Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:12.573Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:12.750Z",
+                 "type": "ActivityFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityFailedEventDetails": {
+                  "error": "RandomError"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:14.750Z",
+                 "type": "ActivityScheduled",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:14.794Z",
+                 "type": "ActivityStarted",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:14.964Z",
+                 "type": "ActivityFailed",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "activityFailedEventDetails": {
+                  "error": "RandomError"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:18.964Z",
+                 "type": "ActivityScheduled",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:19.022Z",
+                 "type": "ActivityStarted",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:19.203Z",
+                 "type": "ActivityFailed",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "activityFailedEventDetails": {
+                  "error": "RandomError"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.204Z",
+                 "type": "ActivityScheduled",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.265Z",
+                 "type": "ActivityStarted",
+                 "id": 13,
+                 "previousEventId": 12,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.511Z",
+                 "type": "ActivityFailed",
+                 "id": 14,
+                 "previousEventId": 13,
+                 "activityFailedEventDetails": {
+                  "error": "RandomError"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.511Z",
+                 "type": "TaskStateExited",
+                 "id": 15,
+                 "previousEventId": 14,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"Error\":\"RandomError\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.517Z",
+                 "type": "PassStateEntered",
+                 "id": 16,
+                 "previousEventId": 15,
+                 "stateEnteredEventDetails": {
+                  "name": "ForCatch",
+                  "input": "{\"Error\":\"RandomError\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.517Z",
+                 "type": "PassStateExited",
+                 "id": 17,
+                 "previousEventId": 16,
+                 "stateExitedEventDetails": {
+                  "name": "ForCatch",
+                  "output": "{\"Error\":\"RandomError\",\"Cause\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-13T18:16:27.517Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 18,
+                 "previousEventId": 17,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Error\":\"RandomError\",\"Cause\":null}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "End": true,
+                "Retry": [ {
+                    "ErrorEquals": [ "ErrorA", "ErrorB" ],
+                    "BackoffRate": 1.5,
+                    "MaxAttempts": 3
+                 }, {
+                    "ErrorEquals": [ "States.ALL" ],
+                    "IntervalSeconds": 2
+                 } ],
+                 "Catch": [
+                    {
+                      "ErrorEquals": [ "States.ALL" ],
+                      "Next": "ForCatch"
+                    }
+                ]
+            },
+            "ForCatch": {
+                "Type": "Pass",
+                "End": true
+              }
+        }
+    }    
+}
+

@@ -14,6 +14,8 @@ import { ExecutionService } from '../execution';
 import { StateMachineService } from '../stateMachines';
 import { TimerService } from '../timer';
 import { AWSConstant } from '@App/utils/constants';
+import { handleCatch, handleRetry } from './errorHandling';
+import { Logger } from '@App/modules';
 
 let interpretor = true;
 export const startInterpretor = (): void => {
@@ -34,15 +36,16 @@ const startInterpretorPoll = async (): Promise<void> => {
     while(interpretor) {
         const task = await TaskService.getGeneralTaskBlocking();
         if (task) {
-            void processTask(task).then();
+            void processRunningState(task).then();
         }
     }
 }
 
-const processTask = async (task: RunningState): Promise<void> => {
+const processRunningState = async (task: RunningState): Promise<void> => {
     let result: StateInput;
     let next: string;
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
+    Logger.logDebug(`processing state '${task.stateName}' from '${task.executionArn}' of type '${state.Type}'`);
 
     const taskToken = state.Type === StateType.Task ? uuid() : undefined;
     await ExecutionService.updateContextObject({executionArn: task.executionArn, enteredState: {
@@ -62,7 +65,7 @@ const processTask = async (task: RunningState): Promise<void> => {
                 next = (state as PassState).Next
                 break;
             case StateType.Task:
-                return await processTaskState(task, state as TaskState, effectiveInput, taskToken);
+                return await processTaskState({task, state: state as TaskState, effectiveInput, token: taskToken});
             case StateType.Wait:
                 return await processWaitTask(task, state as WaitState, effectiveInput); 
             default: 
@@ -70,7 +73,7 @@ const processTask = async (task: RunningState): Promise<void> => {
         }
         effectiveOutput = await filterOutput(task.rawInput, result, state, task);
     } catch (err) {
-        console.log(err)
+        Logger.logError(err ?? 'caca');
         return await endStateFailed({task, 
             cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
@@ -94,20 +97,17 @@ export const endStateSuccess = async (req: {executionArn: string, stateMachineAr
 }
 
 export const endStateFailed = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
-    const asTaskState = req.state as TaskState
-    if (req.error != AWSConstant.error.STATE_RUNTIME && asTaskState.Catch != null) {
-        for (const catcher of asTaskState.Catch) {
-            if (catcher.ErrorEquals.includes(AWSConstant.error.STATE_ALL_ERROR) || catcher.ErrorEquals.includes(req.error)) {
-                const output = applyResultPath(req.task.rawInput, {
-                    Error: req.error ?? null,
-                    Cause: req.cause ?? null,
-                }, catcher.ResultPath);
-                return await endStateSuccess({...req.task, stateType: req.state.Type, nextStateName: catcher.Next, output});
-            }
-        }
+    Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}' failed, handling error`)
+    let wasTheErrorHandled = await handleRetry(req);
+    if (!wasTheErrorHandled) {
+        wasTheErrorHandled = await handleCatch(req)
     }
-    await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
-    return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
+
+    if (!wasTheErrorHandled) {
+        Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
+        await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
+        return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
+    }
 }
 
 export const filterInput = async (task: RunningState, state: StateMachineStateValue): Promise<StateInput> => {
@@ -132,7 +132,8 @@ const registerEvents = (): void => {
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
     Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
-    Event.executionStartedEvent.on(onExecutionStartedEvent)
+    Event.executionStartedEvent.on(onExecutionStartedEvent);
+    Event.on(Event.CustomEvents.ActivityTaskRetry, processTaskState);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
@@ -143,7 +144,8 @@ const unregisterEvents = (): void => {
     Event.workerOutputReceivedEvent.removeListener(processTaskStateDone);
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
-    Event.executionStartedEvent.removeListener(onExecutionStartedEvent)
+    Event.executionStartedEvent.removeListener(onExecutionStartedEvent);
+    Event.removeListener(Event.CustomEvents.ActivityTaskRetry, processTaskState)
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);

@@ -11,7 +11,7 @@ export class BaseError extends Error {
     
       Error.captureStackTrace(this);
     }
-   }
+}
 
 
 export class ResourceAlreadyExistsError extends BaseError {
@@ -24,6 +24,13 @@ export class ResourceAlreadyExistsError extends BaseError {
 export class UnexistingResourceError extends BaseError {
     constructor(description: string) {
         super("Unexisting Resource", description, true);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
+export class TaskTimedOutError extends BaseError {
+    constructor(description: string) {
+        super("Task Timed Out", description, true);
         this.stack = `${this.message}\n${new Error().stack}`;
     }
 }

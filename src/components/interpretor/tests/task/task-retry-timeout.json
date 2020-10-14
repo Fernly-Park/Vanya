@@ -1,0 +1,494 @@
+{
+    "describe": "state machine with a task state containing retry and catch, both on States.Timeout", 
+    "tests": [
+        {
+            "input": {"heartbeat": 1, "timeout": 1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should normally work if no timeout is reach",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"heartbeat": 1, "timeout": 1},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-14T10:58:12.647Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":1,\"timeout\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T10:58:12.668Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":1,\"timeout\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T10:58:12.668Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":1,\"timeout\":1}",
+                  "timeoutInSeconds": 1,
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T10:58:12.865Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T10:58:13.046Z",
+                 "type": "ActivitySucceeded",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activitySucceededEventDetails": {
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T10:58:13.046Z",
+                 "type": "TaskStateExited",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T10:58:13.046Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"heartbeat": 1, "timeout": 0},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {
+                "Error": "States.Timeout",
+                "Cause": "An error occurred while executing the state 'Hello'. "
+            },
+            "describe": "should Retry 3 time and then go to the catch if the timeout is reached",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "workDurationSeconds": 1,
+                    "expectedInput": {"heartbeat": 1, "timeout": 0},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-14T11:03:50.068Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":1,\"timeout\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:50.088Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":1,\"timeout\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:50.088Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":1,\"timeout\":0}",
+                  "timeoutInSeconds": 0,
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:50.338Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:50.344Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:51.344Z",
+                 "type": "ActivityScheduled",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":1,\"timeout\":0}",
+                  "timeoutInSeconds": 0,
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:51.391Z",
+                 "type": "ActivityStarted",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:51.397Z",
+                 "type": "ActivityTimedOut",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:53.397Z",
+                 "type": "ActivityScheduled",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":1,\"timeout\":0}",
+                  "timeoutInSeconds": 0,
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:53.452Z",
+                 "type": "ActivityStarted",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:53.458Z",
+                 "type": "ActivityTimedOut",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.458Z",
+                 "type": "ActivityScheduled",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":1,\"timeout\":0}",
+                  "timeoutInSeconds": 0,
+                  "heartbeatInSeconds": 1
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.511Z",
+                 "type": "ActivityStarted",
+                 "id": 13,
+                 "previousEventId": 12,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.518Z",
+                 "type": "ActivityTimedOut",
+                 "id": 14,
+                 "previousEventId": 13,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.518Z",
+                 "type": "TaskStateExited",
+                 "id": 15,
+                 "previousEventId": 14,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.524Z",
+                 "type": "PassStateEntered",
+                 "id": 16,
+                 "previousEventId": 15,
+                 "stateEnteredEventDetails": {
+                  "name": "ForCatch",
+                  "input": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.524Z",
+                 "type": "PassStateExited",
+                 "id": 17,
+                 "previousEventId": 16,
+                 "stateExitedEventDetails": {
+                  "name": "ForCatch",
+                  "output": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T11:03:57.524Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 18,
+                 "previousEventId": 17,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"heartbeat": 0, "timeout": 1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {
+                "Error": "States.Timeout",
+                "Cause": "An error occurred while executing the state 'Hello'. "
+            },
+            "describe": "should Retry 3 time and then go to the catch if the heartbeat timeout is reached",
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "workDurationSeconds": 1,
+                    "expectedInput": {"heartbeat": 0, "timeout": 1},
+                    "output": {}
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-10-14T13:43:50.372Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":0,\"timeout\":1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:50.401Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":0,\"timeout\":1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:50.401Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":0,\"timeout\":1}",
+                  "timeoutInSeconds": 1,
+                  "heartbeatInSeconds": 0
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:50.641Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:50.647Z",
+                 "type": "ActivityTimedOut",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:51.647Z",
+                 "type": "ActivityScheduled",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":0,\"timeout\":1}",
+                  "timeoutInSeconds": 1,
+                  "heartbeatInSeconds": 0
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:51.683Z",
+                 "type": "ActivityStarted",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:51.689Z",
+                 "type": "ActivityTimedOut",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:53.689Z",
+                 "type": "ActivityScheduled",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":0,\"timeout\":1}",
+                  "timeoutInSeconds": 1,
+                  "heartbeatInSeconds": 0
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:53.734Z",
+                 "type": "ActivityStarted",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:53.740Z",
+                 "type": "ActivityTimedOut",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.741Z",
+                 "type": "ActivityScheduled",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":0,\"timeout\":1}",
+                  "timeoutInSeconds": 1,
+                  "heartbeatInSeconds": 0
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.771Z",
+                 "type": "ActivityStarted",
+                 "id": 13,
+                 "previousEventId": 12,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.777Z",
+                 "type": "ActivityTimedOut",
+                 "id": 14,
+                 "previousEventId": 13,
+                 "activityTimedOutEventDetails": {
+                  "error": "States.Timeout"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.777Z",
+                 "type": "TaskStateExited",
+                 "id": 15,
+                 "previousEventId": 14,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.782Z",
+                 "type": "PassStateEntered",
+                 "id": 16,
+                 "previousEventId": 15,
+                 "stateEnteredEventDetails": {
+                  "name": "ForCatch",
+                  "input": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.782Z",
+                 "type": "PassStateExited",
+                 "id": 17,
+                 "previousEventId": 16,
+                 "stateExitedEventDetails": {
+                  "name": "ForCatch",
+                  "output": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T13:43:57.782Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 18,
+                 "previousEventId": 17,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"Error\":\"States.Timeout\",\"Cause\":\"An error occurred while executing the state 'Hello'. \"}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Pass states",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "TimeoutSecondsPath": "$.timeout",
+                "HeartbeatSecondsPath": "$.heartbeat",
+                "End": true,
+                "Retry": [ {
+                    "ErrorEquals": [ "States.Timeout" ]
+                 } ],
+                 "Catch": [
+                    {
+                      "ErrorEquals": [ "States.Timeout" ],
+                      "Next": "ForCatch"
+                    }
+                ]
+            },
+            "ForCatch": {
+                "Type": "Pass",
+                "End": true
+            }
+        }
+    }    
+}
+

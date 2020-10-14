@@ -4,21 +4,23 @@ import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
 import { endStateSuccess, endStateFailed, filterInput, filterOutput } from "../interpretorService";
-import { applyPath, retrieveField } from "../path";
+import { retrieveField } from "../path";
 import * as Event from '../../events';
 import { AWSConstant } from "@App/utils/constants";
 import { StateMachineService } from "@App/components/stateMachines";
+import { Logger } from "@App/modules";
+import { getDateIn } from "@App/utils/date";
 
 export const processWaitTask = async (task: RunningState, state: WaitState, effectiveInput: StateInput): Promise<void> => {
     let time = new Date();
     if (state.Seconds) {
-        time.setSeconds(time.getSeconds() + state.Seconds);
+        time = getDateIn(state.Seconds * 1000)
     } else if (state.SecondsPath) {
         const seconds = retrieveField<number>(effectiveInput, state.SecondsPath)
-        if (!Number.isInteger(seconds) || seconds < 0) {
+        if (!Number.isInteger(seconds) || seconds < 0) { 
             throw new InvalidPathError(state.SecondsPath);
         }
-        time.setSeconds(time.getSeconds() + seconds);
+        time = getDateIn(seconds * 1000)
     } else if (state.Timestamp) {
         time = new Date(state.Timestamp);
     } else if (state.TimestampPath) {
@@ -39,7 +41,7 @@ export const processWaitingStateDone = async (task: RunningState): Promise<void>
         const output = await filterOutput(task.rawInput, effectiveInput, waitingState, task);
         await endStateSuccess({...task, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
     } catch (err) {
-        console.log(err)
+        Logger.logError(err ?? 'caca');
         await endStateFailed({task, 
             cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,

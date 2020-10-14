@@ -8,6 +8,7 @@ import { isJSON } from "@App/utils/objectUtils";
 import * as Event from '../events';
 import { ActivityService } from "../activity";
 import { isAString } from "@App/utils/stringUtils";
+import { Logger } from "@App/modules";
 
 
 export const taskOutputMaxLength = 262144;
@@ -83,9 +84,10 @@ export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> 
 
 export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> => {
     ensureSendTaskFailureInputIsValid(req);
+    Logger.logInfo(`Task failure sent for '${req.taskToken}'`)
     const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
     if (!activityTask) {
-        
+        Logger.logWarning(`Task failure sent for '${req.taskToken}'`)
         throw new TaskDoesNotExistError(req.taskToken);
     }
     await Event.sendTaskFailureEvent.emit({activityTask, cause: req.cause, error: req.error})

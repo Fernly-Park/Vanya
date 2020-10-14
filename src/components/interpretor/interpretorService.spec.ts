@@ -20,6 +20,8 @@ import { TaskService } from '../task';
 import { TimerService } from '../timer';
 import { ActivityService } from '../activity';
 import { clearInterval, setInterval } from 'timers';
+import config from '@App/config';
+import { Logger } from '@App/modules';
 
 jest.setTimeout(10000)
 
@@ -94,7 +96,7 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
             ? setInterval(() => {
                 // eslint-disable-next-line jest/valid-expect-in-promise
                 void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch((err) => {
-                    console.log(err);
+                    Logger.logError(err ?? 'error while sending heartbeat')
                     return clearInterval(interval);
                 })
             }, activity.heartbeatIntervalSeconds * 1000)
@@ -105,14 +107,17 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
             }
             try {
                 interval ? clearInterval(interval) : false
-                if (activity.fail) {
-                    await TaskService.sendTaskFailure({taskToken: res.taskToken, cause: activity.fail.cause, error: activity.fail.error});
+                const stillNeedToSendAFailSignal = (!Array.isArray(activity.fail) || activity.fail.length > 0)
+                if (activity.fail && stillNeedToSendAFailSignal) {
+                    const fail = Array.isArray(activity.fail) ? activity.fail.shift() : activity.fail
+                    await TaskService.sendTaskFailure({taskToken: res.taskToken, cause: fail.cause, error: fail.error});
+                    await TestHelper.sleep(100)
                 } else {
                     await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
                 }
             // eslint-disable-next-line no-empty
             } catch (err){
-                console.log('error sending : ', err)
+                Logger.logError(err ?? 'error trying to send a task heartbeat or failure')
             }
         }
     }
@@ -138,28 +143,27 @@ const expectEventsToBeCorrect = (received: HistoryEvent[], expected: HistoryEven
             const currentEventTime = new Date(expected[i].timestamp);
             const previousDate = new Date(previousEventTime);
             const seconds = (currentEventTime.getTime() - previousDate.getTime()) / 1000;
-            expect(Math.round(seconds)).toBe(expectedDuration.expectedDurationInSeconds);
+            expect(Math.round(seconds * 10) / 10).toBe(expectedDuration.expectedDurationInSeconds * config.waitScale);
         }
     }
     for (let i = 0; i < expected.length; i++) {
         delete expected[i].timestamp;
         delete received[i].timestamp;
     }
-
     expect(received).toStrictEqual(expected);
 }
 
 const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {
     if (stateMachineTested.stateMachineName === 'wait-timestamp') {
         const time = new Date();
-        time.setSeconds(time.getSeconds() + 1);
+        time.setMilliseconds(time.getMilliseconds() + (1 * config.waitScale * 1000));
         (stateMachineTested.definition.States.Hello as WaitState).Timestamp = time.toISOString()
     }
 
     const test = stateMachineTested.tests.find(x => x.executionName === 'timestampPathSuccess')
     if (test) {
         const time = new Date();
-        time.setSeconds(time.getSeconds() + 2);
+        time.setMilliseconds(time.getMilliseconds() + (2 * config.waitScale * 1000));
         test.input = {timestamp: time.toISOString()}
         test.expectedOutput = JSON.stringify(test.input)
         test.events[0].executionStartedEventDetails.input = JSON.stringify(test.input);
@@ -191,4 +195,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({});
+generateStateMachinesTests();

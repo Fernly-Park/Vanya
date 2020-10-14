@@ -15,12 +15,12 @@ export const setupDatabaseForTests = async (): Promise<void> => {
 
 const clearDatabase = async (): Promise<void> => {
     const db = dbModule.default;
-    await db.schema.dropTableIfExists(ExecutionEventTable.tableName);
-    await db.schema.dropTableIfExists(ExecutionTable.tableName);
-    await db.schema.dropTableIfExists(ActivityTable.tableName);
-    await db.schema.dropTableIfExists(UserTable.tableName);
-    await db.schema.dropTableIfExists(StateMachineVersionTable.tableName);
-    await db.schema.dropTableIfExists(StateMachineTable.tableName);
+    await db(ExecutionEventTable.tableName).del();
+    await db(ExecutionTable.tableName).del();
+    await db(ActivityTable.tableName).del();
+    await db(UserTable.tableName).del();
+    await db(StateMachineVersionTable.tableName).del();
+    await db(StateMachineTable.tableName).del();
 };
 
 export const emptyActivityTable = async(): Promise<void> => {

@@ -19,6 +19,7 @@ export default (app: express.Express): void => {
     
     app.use(pino({
         level: config.log.level || 'info',
+        
         genReqId: (req) => req.headers[REQUEST_ID_HEADER]
     }));
     

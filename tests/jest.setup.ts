@@ -1,3 +1,4 @@
+import { Logger } from "@App/modules";
 import db from "@App/modules/database/db";
 import * as Redis from "@App/modules/database/redis";
 
