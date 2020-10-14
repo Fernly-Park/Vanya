@@ -68,6 +68,9 @@ const processRunningState = async (task: RunningState): Promise<void> => {
                 return await processTaskState({task, state: state as TaskState, effectiveInput, token: taskToken});
             case StateType.Wait:
                 return await processWaitTask(task, state as WaitState, effectiveInput); 
+            case StateType.Succeed:
+                result = effectiveInput;
+                break;
             default: 
                 throw new Error();
         }

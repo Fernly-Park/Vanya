@@ -1,0 +1,140 @@
+{
+    "describe": "simple state machine with only a succeed state", 
+    "tests": [
+        {
+            "input": {"input": {"output": "hello"}},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "hello",
+            "describe": "should work with no an inputPath and an outputPath",
+            "events": [
+                {
+                 "timestamp": "2020-10-14T20:48:51.649Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":{\"output\":\"hello\"}}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:48:51.679Z",
+                 "type": "SucceedStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":{\"output\":\"hello\"}}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:48:51.679Z",
+                 "type": "SucceedStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "\"hello\""
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:48:51.679Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "\"hello\""
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'input' key is not present for the input",
+            "events": [
+                {
+                 "timestamp": "2020-10-14T21:04:01.507Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T21:04:01.644Z",
+                 "type": "SucceedStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T21:04:01.644Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.input' : No valid results for path: '$.input'"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"input": 42},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'output' key is not present for the output",
+            "events": [
+                {
+                 "timestamp": "2020-10-14T21:10:07.008Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T21:10:07.028Z",
+                 "type": "SucceedStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T21:10:07.028Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.output' : No valid results for path: '$.output'"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "InputPath": "$.input",
+                "OutputPath": "$.output",
+                "Type": "Succeed"
+            }
+        }
+    }    
+}
+

@@ -1,0 +1,109 @@
+{
+    "describe": "simple state machine with only a succeed state", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should work with no input and output",
+            "events": [
+                {
+                 "timestamp": "2020-10-14T20:41:08.092Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:41:08.113Z",
+                 "type": "SucceedStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:41:08.113Z",
+                 "type": "SucceedStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:41:08.113Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"input": 42},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"input": 42},
+            "describe": "should work with an input and send it to the output",
+            "events": [
+                {
+                 "timestamp": "2020-10-14T20:44:50.352Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:44:50.373Z",
+                 "type": "SucceedStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:44:50.373Z",
+                 "type": "SucceedStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"input\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-14T20:44:50.373Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"input\":42}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Succeed"
+            }
+        }
+    }    
+}
+

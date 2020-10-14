@@ -13,7 +13,6 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../historyEvent";
 import { updateActivityTask } from "@App/components/task/taskService";
 import { Logger } from "@App/modules";
-import { ExecutionService } from "@App/components/execution";
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, effectiveInput: StateInput, token: string}): Promise<void> => {
     const {task, state, effectiveInput, token} = req;
@@ -69,6 +68,8 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
     if (activityTask.status === ActivityTaskStatus.TimedOut) {
         throw new TaskTimedOutError(activityTask.token);
     }
+    await TaskService.updateActivityTask(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
+
 
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     let output: StateOutput;
@@ -78,7 +79,6 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
     try {
         output = await filterOutput(activityTask.rawInput, activityTask.output, taskState, activityTask);
     } catch (err) {
-        await TaskService.updateActivityTask(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
         return await endStateFailed({task: activityTask, 
             cause: `An error occurred while executing the state '${activityTask.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
@@ -89,7 +89,6 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
         await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
     }
 
-    await TaskService.updateActivityTask(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
     await endStateSuccess({...activityTask, output, nextStateName: taskState.Next, stateType: taskState.Type});
 }
 
