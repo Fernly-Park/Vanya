@@ -195,4 +195,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({folderName: 'succeed'});
+generateStateMachinesTests({folderName: 'fail'});

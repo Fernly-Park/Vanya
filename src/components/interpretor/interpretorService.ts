@@ -1,6 +1,7 @@
+/* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RunningState, StateInput, StateOutput } from '../task/task.interfaces';
-import { PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { FailState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
 import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onExecutionStartedEvent } from './historyEvent';
@@ -42,7 +43,7 @@ const startInterpretorPoll = async (): Promise<void> => {
 }
 
 const processRunningState = async (task: RunningState): Promise<void> => {
-    let result: StateInput;
+    let rawOutput: StateInput;
     let next: string;
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
     Logger.logDebug(`processing state '${task.stateName}' from '${task.executionArn}' of type '${state.Type}'`);
@@ -61,7 +62,7 @@ const processRunningState = async (task: RunningState): Promise<void> => {
         const effectiveInput = await filterInput(task, state);
         switch (state.Type) {
             case StateType.Pass: 
-                result = processPassTask(state as PassState, effectiveInput);
+                rawOutput = processPassTask(state as PassState, effectiveInput);
                 next = (state as PassState).Next
                 break;
             case StateType.Task:
@@ -69,12 +70,15 @@ const processRunningState = async (task: RunningState): Promise<void> => {
             case StateType.Wait:
                 return await processWaitTask(task, state as WaitState, effectiveInput); 
             case StateType.Succeed:
-                result = effectiveInput;
+                rawOutput = effectiveInput;
                 break;
+            case StateType.Fail:
+                const failState = state as FailState
+                return await endStateFailed({task, state, error: failState.Error, cause: failState.Cause})
             default: 
                 throw new Error();
         }
-        effectiveOutput = await filterOutput(task.rawInput, result, state, task);
+        effectiveOutput = await filterOutput(task.rawInput, rawOutput, state, task);
     } catch (err) {
         Logger.logError(err ?? 'caca');
         return await endStateFailed({task, 

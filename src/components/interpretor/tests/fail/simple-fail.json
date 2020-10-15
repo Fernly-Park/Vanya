@@ -1,0 +1,55 @@
+{
+    "describe": "simple state machine with only a succeed state", 
+    "tests": [
+        {
+            "input": {"input": 42},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should simply fail",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T10:53:43.163Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":42}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T10:53:43.221Z",
+                 "type": "FailStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":42}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T10:53:43.221Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "MyError",
+                  "cause": "MyCause"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Fail",
+                "Cause": "MyCause",
+                "Error": "MyError"
+            }
+        }
+    }    
+}
+
