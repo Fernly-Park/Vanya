@@ -1,0 +1,308 @@
+{
+    "describe": "state machine with a choice state with a IsTimestamp of true and then a IsTimestamp of false", 
+    "tests": [
+        {
+            "input": {"timestamp": "2020-10-15T16:28:33.152Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"timestamp": "2020-10-15T16:28:33.152Z"},
+            "describe": "should succeed if the 'timestamp' key is a timestamp",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T17:00:26.102Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timestamp\":\"2020-10-15T16:28:33.152Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:00:26.135Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:00:26.135Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"timestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:00:26.236Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsTimestamp",
+                  "input": "{\"timestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:00:26.236Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsTimestamp",
+                  "output": "{\"timestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:00:26.236Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"timestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timestamp": "notATimestamp","notTimestamp": "notATimestamp"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"timestamp": "notATimestamp","notTimestamp": "notATimestamp"},
+            "describe": "should succeed if the 'timestamp' key is not a timestamp but the notTimestamp key is not either",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T17:03:58.889Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timestamp\":\"notATimestamp\",\"notTimestamp\":\"notATimestamp\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:03:58.910Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timestamp\":\"notATimestamp\",\"notTimestamp\":\"notATimestamp\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:03:58.910Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"timestamp\":\"notATimestamp\",\"notTimestamp\":\"notATimestamp\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:03:59.010Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotTimestamp",
+                  "input": "{\"timestamp\":\"notATimestamp\",\"notTimestamp\":\"notATimestamp\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:03:59.010Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotTimestamp",
+                  "output": "{\"timestamp\":\"notATimestamp\",\"notTimestamp\":\"notATimestamp\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:03:59.010Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"timestamp\":\"notATimestamp\",\"notTimestamp\":\"notATimestamp\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"notTimestamp": "notATimestamp"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'timestamp' key is not present",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T17:06:02.568Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"notTimestamp\":\"notATimestamp\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:06:02.591Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"notTimestamp\":\"notATimestamp\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:06:02.591Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.timestamp'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timestamp": "notATimestamp"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'timestamp' key is not a timestamp and the 'notTimestamp' key is not present",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T17:08:30.265Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timestamp\":\"notATimestamp\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:08:30.287Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timestamp\":\"notATimestamp\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:08:30.287Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.notTimestamp'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"timestamp": true, "notTimestamp": "2020-10-15T16:28:33.152Z"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should go to default if no condition are met",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T17:10:14.293Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"timestamp\":true,\"notTimestamp\":\"2020-10-15T16:28:33.152Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:10:14.317Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"timestamp\":true,\"notTimestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:10:14.317Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"timestamp\":true,\"notTimestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:10:14.427Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"timestamp\":true,\"notTimestamp\":\"2020-10-15T16:28:33.152Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T17:10:14.427Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "IsTimestamp": true,
+                    "Variable": "$.timestamp",
+                    "Next": "forIsTimestamp"
+                  },
+                  {
+                    "IsTimestamp": false,
+                    "Variable": "$.notTimestamp",
+                    "Next": "forIsNotTimestamp"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "forIsNotTimestamp": {
+                "Type": "Pass",
+            "End": true
+            },
+            "forIsTimestamp": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }
+}
+

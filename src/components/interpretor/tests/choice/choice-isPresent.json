@@ -1,0 +1,366 @@
+{
+    "describe": "state machine with a choice state with a IsPresent of true and then a IsPresent of false", 
+    "tests": [
+        {
+            "input": {"present": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"present": null},
+            "describe": "should succeed if the input contains a 'present'",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:20:07.949Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"present\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:20:07.970Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"present\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:20:07.970Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"present\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:20:08.070Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsPresent",
+                  "input": "{\"present\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:20:08.070Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsPresent",
+                  "output": "{\"present\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:20:08.070Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"present\":null}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should succeed if the input is empty",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:21:38.448Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:21:38.469Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:21:38.469Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:21:38.569Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotPresent",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:21:38.569Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotPresent",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:21:38.569Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"notPresent":null},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should go to default if the notPresent key is indeed present",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:22:45.852Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"notPresent\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:22:45.874Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"notPresent\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:22:45.874Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"notPresent\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:22:45.975Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"notPresent\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:22:45.975Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"present":0},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"present":0},
+            "describe": "should succeed if the key present is present with the value 0",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:24:31.708Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"present\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:24:31.734Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"present\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:24:31.734Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"present\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:24:31.835Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsPresent",
+                  "input": "{\"present\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:24:31.835Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsPresent",
+                  "output": "{\"present\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:24:31.835Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"present\":0}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"hello":0},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"hello":0},
+            "describe": "should succeed if the a random  key is present",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:25:43.270Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"hello\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:25:43.293Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"hello\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:25:43.293Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"hello\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:25:43.393Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotPresent",
+                  "input": "{\"hello\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:25:43.393Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotPresent",
+                  "output": "{\"hello\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:25:43.393Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"hello\":0}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "IsPresent": true,
+                    "Variable": "$.present",
+                    "Next": "forIsPresent"
+                  },
+                  {
+                    "IsPresent": false,
+                    "Variable": "$.notPresent",
+                    "Next": "forIsNotPresent"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "forIsNotPresent": {
+                "Type": "Pass",
+            "End": true
+            },
+            "forIsPresent": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }
+}
+

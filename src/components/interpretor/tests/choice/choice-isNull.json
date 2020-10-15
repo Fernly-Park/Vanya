@@ -1,0 +1,317 @@
+{
+    "describe": "state machine with a choice state with a IsNull of true and then a IsNull of false", 
+    "tests": [
+        {
+            "input": {"null": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"null": null},
+            "describe": "should succeed if the input contains a 'null' key which is null",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:44:38.667Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"null\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:44:38.698Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"null\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:44:38.698Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"null\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:44:38.798Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNull",
+                  "input": "{\"null\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:44:38.798Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNull",
+                  "output": "{\"null\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:44:38.798Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"null\":null}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"null": "null", "notNull": "good"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"null": "null", "notNull": "good"},
+            "describe": "should succeed if the input contains a 'null' which is not null but the notNull key is also not null",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:46:47.444Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"null\":\"null\",\"notNull\":\"good\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:46:47.466Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"null\":\"null\",\"notNull\":\"good\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:46:47.466Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"null\":\"null\",\"notNull\":\"good\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:46:47.566Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotNull",
+                  "input": "{\"null\":\"null\",\"notNull\":\"good\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:46:47.566Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotNull",
+                  "output": "{\"null\":\"null\",\"notNull\":\"good\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:46:47.566Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"null\":\"null\",\"notNull\":\"good\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input is empty",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:48:17.344Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:48:17.383Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:48:17.383Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.null'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"null": 0},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'null' key is not null and the 'notNull' key is not present",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:51:25.363Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"null\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:51:25.382Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"null\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:51:25.382Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.notNull'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"null": 0, "notNull": true},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"null": 0, "notNull": true},
+            "describe": "should redirect to default if both the choices are not met",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:52:23.277Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"null\":0,\"notNull\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:52:23.300Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"null\":0,\"notNull\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:52:23.300Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"null\":0,\"notNull\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:52:23.401Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotNull",
+                  "input": "{\"null\":0,\"notNull\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:52:23.401Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotNull",
+                  "output": "{\"null\":0,\"notNull\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:52:23.401Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"null\":0,\"notNull\":true}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "IsNull": true,
+                    "Variable": "$.null",
+                    "Next": "forIsNull"
+                  },
+                  {
+                    "IsNull": false,
+                    "Variable": "$.notNull",
+                    "Next": "forIsNotNull"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "forIsNotNull": {
+                "Type": "Pass",
+            "End": true
+            },
+            "forIsNull": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }
+}
+

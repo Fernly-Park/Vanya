@@ -1,0 +1,346 @@
+{
+    "describe": "state machine with a choice state with a IsString of true and then a IsString of false", 
+    "tests": [
+        {
+            "input": {"string": "null"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"string": "null"},
+            "describe": "should succeed if the input contains a 'string' key whose value is the string null",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:28:33.152Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"string\":\"null\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:28:33.182Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"string\":\"null\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:28:33.182Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"string\":\"null\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:28:33.283Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsString",
+                  "input": "{\"string\":\"null\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:28:33.283Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsString",
+                  "output": "{\"string\":\"null\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:28:33.283Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"string\":\"null\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"string": null, "notString": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"string": null, "notString": null},
+            "describe": "should succeed if the input keys 'string' and 'notString' are both null",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:33:01.308Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"string\":null,\"notString\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:33:01.329Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"string\":null,\"notString\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:33:01.329Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"string\":null,\"notString\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:33:01.440Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotString",
+                  "input": "{\"string\":null,\"notString\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:33:01.440Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotString",
+                  "output": "{\"string\":null,\"notString\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:33:01.440Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"string\":null,\"notString\":null}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input is null",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:34:33.370Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:34:33.391Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:34:33.391Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.string'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"string": null},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input contains a 'string' key who is not a string and do not contains a 'notString' key",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:38:40.074Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"string\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:38:40.200Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"string\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:38:40.200Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.notString'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"notString": null},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the input only contains a 'notString' key",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:52:29.556Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"notString\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:52:29.582Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"notString\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:52:29.582Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.string'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"string": 0, "notString": "hello"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should go to default if no choice is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:54:03.878Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"string\":0,\"notString\":\"hello\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:54:03.900Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"string\":0,\"notString\":\"hello\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:54:03.900Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"string\":0,\"notString\":\"hello\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:54:04.003Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"string\":0,\"notString\":\"hello\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:54:04.003Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "IsString": true,
+                    "Variable": "$.string",
+                    "Next": "forIsString"
+                  },
+                  {
+                    "IsString": false,
+                    "Variable": "$.notString",
+                    "Next": "forIsNotString"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "forIsNotString": {
+                "Type": "Pass",
+            "End": true
+            },
+            "forIsString": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }
+}
+

@@ -1,0 +1,529 @@
+{
+    "describe": "state machine with a choice state with a IsNumeric of true and then a IsNumeric of false", 
+    "tests": [
+        {
+            "input": {"numeric": 0},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"numeric": 0},
+            "describe": "should succeed if the input contains a 'numeric' key which is 0",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:57:08.045Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:57:08.078Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:57:08.078Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:57:08.178Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNumeric",
+                  "input": "{\"numeric\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:57:08.178Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNumeric",
+                  "output": "{\"numeric\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:57:08.178Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"numeric\":0}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numeric": 0, "notNumeric": false},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"numeric": 0, "notNumeric": false},
+            "describe": "should succeed if the input contains a 'numeric' key which is a number and should ignore the notNumeric",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:02:08.100Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":0,\"notNumeric\":false}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:02:08.121Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":0,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:02:08.121Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":0,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:02:08.221Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNumeric",
+                  "input": "{\"numeric\":0,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:02:08.221Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNumeric",
+                  "output": "{\"numeric\":0,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:02:08.221Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"numeric\":0,\"notNumeric\":false}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numeric": -1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"numeric": -1},
+            "describe": "should succeed if the input contains a 'numeric' key which is negative",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:03:26.313Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":-1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:03:26.335Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":-1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:03:26.335Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":-1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:03:26.435Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNumeric",
+                  "input": "{\"numeric\":-1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:03:26.435Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNumeric",
+                  "output": "{\"numeric\":-1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:03:26.435Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"numeric\":-1}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numeric": 1.1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"numeric": 1.1},
+            "describe": "should succeed if the input contains a 'numeric' key which is decimal number",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:04:19.741Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":1.1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:04:19.762Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:04:19.762Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:04:19.862Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNumeric",
+                  "input": "{\"numeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:04:19.862Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNumeric",
+                  "output": "{\"numeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:04:19.862Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"numeric\":1.1}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if there is not input",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:06:31.513Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:06:31.533Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:06:31.533Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.numeric'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numeric":false,"notNumeric":false},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"numeric":false,"notNumeric":false},
+            "describe": "should succeed if the 'numeric' is not a number but the 'notNumeric' is also not",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:07:42.610Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":false,\"notNumeric\":false}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:07:42.632Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":false,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:07:42.632Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":false,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:07:42.732Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotNumeric",
+                  "input": "{\"numeric\":false,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:07:42.732Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotNumeric",
+                  "output": "{\"numeric\":false,\"notNumeric\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:07:42.732Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"numeric\":false,\"notNumeric\":false}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numeric":true,"notNumeric":1.1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should go to default if no condition are met",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:10:52.681Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":true,\"notNumeric\":1.1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:10:52.703Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":true,\"notNumeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:10:52.703Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":true,\"notNumeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:10:52.804Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"numeric\":true,\"notNumeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:10:52.804Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"numeric":"1", "notNumeric":1.1},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should not consider the string 1 as a number",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T16:12:31.519Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"numeric\":\"1\",\"notNumeric\":1.1}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:12:31.539Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"numeric\":\"1\",\"notNumeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:12:31.539Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"numeric\":\"1\",\"notNumeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:12:31.640Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"numeric\":\"1\",\"notNumeric\":1.1}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T16:12:31.640Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "IsNumeric": true,
+                    "Variable": "$.numeric",
+                    "Next": "forIsNumeric"
+                  },
+                  {
+                    "IsNumeric": false,
+                    "Variable": "$.notNumeric",
+                    "Next": "forIsNotNumeric"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "forIsNotNumeric": {
+                "Type": "Pass",
+            "End": true
+            },
+            "forIsNumeric": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }
+}
+

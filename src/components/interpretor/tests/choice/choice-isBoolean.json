@@ -1,0 +1,442 @@
+{
+    "describe": "state machine with a choice state with a Isboolean of true and then a IsBoolean of false", 
+    "tests": [
+        {
+            "input": {"boolean": true},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"boolean": true},
+            "describe": "should succeed if the input contains a 'boolean' key that is true",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:19:51.271Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"boolean\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:19:51.304Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"boolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:19:51.304Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"boolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:19:51.404Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsBoolean",
+                  "input": "{\"boolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:19:51.404Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsBoolean",
+                  "output": "{\"boolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:19:51.404Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"boolean\":true}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"boolean": false},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"boolean": false},
+            "describe": "should succeed if the input contains a 'boolean' key that is false",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:22:49.118Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"boolean\":false}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:22:49.140Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"boolean\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:22:49.140Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"boolean\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:22:49.240Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsBoolean",
+                  "input": "{\"boolean\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:22:49.240Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsBoolean",
+                  "output": "{\"boolean\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:22:49.240Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"boolean\":false}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if there is no 'boolean' variable in the input",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:24:02.929Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:24:02.953Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:24:02.953Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.boolean'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"boolean": null, "notBoolean": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"boolean": null, "notBoolean": null},
+            "describe": "should succeed if the 'boolean' and the 'notBoolean' key are not boolean ",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:26:54.583Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"boolean\":null,\"notBoolean\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:26:54.605Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"boolean\":null,\"notBoolean\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:26:54.605Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"boolean\":null,\"notBoolean\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:26:54.706Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotBoolean",
+                  "input": "{\"boolean\":null,\"notBoolean\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:26:54.706Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotBoolean",
+                  "output": "{\"boolean\":null,\"notBoolean\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:26:54.706Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"boolean\":null,\"notBoolean\":null}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"boolean": null, "notBoolean": true},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'boolean' is not a boolean and 'notBoolean' is a boolean ",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:36:27.479Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"boolean\":null,\"notBoolean\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:36:27.500Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"boolean\":null,\"notBoolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:36:27.500Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"boolean\":null,\"notBoolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:36:27.600Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"boolean\":null,\"notBoolean\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:36:27.600Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"boolean": null},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the 'boolean' is not a boolean and 'notBoolean' is undefined",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:38:06.669Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"boolean\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:38:06.687Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"boolean\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:38:06.687Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.notBoolean'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"boolean": "true", "notBoolean": "true"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"boolean": "true", "notBoolean": "true"},
+            "describe": "should succeed if both the boolean and notboolean are the string true",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T15:39:58.014Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"boolean\":\"true\",\"notBoolean\":\"true\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:39:58.035Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"boolean\":\"true\",\"notBoolean\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:39:58.035Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"boolean\":\"true\",\"notBoolean\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:39:58.135Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "forIsNotBoolean",
+                  "input": "{\"boolean\":\"true\",\"notBoolean\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:39:58.135Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "forIsNotBoolean",
+                  "output": "{\"boolean\":\"true\",\"notBoolean\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T15:39:58.135Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"boolean\":\"true\",\"notBoolean\":\"true\"}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "IsBoolean": true,
+                    "Variable": "$.boolean",
+                    "Next": "forIsBoolean"
+                  },
+                  {
+                    "IsBoolean": false,
+                    "Variable": "$.notBoolean",
+                    "Next": "forIsNotBoolean"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "forIsNotBoolean": {
+                "Type": "Pass",
+            "End": true
+            },
+            "forIsBoolean": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }   
+}
+
