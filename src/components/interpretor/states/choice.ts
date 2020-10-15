@@ -7,9 +7,9 @@ import { retrieveField } from "../path";
 export const processChoiceState = (req: {state: ChoiceState, effectiveInput: StateInput}): string => {
     const {state} = req;
 
-    for (const choice of state.Choices) {
-        if (processChoiceRule(choice, req.effectiveInput)) {
-            return choice.Next;
+    for (const choiceRule of state.Choices) {
+        if (processChoiceRule(choiceRule, req.effectiveInput)) {
+            return choiceRule.Next;
         }
     }
     if (state.Default) {
@@ -62,6 +62,11 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processNumericGreaterThan = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable > rule);
         return processNumericGreaterThan(rule.NumericGreaterThan, rule.NumericGreaterThanPath, effectiveInput, variable)
     }
+    if (rule.NumericGreaterThanEquals !== undefined || rule.NumericGreaterThanEqualsPath !== undefined) {
+        const processNumericGreaterThanEquals = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable >= rule);
+        return processNumericGreaterThanEquals(rule.NumericGreaterThanEquals, rule.NumericGreaterThanEqualsPath, effectiveInput, variable);
+
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
@@ -82,28 +87,28 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
             || (!rule.IsTimestamp && !ISO8601_REGEX.test(variable as string))
     }
 
-    
+    // throw fatal
 }
 
-const generateDataTestComparator = (ensureVariableOfGoodType: (variable: unknown) => boolean, comparator: (variable: unknown, fromRuleOrPath: unknown) => boolean) => {
-        return (compareVariableToThis: unknown, pathToComparator: string, effectiveInput: StateInput, variable: unknown) => {
-            if (!ensureVariableOfGoodType(variable)) {
+const generateDataTestComparator = (isVariableOfCorrectType: (variable: unknown) => boolean, comparator: (variable: unknown, rule: unknown) => boolean) => {
+        return (rule: unknown, pathToRule: string, effectiveInput: StateInput, variable: unknown) => {
+            if (!isVariableOfCorrectType(variable)) {
                 return false;
             }
-            if (compareVariableToThis !== undefined) {
-                return comparator(variable, compareVariableToThis);
+            if (rule !== undefined) {
+                return comparator(variable, rule);
             }
 
-            const comparatorFromPath = retrieveField(effectiveInput, pathToComparator);
-            if (comparatorFromPath === undefined) {
-                throw new InvalidPathError(`Invalid Path '${pathToComparator}'. The choice state's condition path references an invalid value`)
+            const ruleFromPath = retrieveField(effectiveInput, pathToRule);
+            if (ruleFromPath === undefined) {
+                throw new InvalidPathError(`Invalid Path '${pathToRule}'. The choice state's condition path references an invalid value`)
             }
 
-            if (!ensureVariableOfGoodType(comparatorFromPath)) {
+            if (!isVariableOfCorrectType(ruleFromPath)) {
                 return false;
             }
 
-            return comparator(variable, comparatorFromPath)
+            return comparator(variable, ruleFromPath)
         }
 
 }
