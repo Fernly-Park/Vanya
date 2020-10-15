@@ -116,7 +116,7 @@ export interface ChoiceRule {
 
     StringMatches?: string,
 
-    NumericEquals?: string, 
+    NumericEquals?: number, 
     NumericEqualsPath?: string,
 
     NumericLessThan?: string,

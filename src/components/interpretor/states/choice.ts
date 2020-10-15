@@ -35,6 +35,8 @@ const processChoiceRule = (rule: ChoiceRule, effectiveInput: StateInput): boolea
 const processBooleanExpression = (rule: ChoiceRule, effectiveInput: StateInput): boolean => {
     if (rule.And) {
         return processANDChoice(rule, effectiveInput);
+    } else if (rule.Not) {
+        return !processChoiceRule(rule.Not, effectiveInput);
     }
 }
 
@@ -49,7 +51,16 @@ const processANDChoice = (rule: ChoiceRule, effectiveInput: StateInput): boolean
 
 const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput, variable: unknown): boolean => {
     if (rule.BooleanEquals !== undefined || rule.BooleanEqualsPath !== undefined) {
-        return processBooleanEquals(rule, effectiveInput, variable);
+        const processBooleanEquals = generateDataTestComparator((v) => typeof v === 'boolean', (a1, a2) => a1 === a2)
+        return processBooleanEquals(rule.BooleanEquals, rule.BooleanEqualsPath, effectiveInput, variable);
+    }
+    if (rule.NumericEquals !== undefined || rule.NumericEqualsPath !== undefined) {
+        const processNumericEquals = generateDataTestComparator(v => typeof v === 'number', (a1, a2) => a1 === a2)
+        return processNumericEquals(rule.NumericEquals, rule.NumericEqualsPath, effectiveInput, variable);
+    }
+    if (rule.NumericGreaterThan !== undefined || rule.NumericGreaterThanPath !== undefined) {
+        const processNumericGreaterThan = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable > rule);
+        return processNumericGreaterThan(rule.NumericGreaterThan, rule.NumericGreaterThanPath, effectiveInput, variable)
     }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
@@ -70,20 +81,29 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         return (rule.IsTimestamp && typeof variable === 'string' && ISO8601_REGEX.test(variable)) 
             || (!rule.IsTimestamp && !ISO8601_REGEX.test(variable as string))
     }
+
+    
 }
 
+const generateDataTestComparator = (ensureVariableOfGoodType: (variable: unknown) => boolean, comparator: (variable: unknown, fromRuleOrPath: unknown) => boolean) => {
+        return (compareVariableToThis: unknown, pathToComparator: string, effectiveInput: StateInput, variable: unknown) => {
+            if (!ensureVariableOfGoodType(variable)) {
+                return false;
+            }
+            if (compareVariableToThis !== undefined) {
+                return comparator(variable, compareVariableToThis);
+            }
 
-const processBooleanEquals = (rule: ChoiceRule, effectiveInput: StateInput, variable: unknown): boolean => {
-    if (typeof variable !== 'boolean') {
-        return false;
-    }
-    if (rule.BooleanEquals !== undefined) {
-        return variable === rule.BooleanEquals;
-    }
-    const booleanEqualsFromInput = retrieveField<boolean>(effectiveInput, rule.BooleanEqualsPath);
-    if (typeof booleanEqualsFromInput !== 'boolean') {
-        return false;
-    }
+            const comparatorFromPath = retrieveField(effectiveInput, pathToComparator);
+            if (comparatorFromPath === undefined) {
+                throw new InvalidPathError(`Invalid Path '${pathToComparator}'. The choice state's condition path references an invalid value`)
+            }
 
-    return booleanEqualsFromInput === variable;
+            if (!ensureVariableOfGoodType(comparatorFromPath)) {
+                return false;
+            }
+
+            return comparator(variable, comparatorFromPath)
+        }
+
 }

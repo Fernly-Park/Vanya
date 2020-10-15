@@ -33,7 +33,13 @@ const getTests = (dirPath = 'tests'): TestStateMachine[] => {
         if (statSync(join(__dirname, dirPath, fileName)).isDirectory()) {
             toReturn.push(...getTests(join(dirPath, fileName)));
         } else {
-            const fileContent = JSON.parse(readFileSync(join(__dirname, dirPath, fileName), 'utf-8')) as TestStateMachine;
+            const fileContentStringified = (readFileSync(join(__dirname, dirPath, fileName), 'utf-8'));
+            let fileContent: TestStateMachine;
+            try {
+                fileContent = JSON.parse(fileContentStringified) as TestStateMachine
+            } catch (err) {
+                throw new Error(`The test file '${fileName}' is not a correct JSON file`)
+            }
             fileContent.folderName = basename(dirname(join(__dirname, dirPath, fileName)));
             fileContent.stateMachineName = fileContent.stateMachineName ?? fileName.split('.')[0];
             for (let i = 0; i < fileContent.tests.length; i++) {
@@ -135,6 +141,7 @@ const createActivities = async (activities: ActivitiyToCreateForTests[], userId:
 }
 
 const expectEventsToBeCorrect = (received: HistoryEvent[], expected: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
+    expect(expected).toHaveLength(received.length)
     for (let i = 0; i < expected.length; i++) {
         expect(received[i].timestamp).toMatch(ISO8601_REGEX);
         const expectedDuration = expectedDurations?.find(x => x.eventId === received[i].id);
@@ -195,4 +202,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({});
+generateStateMachinesTests({stateMachineName: 'choice-numericGreaterThan'});

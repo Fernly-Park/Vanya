@@ -558,6 +558,44 @@
                  }
                 }
             ]
+        },
+        {
+            "input": {"variable": null, "variableForPath": true},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the path of the second condition is not present",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T18:16:35.879Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":null,\"variableForPath\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T18:16:35.918Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":null,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T18:16:35.918Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.path'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
         }
     ],
     "definition": {
