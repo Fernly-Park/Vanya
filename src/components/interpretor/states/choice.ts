@@ -67,6 +67,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         return processNumericGreaterThanEquals(rule.NumericGreaterThanEquals, rule.NumericGreaterThanEqualsPath, effectiveInput, variable);
 
     }
+    if (rule.NumericLessThan !== undefined || rule.NumericLessThanPath !== undefined) {
+        const processNumericLessThan = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable < rule);
+        return processNumericLessThan(rule.NumericLessThan, rule.NumericLessThanPath, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
