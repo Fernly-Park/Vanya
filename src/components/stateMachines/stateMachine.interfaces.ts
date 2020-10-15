@@ -81,9 +81,76 @@ export interface TaskState extends StateMachineStateValue {
 }
 
 export interface ChoiceState extends StateMachineStateValue {
-    Choice: unknown[]
+    Choice: (ChoiceRule & {Next: string})[]
     InputPath?: string
-    OutputPath?: string
+    OutputPath?: string,
+    Default?: string
+}
+
+
+export interface ChoiceRule {
+    And?: ChoiceRule[],
+    Or?: ChoiceRule[],
+    Not?: ChoiceRule,
+    
+    Variable: string,
+
+    StringEquals?: string,
+    StringEqualsPath?: string,
+
+    StringLessThan?: string
+    StringLessThanPath?: string
+
+    StringGreaterThan?: string,
+    StringGreaterThanPath?: string,
+
+    StringLessThanEquals?: string,
+    StringLessThanEqualsPath?: string,
+
+    StringGreaterThanEquals?: string,
+    StringGreaterThanEqualsPath?: string,
+
+    StringMatches?: string,
+
+    NumericEquals?: string, 
+    NumericEqualsPath?: string,
+
+    NumericLessThan?: string,
+    NumericLessThanPath?: string,
+
+    NumericGreaterThan?: string,
+    NumericGreaterThanPath?: string,
+
+    NumericLessThanEquals?: string,
+    NumericLessThanEqualsPath?: string,
+
+    NumericGreaterThanEquals?: string,
+    NumericGreaterThanEqualsPath?: string,
+
+    BooleanEquals?: string,
+    BooleanEqualsPath?: string,
+
+    TimestampEquals?: string,
+    TimestampEqualsPath?: string,
+
+    TimestampLessThan?: string,
+    TimestampLessThanPath?: string,
+
+    TimestampGreaterThan?: string,
+    TimestampGreaterThanPath?: string,
+
+    TimestampLessThanThan?: string,
+    TimestampLessThanThanPath?: string,
+
+    TimestampGreaterThanThan?: string,
+    TimestampGreaterThanThanPath?: string,
+
+    IsNull?: string,
+    IsPresent?: string,
+    IsNumeric?: string,
+    IsString?: string,
+    IsBoolean?: string,
+    IsTimestamp?: string
 }
 
 export interface WaitState extends StateMachineStateValue {
