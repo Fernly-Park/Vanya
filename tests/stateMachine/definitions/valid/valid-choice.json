@@ -1,0 +1,34 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+    "StartAt": "Hello",
+    "States": {
+        "Hello": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "BooleanEquals": true,
+                "Variable": "$.variable",
+                "Next": "success"
+              },
+              {
+                "BooleanEqualsPath": "$.path",
+                "Variable": "$.variableForPath",
+                "Next": "ForPath"
+              }
+            ],
+            "Default": "fail"
+          },
+        "ForPath": {
+            "Type": "Pass",
+        "End": true
+        },
+        "success": {
+        "Type": "Succeed"
+        },
+        "fail": {
+            "Type": "Fail",
+            "Error": "myError",
+            "Cause": "myCause"
+        }
+    }
+}  

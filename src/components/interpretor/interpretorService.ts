@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RunningState, StateInput, StateOutput } from '../task/task.interfaces';
-import { FailState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ChoiceState, FailState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
 import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onExecutionStartedEvent } from './historyEvent';
@@ -17,6 +17,8 @@ import { TimerService } from '../timer';
 import { AWSConstant } from '@App/utils/constants';
 import { handleCatch, handleRetry } from './errorHandling';
 import { Logger } from '@App/modules';
+import { NoChoiceMatchedError } from '@App/errors/customErrors';
+import { processChoiceState } from './states/choice';
 
 let interpretor = true;
 export const startInterpretor = (): void => {
@@ -75,17 +77,21 @@ const processRunningState = async (task: RunningState): Promise<void> => {
             case StateType.Fail:
                 const failState = state as FailState
                 return await endStateFailed({task, state, error: failState.Error, cause: failState.Cause})
+            case StateType.Choice:
+                rawOutput = effectiveInput;
+                next = processChoiceState({effectiveInput, state: state as ChoiceState});
+                break;
             default: 
                 throw new Error();
         }
         effectiveOutput = await filterOutput(task.rawInput, rawOutput, state, task);
     } catch (err) {
-        Logger.logError(err ?? 'caca');
+        Logger.logError(err ?? '');
         return await endStateFailed({task, 
             cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
             state
-        })
+        })  
     }
     
     await endStateSuccess({...task, output: effectiveOutput, nextStateName: next, stateType: state.Type});

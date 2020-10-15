@@ -81,10 +81,14 @@ export interface TaskState extends StateMachineStateValue {
 }
 
 export interface ChoiceState extends StateMachineStateValue {
-    Choice: (ChoiceRule & {Next: string})[]
+    Choices: TopChoiceRule[]
     InputPath?: string
     OutputPath?: string,
     Default?: string
+}
+
+export interface TopChoiceRule extends ChoiceRule {
+    Next: string
 }
 
 
@@ -92,8 +96,8 @@ export interface ChoiceRule {
     And?: ChoiceRule[],
     Or?: ChoiceRule[],
     Not?: ChoiceRule,
-    
-    Variable: string,
+
+    Variable?: string,
 
     StringEquals?: string,
     StringEqualsPath?: string,
@@ -127,7 +131,7 @@ export interface ChoiceRule {
     NumericGreaterThanEquals?: string,
     NumericGreaterThanEqualsPath?: string,
 
-    BooleanEquals?: string,
+    BooleanEquals?: boolean,
     BooleanEqualsPath?: string,
 
     TimestampEquals?: string,

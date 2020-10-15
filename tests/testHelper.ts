@@ -78,6 +78,7 @@ export const stateMachinesForTests = {
         invalidWaitTimestampEmpty: getStateMachineDef('invalid', 'invalid-wait-timestamp-empty.json'),
         invalidWaitSecondsPath: getStateMachineDef('invalid', 'invalid-wait-secondsPath.json'),
         invalidWaitTimestampPath: getStateMachineDef('invalid', 'invalid-wait-timestampPath.json'),
+        invalidEmptyChoices: getStateMachineDef('invalid', 'invalid-empty-choice.json'),
     }, 
     valid: {
         validCatchFailure: getStateMachineDef('valid', 'valid-catch-failure.json'),
@@ -116,6 +117,7 @@ export const stateMachinesForTests = {
         validTaskParameters: getStateMachineDef('valid', 'valid-task-parameters.json'),
         validTaskTimer: getStateMachineDef('valid', 'valid-task-timer.json'),
         validWaitState: getStateMachineDef('valid', 'valid-wait-state.json'),
+        validChoice: getStateMachineDef('valid', 'valid-choice.json'),
     }
 }
 

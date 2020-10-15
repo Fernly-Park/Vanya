@@ -35,6 +35,13 @@ export class TaskTimedOutError extends BaseError {
     }
 }
 
+export class NoChoiceMatchedError extends BaseError {
+    constructor(description: string) {
+        super("No Choice Matched", description, true);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
 export class UserDoesNotExistsError extends BaseError {
     constructor(description: string) {
         super("User Does Not Exists", description, true);

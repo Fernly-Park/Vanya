@@ -1,0 +1,598 @@
+{
+    "describe": "state machine with a choice state for BooleanEquals and BooleanEqualsPath", 
+    "tests": [
+        {
+            "input": {"variable": true},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"variable": true},
+            "describe": "should succeed and go to the 'success' state if the first choice is correct",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:04:57.702Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:04:57.733Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:04:57.733Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:04:57.833Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "success",
+                  "input": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:04:57.833Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "success",
+                  "output": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:04:57.833Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"variable\":true}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": false},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the first choice is not met and the path of the second condition is not in the input",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:06:54.403Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":false}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:06:54.425Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:06:54.425Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.variableForPath'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": false, "path": true, "variableForPath": true},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"variable": false, "path": true, "variableForPath": true},
+            "describe": "should Succeed if the first choice is not met but the second choice is",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:10:04.749Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:10:04.771Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:10:04.771Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":false,\"path\":true,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:10:04.872Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "ForPath",
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:10:04.872Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "ForPath",
+                  "output": "{\"variable\":false,\"path\":true,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:10:04.872Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"variable\":false,\"path\":true,\"variableForPath\":true}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": false, "path": false, "variableForPath": true},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail and go to the failState if any condition is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:11:05.225Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":false,\"path\":false,\"variableForPath\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:11:05.246Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":false,\"path\":false,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:11:05.246Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":false,\"path\":false,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:11:05.348Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"variable\":false,\"path\":false,\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:11:05.348Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": false, "path": true, "variableForPath": false},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail and go to the failState if any condition is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:12:34.943Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":false}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:12:34.964Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:12:34.964Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":false,\"path\":true,\"variableForPath\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:12:35.064Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":false}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:12:35.064Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail if the input is empty",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:18:38.317Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:18:38.336Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:18:38.336Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.variable'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": false,"path": "true","variableForPath": true},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail and go to the default state if the BooleanEaqualsPath is present, even if it's not a boolean",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:27:43.234Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":false,\"path\":\"true\",\"variableForPath\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:27:43.274Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":false,\"path\":\"true\",\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:27:43.274Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":false,\"path\":\"true\",\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:27:43.374Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"variable\":false,\"path\":\"true\",\"variableForPath\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:27:43.374Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": false,"path": true,"variableForPath": "true"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail and go to the default state if the variableForPath is of incorrect type",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:28:41.789Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":\"true\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:28:41.812Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:28:41.812Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":false,\"path\":true,\"variableForPath\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:28:41.913Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"variable\":false,\"path\":true,\"variableForPath\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:28:41.913Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": "0","path": 0,"variableForPath": null},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail and go to the default state if every variable is present but of the wrong type",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:38:26.373Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":\"0\",\"path\":0,\"variableForPath\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:38:26.406Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":\"0\",\"path\":0,\"variableForPath\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:38:26.406Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":\"0\",\"path\":0,\"variableForPath\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:38:26.516Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"variable\":\"0\",\"path\":0,\"variableForPath\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:38:26.516Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": "0","path": "true","variableForPath": "true"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should Fail if trying to compare the strings true with BooleanEquals",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:43:30.889Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":\"0\",\"path\":\"true\",\"variableForPath\":\"true\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:43:30.913Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":\"0\",\"path\":\"true\",\"variableForPath\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:43:30.913Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":\"0\",\"path\":\"true\",\"variableForPath\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:43:31.014Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "fail",
+                  "input": "{\"variable\":\"0\",\"path\":\"true\",\"variableForPath\":\"true\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:43:31.014Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "myError",
+                  "cause": "myCause"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+            "Hello": {
+                "Type": "Choice",
+                "Choices": [
+                  {
+                    "BooleanEquals": true,
+                    "Variable": "$.variable",
+                    "Next": "success"
+                  },
+                  {
+                    "BooleanEqualsPath": "$.path",
+                    "Variable": "$.variableForPath",
+                    "Next": "ForPath"
+                  }
+                ],
+                "Default": "fail"
+              },
+            "ForPath": {
+                "Type": "Pass",
+            "End": true
+            },
+            "success": {
+            "Type": "Succeed"
+            },
+            "fail": {
+                "Type": "Fail",
+                "Error": "myError",
+                "Cause": "myCause"
+            }
+        }
+    }    
+}
+

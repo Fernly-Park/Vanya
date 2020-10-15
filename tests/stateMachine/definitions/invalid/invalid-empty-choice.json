@@ -1,0 +1,16 @@
+{
+    "Comment": "A Hello World example of the Amazon States Language using Choice states",
+    "StartAt": "Hello",
+    "States": {
+      "Hello": {
+        "Type": "Choice",
+        "Choices": [
+          
+        ],
+        "Default": "success"
+      },
+      "success": {
+        "Type": "Succeed"
+      }
+    }
+}

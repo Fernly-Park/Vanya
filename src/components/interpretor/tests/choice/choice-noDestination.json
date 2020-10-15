@@ -1,0 +1,130 @@
+{
+    "describe": "state machine with a choice state for BooleanEquals and no default, causing a possible no destination error", 
+    "tests": [
+        {
+            "input": {"variable": true},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"variable": true},
+            "describe": "should succeed and go to the 'success' state if the first choice is correct",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T14:02:45.478Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T14:02:45.499Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T14:02:45.499Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T14:02:45.600Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "success",
+                  "input": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T14:02:45.600Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "success",
+                  "output": "{\"variable\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T14:02:45.600Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"variable\":true}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"variable": "0"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the first choice is not met, causing no destination",
+            "events": [
+                {
+                 "timestamp": "2020-10-15T13:56:36.516Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":\"0\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:56:36.544Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":\"0\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-15T13:56:36.544Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Failed to transition out of the state. The state does not point to a next state"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using Choice states",
+        "StartAt": "Hello",
+        "States": {
+          "Hello": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "BooleanEquals": true,
+                "Variable": "$.variable",
+                "Next": "success"
+              }
+            ]
+          },
+          "success": {
+            "Type": "Succeed"
+          }
+        }
+    }
+}
+
