@@ -77,7 +77,6 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
     if (rule.NumericGreaterThanEquals !== undefined || rule.NumericGreaterThanEqualsPath !== undefined) {
         const processNumericGreaterThanEquals = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable >= rule);
         return processNumericGreaterThanEquals(rule.NumericGreaterThanEquals, rule.NumericGreaterThanEqualsPath, effectiveInput, variable);
-
     }
     if (rule.NumericLessThan !== undefined || rule.NumericLessThanPath !== undefined) {
         const processNumericLessThan = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable < rule);
@@ -90,6 +89,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
     if (rule.StringEquals !== undefined || rule.StringEqualsPath !== undefined) {
         const processStringEquals = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable === rule);
         return processStringEquals(rule.StringEquals, rule.StringEqualsPath, effectiveInput, variable);
+    }
+    if (rule.StringGreaterThan !== undefined || rule.StringGreaterThanPath !== undefined) {
+        const processStringGreaterThan = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable > rule)
+        return processStringGreaterThan(rule.StringGreaterThan, rule.StringGreaterThanPath, effectiveInput, variable);
     }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
@@ -117,7 +120,7 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
 const generateDataTestComparator = (isVariableOfCorrectType: (variable: unknown) => boolean, comparator: (variable: unknown, rule: unknown) => boolean) => {
         return (rule: unknown, pathToRule: string, effectiveInput: StateInput, variable: unknown) => {
             let ruleFromPath;
-            
+
             if (pathToRule !== undefined) {
                 ruleFromPath = retrieveField(effectiveInput, pathToRule);
                 if (ruleFromPath === undefined) {
