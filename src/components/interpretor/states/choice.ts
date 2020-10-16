@@ -102,6 +102,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processStringLessThan = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable < rule);
         return processStringLessThan(rule.StringLessThan, rule.StringLessThanPath, effectiveInput, variable);
     }
+    if (rule.StringLessThanEquals !== undefined || rule.StringLessThanEqualsPath !== undefined) {
+        const processStringLessThanEquals = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable <= rule);
+        return processStringLessThanEquals(rule.StringLessThanEquals, rule.StringLessThanEqualsPath, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
