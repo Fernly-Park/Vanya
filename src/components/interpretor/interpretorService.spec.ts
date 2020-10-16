@@ -202,4 +202,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({folderName: 'choice'});
+generateStateMachinesTests({stateMachineName: 'choice-numericLessThanEquals'});

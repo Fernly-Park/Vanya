@@ -71,6 +71,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processNumericLessThan = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable < rule);
         return processNumericLessThan(rule.NumericLessThan, rule.NumericLessThanPath, effectiveInput, variable);
     }
+    if (rule.NumericLessThanEquals !== undefined || rule.NumericLessThanEqualsPath !== undefined) {
+        const processNumericLessThanEquals = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable <= rule);
+        return processNumericLessThanEquals(rule.NumericLessThanEquals, rule.NumericLessThanEqualsPath, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
