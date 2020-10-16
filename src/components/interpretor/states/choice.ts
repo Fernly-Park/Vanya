@@ -37,6 +37,8 @@ const processBooleanExpression = (rule: ChoiceRule, effectiveInput: StateInput):
         return processANDChoice(rule, effectiveInput);
     } else if (rule.Not) {
         return !processChoiceRule(rule.Not, effectiveInput);
+    } else if (rule.Or) {
+        return processOrChoice(rule, effectiveInput);
     }
 }
 
@@ -47,6 +49,15 @@ const processANDChoice = (rule: ChoiceRule, effectiveInput: StateInput): boolean
         }
     }
     return true;
+}
+
+const processOrChoice = (rule: ChoiceRule, effectiveInput: StateInput): boolean => {
+    for (const choiceRule of rule.Or) {
+        if (processChoiceRule(choiceRule, effectiveInput)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput, variable: unknown): boolean => {
