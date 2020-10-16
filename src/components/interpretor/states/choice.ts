@@ -98,6 +98,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processStringGreaterThanEquals = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable >= rule);
         return processStringGreaterThanEquals(rule.StringGreaterThanEquals, rule.StringGreaterThanEqualsPath, effectiveInput, variable);
     }
+    if (rule.StringLessThan !== undefined || rule.StringLessThanPath !== undefined) {
+        const processStringLessThan = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable < rule);
+        return processStringLessThan(rule.StringLessThan, rule.StringLessThanPath, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
