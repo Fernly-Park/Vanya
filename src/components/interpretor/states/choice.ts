@@ -40,6 +40,7 @@ const processBooleanExpression = (rule: ChoiceRule, effectiveInput: StateInput):
     } else if (rule.Or) {
         return processOrChoice(rule, effectiveInput);
     }
+    throw new Error ('Boolean expression in choice state should contain an AND or a NOT or a; OR')
 }
 
 const processANDChoice = (rule: ChoiceRule, effectiveInput: StateInput): boolean => {
@@ -86,6 +87,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processNumericLessThanEquals = generateDataTestComparator(v => typeof v === 'number', (variable, rule) => variable <= rule);
         return processNumericLessThanEquals(rule.NumericLessThanEquals, rule.NumericLessThanEqualsPath, effectiveInput, variable);
     }
+    if (rule.StringEquals !== undefined || rule.StringEqualsPath !== undefined) {
+        const processStringEquals = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable === rule);
+        return processStringEquals(rule.StringEquals, rule.StringEqualsPath, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
@@ -111,6 +116,15 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
 
 const generateDataTestComparator = (isVariableOfCorrectType: (variable: unknown) => boolean, comparator: (variable: unknown, rule: unknown) => boolean) => {
         return (rule: unknown, pathToRule: string, effectiveInput: StateInput, variable: unknown) => {
+            let ruleFromPath;
+            
+            if (pathToRule !== undefined) {
+                ruleFromPath = retrieveField(effectiveInput, pathToRule);
+                if (ruleFromPath === undefined) {
+                    throw new InvalidPathError(`Invalid Path '${pathToRule}'. The choice state's condition path references an invalid value`)
+                }
+            }
+
             if (!isVariableOfCorrectType(variable)) {
                 return false;
             }
@@ -118,11 +132,7 @@ const generateDataTestComparator = (isVariableOfCorrectType: (variable: unknown)
                 return comparator(variable, rule);
             }
 
-            const ruleFromPath = retrieveField(effectiveInput, pathToRule);
-            if (ruleFromPath === undefined) {
-                throw new InvalidPathError(`Invalid Path '${pathToRule}'. The choice state's condition path references an invalid value`)
-            }
-
+            
             if (!isVariableOfCorrectType(ruleFromPath)) {
                 return false;
             }
