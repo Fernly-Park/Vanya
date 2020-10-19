@@ -143,11 +143,11 @@ export interface ChoiceRule {
     TimestampGreaterThan?: string,
     TimestampGreaterThanPath?: string,
 
-    TimestampLessThanThan?: string,
-    TimestampLessThanThanPath?: string,
+    TimestampLessThanEquals?: string,
+    TimestampLessThanEqualsPath?: string,
 
-    TimestampGreaterThanThan?: string,
-    TimestampGreaterThanThanPath?: string,
+    TimestampGreaterThanEquals?: string,
+    TimestampGreaterThanEqualsPath?: string,
 
     IsNull?: string,
     IsPresent?: string,
