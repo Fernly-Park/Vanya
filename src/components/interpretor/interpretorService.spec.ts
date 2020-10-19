@@ -202,4 +202,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'choice-stringMatchesWithOpenBackslash'});
+generateStateMachinesTests({stateMachineName: 'choice-timestampEquals'});

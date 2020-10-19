@@ -1,0 +1,555 @@
+{
+    "describe": "state machine with a choice state for timestampEquals and timestampEqualsPath", 
+    "tests": [
+        {
+            "input": {"first": "2019-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": "2019-10-19T17:40:45.651Z"},
+            "describe": "should succeed if the first condition is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:19:31.417Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":\"2019-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:19:31.445Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":\"2019-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:19:31.445Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":\"2019-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:19:31.545Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "pathForFirst",
+                  "input": "{\"first\":\"2019-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:19:31.545Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "pathForFirst",
+                  "output": "{\"first\":\"2019-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:19:31.545Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":\"2019-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": "2019-10-19T17:40:45.641Z", "second": "2021-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": "2019-10-19T17:40:45.641Z", "second": "2021-10-19T17:40:45.651Z"},
+            "describe": "should succeed if the second condition is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:23:41.660Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":\"2019-10-19T17:40:45.641Z\",\"second\":\"2021-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:23:41.679Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":\"2019-10-19T17:40:45.641Z\",\"second\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:23:41.679Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":\"2019-10-19T17:40:45.641Z\",\"second\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:23:41.779Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "pathForSecond",
+                  "input": "{\"first\":\"2019-10-19T17:40:45.641Z\",\"second\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:23:41.779Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "pathForSecond",
+                  "output": "{\"first\":\"2019-10-19T17:40:45.641Z\",\"second\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:23:41.779Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":\"2019-10-19T17:40:45.641Z\",\"second\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": "2019-10-19T17:40:45.641Z"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail if the variable for the second condition is not present",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:26:11.120Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":\"2019-10-19T17:40:45.641Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:26:11.140Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":\"2019-10-19T17:40:45.641Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:26:11.140Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. Invalid Path '$.second'. The choice state's condition path references an invalid value"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z", "thirdVariable": "2021-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z", "thirdVariable": "2021-10-19T17:40:45.651Z"},
+            "describe": "should succeed if the third condition is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:28:47.832Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.856Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.856Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.956Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "pathForThird",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.956Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "pathForThird",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.956Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z", "thirdVariable": "2021-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z", "thirdVariable": "2021-10-19T17:40:45.651Z"},
+            "describe": "should succeed if the third condition is met",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:28:47.832Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.856Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.856Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.956Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "pathForThird",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.956Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "pathForThird",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:28:47.956Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z ", "thirdVariable": "2021-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z ", "thirdVariable": "2021-10-19T17:40:45.651Z"},
+            "describe": "should go to default if the third rule contains a space",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:30:06.245Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z \",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:30:06.266Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z \",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:30:06.266Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z \",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:30:06.366Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "default",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z \",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:30:06.366Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "default",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z \",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:30:06.366Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z \",\"thirdVariable\":\"2021-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z", "thirdVariable": "2022-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "2021-10-19T17:40:45.651Z", "thirdVariable": "2022-10-19T17:40:45.651Z"},
+            "describe": "should go to default if the third rule is not met due to different date",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:31:14.103Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:31:14.125Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:31:14.125Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:31:14.238Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "default",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:31:14.238Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "default",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:31:14.238Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"2021-10-19T17:40:45.651Z\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "", "thirdVariable": "2022-10-19T17:40:45.651Z"},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": true, "second": " 2021-10-19T17:40:45.651Z", "thirdRule": "", "thirdVariable": "2022-10-19T17:40:45.651Z"},
+            "describe": "should go to default if the third rule is an empty string",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T19:32:29.709Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:32:29.729Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:32:29.729Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:32:29.840Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "default",
+                  "input": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:32:29.840Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "default",
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T19:32:29.840Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":true,\"second\":\" 2021-10-19T17:40:45.651Z\",\"thirdRule\":\"\",\"thirdVariable\":\"2022-10-19T17:40:45.651Z\"}"
+                 }
+                }
+            ]
+        }
+        
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+          "Hello": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "TimestampEquals": "2019-10-19T17:40:45.651Z",
+                "Variable": "$.first",
+                "Next": "pathForFirst"
+              },
+              {
+                "TimestampEquals": "2021-10-19T17:40:45.651Z",
+                "Variable": "$.second",
+                "Next": "pathForSecond"
+              },
+              {
+                "TimestampEqualsPath": "$.thirdRule",
+                "Variable": "$.thirdVariable",
+                "Next": "pathForThird"
+              }
+            ],
+            "Default": "default"
+          },
+          "pathForFirst": {
+            "Type": "Pass",
+            "End": true
+          },
+          "pathForSecond": {
+            "Type": "Succeed"
+          },
+          "pathForThird": {
+            "Type": "Succeed"
+          },
+          "default": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+    }
+}
+
