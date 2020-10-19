@@ -111,10 +111,16 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processStringMatches = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => stringMatches(variable as string, rule as string));
         return processStringMatches(rule.StringMatches, undefined, effectiveInput, variable);
     }
+    const ensureIsTimestamp = (v: unknown) => typeof v === 'string' && ISO8601_REGEX.test(v);
     if (rule.TimestampEquals !== undefined || rule.TimestampEqualsPath !== undefined) {
-        const processTimestampEquals = generateDataTestComparator(v => typeof v === 'string' && ISO8601_REGEX.test(v), (
-            variable, rule) => new Date(variable as string).getTime() === new Date(rule as string).getTime());
+        const processTimestampEquals = generateDataTestComparator(ensureIsTimestamp, 
+            (variable, rule) => new Date(variable as string).getTime() === new Date(rule as string).getTime());
         return processTimestampEquals(rule.TimestampEquals, rule.TimestampEqualsPath, effectiveInput, variable);
+    }
+    if (rule.TimestampGreaterThan !== undefined || rule.TimestampGreaterThanPath !== undefined) {
+        const processTimestampGreaterThan = generateDataTestComparator(ensureIsTimestamp, 
+            (variable, rule) => new Date(variable as string).getTime() > new Date(rule as string).getTime());
+        return processTimestampGreaterThan(rule.TimestampGreaterThan, rule.TimestampGreaterThanPath, effectiveInput, variable);
     }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
