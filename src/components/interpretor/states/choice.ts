@@ -122,6 +122,11 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
             (variable, rule) => new Date(variable as string).getTime() > new Date(rule as string).getTime());
         return processTimestampGreaterThan(rule.TimestampGreaterThan, rule.TimestampGreaterThanPath, effectiveInput, variable);
     }
+    if (rule.TimestampLessThan !== undefined || rule.TimestampLessThanPath !== undefined) {
+        const processTimestampLessThan = generateDataTestComparator(ensureIsTimestamp, 
+            (variable, rule) => new Date(variable as string).getTime() < new Date(rule as string).getTime());
+        return processTimestampLessThan(rule.TimestampLessThan, rule.TimestampLessThanPath, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
