@@ -1,4 +1,5 @@
-import { isAString, containsWhiteSpace, trimAll } from "@App/utils/stringUtils";
+/* eslint-disable no-unexpected-multiline */
+import { isAString, containsWhiteSpace, trimAll, stringMatches } from "@App/utils/stringUtils";
 
 describe('testing isAString function', () => {
     it('should detect that the argument is indeed a string', () => {
@@ -56,3 +57,42 @@ describe('testing trilAll function', () => {
         expect(result[6]).toBe('');
     })
 });
+
+describe('string matches', () => {
+    it.each([
+        ["hello", "hello", true,],
+        ["hello", "ello", false],
+        ["ello", "hello", false],
+        ["foo23.log", "foo*.log", true],
+        ["", "*", true],
+        ["hello", "*", true],
+        ["\\", "*", true],
+        ["he*lo", "he\\*lo", true],
+        ["he\\*lo", "he\\*lo", false],
+        ["foobar.zebra", "foo*.*", true],
+        ["foobar", "foo*.*", false],
+        ["foobar", "foo**", true],
+        ["hello**", "hello*\\*", true],
+        ["hello**", "hello", true],
+        ["hello", "hello*\\*", false],
+        ["\\\\", "*\\\\*", true],
+
+    ])
+    ("should considere that the string '%p' matching with '%p' is %p", (str: string, rule: string, expectedResult: boolean) => {
+        expect.assertions(1);
+
+        const result = stringMatches(str, rule);
+
+        expect(result).toBe(expectedResult);
+    })
+
+    it.each([
+        ['hello', '\\']
+    ])
+    ("should throw if we try  the string '%p' matching with '%p'", (str: string, rule: string) => {
+        expect.assertions(1);
+
+        expect(() => stringMatches(str, rule)).toThrow();
+    })
+
+})

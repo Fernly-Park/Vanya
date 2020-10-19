@@ -1,0 +1,136 @@
+{
+    "describe": "state machine with a choice state for StringMatches with only one condition which has an open backslash", 
+    "tests": [
+        {
+            "input": {"first": "1"},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail due to the open backslash in the stringMatches condition if the input is a string",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T17:05:49.443Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":\"1\"}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:05:49.463Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":\"1\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:05:49.463Z",
+                 "type": "ExecutionFailed",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "executionFailedEventDetails": {
+                  "error": "States.Runtime",
+                  "cause": "An error occurred while executing the state 'Hello'. All occurrences of \\ and * literal, must be escaped with \\ within the StringMatches pattern."
+                 }
+                }
+            ]
+        },
+        {
+            "input": {"first": null},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"first": null},
+            "describe": "should work and go to default if the input is not a string",
+            "events": [
+                {
+                 "timestamp": "2020-10-19T17:40:45.651Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"first\":null}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:40:45.676Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"first\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:40:45.676Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"first\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:40:45.815Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "default",
+                  "input": "{\"first\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:40:45.815Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "default",
+                  "output": "{\"first\":null}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-19T17:40:45.815Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"first\":null}"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+        "StartAt": "Hello",
+        "States": {
+          "Hello": {
+            "Type": "Choice",
+            "Choices": [
+              {
+                "StringMatches": "\\",
+                "Variable": "$.first",
+                "Next": "pathForFirst"
+              }
+            ],
+            "Default": "default"
+          },
+          "pathForFirst": {
+            "Type": "Pass",
+            "End": true
+          },
+          "default": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+    }
+}
+

@@ -1,6 +1,7 @@
 import { ChoiceRule, ChoiceState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { StateInput } from "@App/components/task/task.interfaces";
 import { InvalidPathError, NoChoiceMatchedError } from "@App/errors/customErrors";
+import { stringMatches } from "@App/utils/stringUtils";
 import { ISO8601_REGEX } from "@App/utils/validationHelper";
 import { retrieveField } from "../path";
 
@@ -106,6 +107,10 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
         const processStringLessThanEquals = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => variable <= rule);
         return processStringLessThanEquals(rule.StringLessThanEquals, rule.StringLessThanEqualsPath, effectiveInput, variable);
     }
+    if (rule.StringMatches !== undefined) {
+        const processStringMatches = generateDataTestComparator(v => typeof v === 'string', (variable, rule) => stringMatches(variable as string, rule as string));
+        return processStringMatches(rule.StringMatches, undefined, effectiveInput, variable);
+    }
     if (rule.IsBoolean !== undefined) {
         return (rule.IsBoolean && typeof variable === 'boolean') || (!rule.IsBoolean && typeof variable !== 'boolean');
     }
@@ -156,3 +161,4 @@ const generateDataTestComparator = (isVariableOfCorrectType: (variable: unknown)
         }
 
 }
+
