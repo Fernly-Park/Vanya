@@ -77,4 +77,11 @@ export class TaskResourceDoesNotExistsError extends BaseError {
     }
 }
 
+export class FatalError extends BaseError {
+    constructor(description: string) {
+        super("Fatal Error", description, false);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
 

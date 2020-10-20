@@ -1,6 +1,6 @@
 import { ChoiceRule, ChoiceState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { StateInput } from "@App/components/task/task.interfaces";
-import { InvalidPathError, NoChoiceMatchedError } from "@App/errors/customErrors";
+import { FatalError, InvalidPathError, NoChoiceMatchedError } from "@App/errors/customErrors";
 import { stringMatches } from "@App/utils/stringUtils";
 import { ISO8601_REGEX } from "@App/utils/validationHelper";
 import { retrieveField } from "../path";
@@ -41,7 +41,7 @@ const processBooleanExpression = (rule: ChoiceRule, effectiveInput: StateInput):
     } else if (rule.Or) {
         return processOrChoice(rule, effectiveInput);
     }
-    throw new Error ('Boolean expression in choice state should contain an AND or a NOT or a; OR')
+    throw new FatalError ('Boolean expression in choice state should contain an AND or a NOT or a; OR')
 }
 
 const processANDChoice = (rule: ChoiceRule, effectiveInput: StateInput): boolean => {
@@ -158,7 +158,7 @@ const processDataTestExpression = (rule: ChoiceRule, effectiveInput: StateInput,
             || (!rule.IsTimestamp && !ISO8601_REGEX.test(variable as string))
     }
 
-    // throw fatal
+    throw new FatalError(`A choice state cannot have custom rule.`);
 }
 
 const generateDataTestComparator = (isVariableOfCorrectType: (variable: unknown) => boolean, comparator: (variable: unknown, rule: unknown) => boolean) => {
