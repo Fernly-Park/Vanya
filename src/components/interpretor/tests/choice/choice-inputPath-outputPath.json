@@ -1,0 +1,243 @@
+{
+    "describe": "state machine with a choice state containing an inputPath if '$.input' and an outputPath of '$.output'", 
+    "tests": [
+      {
+          "input": {"input": {"Number": 42, "output": "hello"}},
+          "expectedStateMachineStatus": "SUCCEEDED",
+          "expectedOutput": "hello",
+          "describe": "should succeed if there in an 'output' key inside an 'input'",
+          "events": [
+            {
+             "timestamp": "2020-10-20T11:17:13.149Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"input\":{\"Number\":42,\"output\":\"hello\"}}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-10-20T11:17:13.187Z",
+             "type": "ChoiceStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Hello",
+              "input": "{\"input\":{\"Number\":42,\"output\":\"hello\"}}"
+             }
+            },
+            {
+             "timestamp": "2020-10-20T11:17:13.187Z",
+             "type": "ChoiceStateExited",
+             "id": 3,
+             "previousEventId": 2,
+             "stateExitedEventDetails": {
+              "name": "Hello",
+              "output": "\"hello\""
+             }
+            },
+            {
+             "timestamp": "2020-10-20T11:17:13.287Z",
+             "type": "PassStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "pathForFirst",
+              "input": "\"hello\""
+             }
+            },
+            {
+             "timestamp": "2020-10-20T11:17:13.287Z",
+             "type": "PassStateExited",
+             "id": 5,
+             "previousEventId": 4,
+             "stateExitedEventDetails": {
+              "name": "pathForFirst",
+              "output": "\"hello\""
+             }
+            },
+            {
+             "timestamp": "2020-10-20T11:17:13.287Z",
+             "type": "ExecutionSucceeded",
+             "id": 6,
+             "previousEventId": 5,
+             "executionSucceededEventDetails": {
+              "output": "\"hello\""
+             }
+            }
+          ]
+      },
+      {
+        "input": {"Number": 42, "output": "hello"},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "describe": "should fail if there is no 'input' key",
+        "events": [
+          {
+           "timestamp": "2020-10-20T11:18:13.138Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "{\"Number\":42,\"output\":\"hello\"}",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:18:13.164Z",
+           "type": "ChoiceStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "Hello",
+            "input": "{\"Number\":42,\"output\":\"hello\"}"
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:18:13.164Z",
+           "type": "ExecutionFailed",
+           "id": 3,
+           "previousEventId": 2,
+           "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.input' : No valid results for path: '$.input'"
+           }
+          }
+        ]
+      },
+      {
+        "input": {"input": {"Number": 42}},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "describe": "should fail if there is no 'output' key inside the 'input' key",
+        "events": [
+          {
+           "timestamp": "2020-10-20T11:19:10.872Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "{\"input\":{\"Number\":42}}",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:10.893Z",
+           "type": "ChoiceStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "Hello",
+            "input": "{\"input\":{\"Number\":42}}"
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:10.893Z",
+           "type": "ExecutionFailed",
+           "id": 3,
+           "previousEventId": 2,
+           "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.output' : No valid results for path: '$.output'"
+           }
+          }
+        ]
+      },
+      {
+        "input": {"input": {"Number": [42], "output": "hello"}},
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": "hello",
+        "describe": "should go to default and apply output path if no condition is met",
+        "events": [
+          {
+           "timestamp": "2020-10-20T11:19:59.509Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "{\"input\":{\"Number\":[42],\"output\":\"hello\"}}",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:59.530Z",
+           "type": "ChoiceStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "Hello",
+            "input": "{\"input\":{\"Number\":[42],\"output\":\"hello\"}}"
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:59.530Z",
+           "type": "ChoiceStateExited",
+           "id": 3,
+           "previousEventId": 2,
+           "stateExitedEventDetails": {
+            "name": "Hello",
+            "output": "\"hello\""
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:59.630Z",
+           "type": "PassStateEntered",
+           "id": 4,
+           "previousEventId": 3,
+           "stateEnteredEventDetails": {
+            "name": "default",
+            "input": "\"hello\""
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:59.630Z",
+           "type": "PassStateExited",
+           "id": 5,
+           "previousEventId": 4,
+           "stateExitedEventDetails": {
+            "name": "default",
+            "output": "\"hello\""
+           }
+          },
+          {
+           "timestamp": "2020-10-20T11:19:59.630Z",
+           "type": "ExecutionSucceeded",
+           "id": 6,
+           "previousEventId": 5,
+           "executionSucceededEventDetails": {
+            "output": "\"hello\""
+           }
+          }
+        ]
+      }
+    ],
+    "definition": {
+      "Comment": "A Hello World example of the Amazon States Language using a Choice state",
+      "StartAt": "Hello",
+      "States": {
+        "Hello": {
+          "Type": "Choice",
+          "InputPath": "$.input",
+          "OutputPath": "$.output",
+          "Choices": [
+            {
+              "IsNumeric": true,
+              "Variable": "$.Number",
+              "Next": "pathForFirst"
+            }
+          ],
+          "Default": "default"
+        },
+        "pathForFirst": {
+          "Type": "Pass",
+          "End": true
+        },
+        "default": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }
+}
+
