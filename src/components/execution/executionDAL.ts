@@ -1,5 +1,5 @@
 import db, { DbOrTransaction } from '@App/modules/database/db';
-import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable } from './execution.interfaces';
+import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable, ContextObjectEnteredState } from './execution.interfaces';
 import * as DALFactory from '@App/components/DALFactory';
 import * as Redis from '@App/modules/database/redis';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
@@ -78,31 +78,45 @@ export const selectExecutionByName = modifyExecutionInputType(
 export const countExecutions = DALFactory.countResourceFactory(ExecutionTable.tableName);
 
 export const setContextObject = async (executionArn: string, contextObject: ContextObject): Promise<void> => {
-    const key = Redis.getContextObjectKey(executionArn);
-    await Redis.jsonsetAsync(key, '.', JSON.stringify({State: {}, ...contextObject}));
+    const redisKey = Redis.getContextObjectKey(executionArn);
+    for(const [objectKey, val] of Object.entries(contextObject)) {
+        await Redis.hsetAsync(redisKey, objectKey, JSON.stringify(val));
+    }
+    await Redis.hsetAsync(redisKey, 'State', JSON.stringify({}));
+
 }
-type StoredContextObject = ContextObject & {State: Record<string, any>}
+export type StoredContextObject = ContextObject & {State: Record<string, any>}
 export const updateContextObject = async (req: {executionArn: string, update: Record<string, unknown>, token?: string, stateName: string}): Promise<void> => {
     const key = Redis.getContextObjectKey(req.executionArn);
-    await Redis.jsonsetAsync(key, `.State.${req.stateName}`, JSON.stringify(req.update));
+    await Redis.hsetAsync(key, `State:${req.stateName}`, JSON.stringify(req.update));
     if (req.token) {
-        await Redis.jsonsetAsync(key, `.State.${req.stateName}.Task`, JSON.stringify({Token: req.token}));
+        await Redis.hsetAsync(key, `State:${req.stateName}:Task`, JSON.stringify({Token: req.token}))
     }
 } 
 
 export const getContextObject = async (executionArn: string, stateName: string): Promise<ContextObject> => {
     const key = Redis.getContextObjectKey(executionArn);
-    const contextObject = JSON.parse(await Redis.jsongetAsync(key)) as StoredContextObject;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return contextObject ? {...contextObject, State: contextObject.State[stateName], Task: contextObject.State[stateName]?.Task} : null;
+    const contextObject = await Redis.hgetAllAsync(key);
+    if (!contextObject) {
+        return null;
+    }
+    const toReturn: ContextObject = {
+        Execution: JSON.parse(contextObject["Execution"] as string),
+        StateMachine: JSON.parse(contextObject["StateMachine"] as string),
+        State: contextObject[`State:${stateName}`] ? JSON.parse(contextObject[`State:${stateName}`] as string) : undefined,
+        Task: contextObject[`State:${stateName}:Task`] ? JSON.parse(contextObject[`State:${stateName}:Task`] as string): undefined
+    };
+
+    return toReturn;
 }
 
 export const deleteContextObject = async (executionArn: string, stateName?: string): Promise<void> => {
     const key = Redis.getContextObjectKey(executionArn);
     if (stateName) {
-        await Redis.jsondelAsync(key, `.State.${stateName}`);
+        await Redis.hdelAsync(key, `State:${stateName}`);
+        await Redis.hdelAsync(key, `State:${stateName}:Task`);
     } else {
-        await Redis.jsondelAsync(key);
+        await Redis.delAsync(key);
     }
 }
 

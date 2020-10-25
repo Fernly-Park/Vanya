@@ -46,6 +46,7 @@ export let lpopAsync: (key: string) => Promise<string>;
 export let blpopAsync: (key: string, timeout: number) => Promise<[string, string]>;
 export let hsetAsync: (key: string, field: string, value: string) => Promise<void>
 export let hgetAsync: (key: string, field: string) => Promise<string>
+export let hgetAllAsync : (key: string) => Promise<Record<string, unknown>>;
 export let hdelAsync: (key: string, field: string) => Promise<void>
 export let incrAsync: (key: string) => Promise<number>;
 export let lrangeAsync: (key: string, from: number, toIncluded: number) => Promise<string[]>
@@ -59,6 +60,7 @@ export let jsonsetAsync: (key: string, path: string, json: string) => Promise<bo
 export let jsongetAsync: (key: string, path?: string) => Promise<string>;
 export let jsondelAsync: (key: string, path?: string) => Promise<void>;
 export let zremAsync: (key: string, member: string) => Promise<number>;
+export let hmsetAsync: (key: string, arg: {[key: string]: string | number}) => Promise<void>;
 
 export const quitAsync = async (): Promise<void> => {
     if (connectionPool) {
@@ -104,6 +106,8 @@ export const startRedis = () => {
     zcountAsync = pooledFunctionFactory(client.zcount);
     lremAsync = pooledFunctionFactory(client.lrem);
     zremAsync = pooledFunctionFactory(client.zrem);
+    hmsetAsync = pooledFunctionFactory(client.hmset)
+    hgetAllAsync = pooledFunctionFactory(client.hgetall);
 
     watchAsync = async (keyToWatch: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => {
         const watcher = await connectionPool.acquire();
