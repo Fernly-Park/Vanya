@@ -61,7 +61,7 @@ export let jsongetAsync: (key: string, path?: string) => Promise<string>;
 export let jsondelAsync: (key: string, path?: string) => Promise<void>;
 export let zremAsync: (key: string, member: string) => Promise<number>;
 export let hmsetAsync: (key: string, arg: {[key: string]: string | number}) => Promise<void>;
-
+export let jsonNumIncrByAsync: (key: string, path: string, number: number) => Promise<number>
 export const quitAsync = async (): Promise<void> => {
     if (connectionPool) {
         await connectionPool.drain();
@@ -130,9 +130,12 @@ export const startRedis = () => {
             await connectionPool.release(connection);
         }
     }
+
+    
     jsonsetAsync = customPooledFunctionFactory("JSON.SET")
     jsongetAsync = customPooledFunctionFactory("JSON.GET")
     jsondelAsync = customPooledFunctionFactory("JSON.DEL")
+    jsonNumIncrByAsync = customPooledFunctionFactory("JSON.NUMINCRBY");
 }
 
 export const onConnectionSuccess = (callback: () => void ): void => {
@@ -170,6 +173,6 @@ export const getActivityTaskInProgressKey = (token: string): string => {
     return `${config.redis_prefix}:tasks:${token}`;
 }
 
-export const getTaskInProgress = (taskToken: string): string => {
-    return `${config.redis_prefix}:${taskToken}:tasks`;
+export const getParallelStateInfoKey = (parallelKey: string): string => {
+    return `${config.redis_prefix}:parallel:${parallelKey}`
 }

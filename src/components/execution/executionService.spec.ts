@@ -15,7 +15,8 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
         stateMachineName?: string,
         userId?: string,
         input?: string,
-        executionName?: string
+        executionName?: string,
+        stateMachineDef?: string
     }) => {
         return await TestHelper.createSMAndStartExecutionHelper({...req, userId: req?.userId ?? getUser().id});
     }
@@ -221,4 +222,17 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             expect(eventsFromRedisAfter).toHaveLength(0);
         });
     });
+
+    describe('update context object', () => {
+        it('should work event if the new state name has spaces', async () => {
+            expect.assertions(1);
+
+            const {execution} = await createSMAndStartExecutionHelper();
+
+            expect(async () => await ExecutionService.updateContextObject({executionArn: execution.executionArn, enteredState: {EnteredTime: new Date(), Name: 'hello world'}}))
+                .not.toThrow()
+
+            const contextObject = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn, stateName: 'hello world'});
+        })
+    })
 }})

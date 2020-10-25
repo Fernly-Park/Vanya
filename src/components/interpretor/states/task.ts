@@ -3,7 +3,7 @@ import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningS
 import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
 import { retrieveField } from "../path";
-import { endStateSuccess, filterOutput, endStateFailed } from "../interpretorService";
+import { endStateSuccess, filterOutput, endStateFailed, filterInput } from "../interpretorService";
 import { TaskService } from "@App/components/task";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
@@ -14,8 +14,9 @@ import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent
 import { updateActivityTask } from "@App/components/task/taskService";
 import { Logger } from "@App/modules";
 
-export const processTaskState = async (req: {task: RunningState, state: TaskState, effectiveInput: StateInput, token: string}): Promise<void> => {
-    const {task, state, effectiveInput, token} = req;
+export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
+    const {task, state, token} = req;
+    const effectiveInput = await filterInput(task, state);
     const resource = req.state.Resource;
     const activity = await ActivityService.getActivity(resource);
     if (!activity) {
@@ -89,7 +90,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
         await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
     }
 
-    await endStateSuccess({...activityTask, output, nextStateName: taskState.Next, stateType: taskState.Type});
+    await endStateSuccess({...activityTask, output, nextStateName: taskState.Next, state: taskState});
 }
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {

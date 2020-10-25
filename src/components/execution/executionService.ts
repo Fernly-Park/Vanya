@@ -7,11 +7,11 @@ import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
 import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, HistoryEventType } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
-import { IStateMachineDefinition, ParallelState, PassState, StateType } from "../stateMachines/stateMachine.interfaces";
 import { StateMachineService } from "../stateMachines";
 import { TaskService } from "../task";
 import { UserService } from "../user";
 import { executionStartedEvent } from "../events";
+import { Logger } from "@App/modules";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);
@@ -103,12 +103,15 @@ export const retrieveExecutionContextObject = async (req: {executionArn: string,
 }
 
 export const updateContextObject = async (req: {executionArn: string, enteredState: ContextObjectEnteredState, taskToken?: string, previousState?: string}): Promise<void> => {
+    Logger.logDebug(`Updating context object for execution '${req.executionArn}' and state '${req.enteredState.Name}'`)
     // todo check
     if (req.previousState) {
         await ExecutionDAL.deleteContextObject(req.executionArn, req.previousState);
     }
+
     await ExecutionDAL.updateContextObject({executionArn: req.executionArn, update: req.enteredState, 
         token: req.taskToken, stateName: req.enteredState.Name, });
+
 }
 
 

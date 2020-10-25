@@ -14,6 +14,14 @@ export class BaseError extends Error {
 }
 
 
+
+export class DALError extends BaseError {
+    constructor(description: string) {
+        super("DALError", description, true);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}
+
 export class ResourceAlreadyExistsError extends BaseError {
     constructor(description: string) {
         super("Resource Already Exists", description, true);

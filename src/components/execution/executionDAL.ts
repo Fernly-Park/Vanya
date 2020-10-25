@@ -3,6 +3,7 @@ import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEv
 import * as DALFactory from '@App/components/DALFactory';
 import * as Redis from '@App/modules/database/redis';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
+import { DALError } from '@App/errors/customErrors';
 
 type InsertExecutionReq = {
     executionArn: string,
@@ -92,6 +93,7 @@ export const updateContextObject = async (req: {executionArn: string, update: Re
     if (req.token) {
         await Redis.hsetAsync(key, `State:${req.stateName}:Task`, JSON.stringify({Token: req.token}))
     }
+    
 } 
 
 export const getContextObject = async (executionArn: string, stateName: string): Promise<ContextObject> => {

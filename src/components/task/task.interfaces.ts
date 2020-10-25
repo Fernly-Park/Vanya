@@ -8,7 +8,12 @@ export interface RunningState {
     stateMachineArn: string,
     previousStateName?: string,
     previousEventId: number,
-    retry?: RetryInformation[]
+    retry?: RetryInformation[],
+    
+    parallelInfo?: {
+        parentKey: string,
+        currentBranche: number
+    },
 }
 
 export interface RetryInformation {
@@ -23,6 +28,11 @@ export type RunningTaskState = RunningState & {
     effectiveInput: StateInput,
     heartbeatSeconds?: number,
     timeoutSeconds?: number
+}
+
+export type RunningParallelState = RunningState & {
+    numberOfBranchesLeft: number
+    output: StateOutput[]
 }
 
 export enum ActivityTaskStatus {

@@ -1,20 +1,22 @@
 import { ChoiceRule, ChoiceState } from "@App/components/stateMachines/stateMachine.interfaces";
-import { StateInput } from "@App/components/task/task.interfaces";
+import { RunningState, StateInput } from "@App/components/task/task.interfaces";
 import { FatalError, InvalidPathError, NoChoiceMatchedError } from "@App/errors/customErrors";
 import { stringMatches } from "@App/utils/stringUtils";
 import { ISO8601_REGEX } from "@App/utils/validationHelper";
+import { filterInput } from "../interpretorService";
 import { retrieveField } from "../path";
 
-export const processChoiceState = (req: {state: ChoiceState, effectiveInput: StateInput}): string => {
+export const processChoiceState = async (req: {state: ChoiceState, task: RunningState}): Promise<{next: string, effectiveInput: StateInput}> => {
     const {state} = req;
+    const effectiveInput = await filterInput(req.task, state);
 
     for (const choiceRule of state.Choices) {
-        if (processChoiceRule(choiceRule, req.effectiveInput)) {
-            return choiceRule.Next;
+        if (processChoiceRule(choiceRule, effectiveInput)) {
+            return {next: choiceRule.Next, effectiveInput};
         }
     }
     if (state.Default) {
-        return state.Default
+        return {next: state.Default, effectiveInput}
     }
 
     throw new NoChoiceMatchedError('Failed to transition out of the state. The state does not point to a next state')

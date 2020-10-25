@@ -120,3 +120,17 @@ export const onActivityFailedEvent = async (req: {activityTask: RunningTaskState
         }
     }});
 }
+
+export const onParallelTaskStarted = async (req: {executionArn: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.ParallelStateStarted,
+        previousEventId: req.previousEventId
+    }})
+}
+
+export const onParallelStateSucceeded = async (req: {executionArn: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.ParallelStateSucceeded,
+        previousEventId: req.previousEventId
+    }});
+}

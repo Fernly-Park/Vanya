@@ -81,5 +81,7 @@ export enum HistoryEventType {
     ActivityFailed = 'ActivityFailed',
     ExecutionSucceeded = 'ExecutionSucceeded',
     StateEntered = 'StateEntered',
-    StateExited = 'StateExited'
+    StateExited = 'StateExited',
+    ParallelStateStarted = 'ParallelStateStarted',
+    ParallelStateSucceeded = 'ParallelStateSucceeded',
 }

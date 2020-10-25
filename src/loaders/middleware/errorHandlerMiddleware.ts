@@ -25,6 +25,7 @@ export const errorHandlerMiddleware =  (error: Error, _request: express.Request,
       next(error);
     } else {
       logger.logFatal('Potentially fatar error, restarting');
+      logger.logFatal(error);
       process.exit(-1);
     }
 } 

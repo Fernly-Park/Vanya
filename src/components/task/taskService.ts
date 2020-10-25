@@ -1,5 +1,5 @@
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskFailureInput, SendTaskHeartbeatInput, SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
-import { RunningTaskState, ActivityTaskStatus, RunningState } from "./task.interfaces";
+import { RunningTaskState, ActivityTaskStatus, RunningState, RunningParallelState } from "./task.interfaces";
 import * as TaskDAL from "./taskDAL";
 import { ActivityDoesNotExistError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from "@App/errors/AWSErrors";
 import Joi from "@hapi/joi";
@@ -137,4 +137,16 @@ const ensureWorkerNameIsValid = (workerName: string): void  => {
             throw new InvalidNameError(workerName);
         }
     }
+}
+
+export const setRunningParallelState = async (req: {parallelStateKey: string, parallelStateInfo: RunningParallelState}): Promise<void> => {
+    return await TaskDAL.setParallelRunningState(req);
+}
+
+export const updateRunningParallelState = async (req: {parallelStateKey: string, output: string, brancheNumber: number}): Promise<number> => {
+    return await TaskDAL.updateRunningParallelState(req);
+}
+
+export const getRunningParallelState = async (parallelStateKey: string): Promise<RunningParallelState> => {
+    return await TaskDAL.getRunningParallelState(parallelStateKey);
 }

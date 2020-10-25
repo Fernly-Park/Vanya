@@ -1,0 +1,108 @@
+{
+    "describe": "simple state machine with a parallel state and an input path", 
+    "tests": [
+        {
+            "input": {"input": 42},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": ["first","second","third"],
+            "describe": "should work and send an array as a result"
+        },
+        {
+          "input": {},
+          "expectedStateMachineStatus": "FAILED",
+          "expectedOutput": null,
+          "describe": "should fail without the 'input' key in the input (because of the inputPath in the parallel state)",
+          "events": [
+            {
+             "timestamp": "2020-10-24T19:10:36.377Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-10-24T19:10:36.409Z",
+             "type": "ParallelStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-24T19:10:36.409Z",
+             "type": "ParallelStateStarted",
+             "id": 3,
+             "previousEventId": 2
+            },
+            {
+             "timestamp": "2020-10-24T19:10:36.409Z",
+             "type": "ExecutionFailed",
+             "id": 4,
+             "previousEventId": 3,
+             "executionFailedEventDetails": {
+              "error": "States.Runtime",
+              "cause": "An error occurred while executing the state 'Parallel State'. Invalid path '$.input' : No valid results for path: '$.input'"
+             }
+            }
+           ]
+      }
+    ],
+    "definition": {
+      "Comment": "Simple parallel state machine",
+      "StartAt": "Parallel State",
+      "States": {
+        "Parallel State": {
+          "InputPath": "$.input",
+          "Type": "Parallel",
+          "Branches": [
+            {
+              "StartAt": "Pass State 1",
+              "States": {
+                "Pass State 1": {
+                  "Type": "Pass",
+                  "Result": "first",
+                  "End": true
+                }
+              }
+            },
+            {
+              "StartAt": "Pass State 2",
+              "States": {
+                "Pass State 2": {
+                  "Type": "Pass",
+                  "Result": "second",
+                  "Next": "Wait 2"
+                },
+                "Wait 2": {
+                  "Type": "Wait",
+                  "Seconds": 1,
+                  "End": true
+                }
+              }
+            },
+            {
+              "StartAt": "Pass State 3",
+              "States": {
+                "Pass State 3": {
+                  "Type": "Pass",
+                  "Result": "third",
+                  "End": true
+                }
+              }
+            }
+          ],
+          "Next": "NEXT_STATE"
+        },
+        "NEXT_STATE": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }  
+}
+

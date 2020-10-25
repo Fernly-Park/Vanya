@@ -118,6 +118,7 @@ export const stateMachinesForTests = {
         validTaskTimer: getStateMachineDef('valid', 'valid-task-timer.json'),
         validWaitState: getStateMachineDef('valid', 'valid-wait-state.json'),
         validChoice: getStateMachineDef('valid', 'valid-choice.json'),
+        validPassSpaceName: getStateMachineDef('valid', 'pass', 'valid-pass-space-stateName.json'),
     }
 }
 

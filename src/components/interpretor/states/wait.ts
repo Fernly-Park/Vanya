@@ -1,5 +1,5 @@
 import { WaitState } from "@App/components/stateMachines/stateMachine.interfaces";
-import { StateInput, RunningState } from "@App/components/task/task.interfaces";
+import { RunningState } from "@App/components/task/task.interfaces";
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
@@ -11,7 +11,8 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { Logger } from "@App/modules";
 import { getDateIn } from "@App/utils/date";
 
-export const processWaitTask = async (task: RunningState, state: WaitState, effectiveInput: StateInput): Promise<void> => {
+export const processWaitTask = async (task: RunningState, state: WaitState): Promise<void> => {
+    const effectiveInput = await filterInput(task, state);
     let time = new Date();
     if (state.Seconds) {
         time = getDateIn(state.Seconds * 1000)
@@ -30,16 +31,20 @@ export const processWaitTask = async (task: RunningState, state: WaitState, effe
         }
         time = new Date(timestamp);
     }
+
+    Logger.logDebug(`Waiting state '${task.stateName}' of '${task.executionArn}' started. waiting until '${time.toISOString()}'`)
     await TimerService.addTimedTask({until: time, timedTask: {task, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
 }
 
 
 export const processWaitingStateDone = async (task: RunningState): Promise<void> => {
+    Logger.logDebug(`Waiting for state '${task.stateName}' of '${task.executionArn}' finished, resuming state machine processing`)
+
     const waitingState = (await StateMachineService.retrieveStateFromStateMachine(task)) as WaitState;
     const effectiveInput = await filterInput(task, waitingState);
     try {
         const output = await filterOutput(task.rawInput, effectiveInput, waitingState, task);
-        await endStateSuccess({...task, output, nextStateName: waitingState.Next, stateType: waitingState.Type});
+        await endStateSuccess({...task, output, nextStateName: waitingState.Next, state: waitingState});
     } catch (err) {
         Logger.logError(err ?? 'caca');
         await endStateFailed({task, 
