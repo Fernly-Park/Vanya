@@ -87,6 +87,9 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         if (currentTest.events) {
             expectEventsToBeCorrect(currentTest.events, events, currentTest.eventsExpectedDuration)
         }
+        if (currentTest.expectedNumberOfEvents !== undefined) {
+            expect(events).toHaveLength(currentTest.expectedNumberOfEvents);
+        }
     });
 }
 
@@ -202,4 +205,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests();
+generateStateMachinesTests({stateMachineName: 'simple-parallel-outputPath'});

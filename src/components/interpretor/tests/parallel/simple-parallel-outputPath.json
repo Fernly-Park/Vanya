@@ -1,0 +1,73 @@
+{
+    "describe": "simple state machine with a parallel state and an outputPath path", 
+    "tests": [
+        {
+            "input": {"input": 42},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": "first",
+            "describe": "should work and send an array as a result",
+            "expectedNumberOfEvents": 19,
+            "activitiesToCreate": [
+              {
+                  "name": "tmp",
+                  "expectedInput": 42,
+                  "output": {"hello": "world"}
+              }
+          ]
+        }
+    ],
+    "definition": {
+      "Comment": "Simple parallel state machine",
+      "StartAt": "Parallel State",
+      "States": {
+        "Parallel State": {
+          "OutputPath": "$.[1]",
+          "Type": "Parallel",
+          "Branches": [
+            {
+              "StartAt": "Pass State 1",
+              "States": {
+                "Pass State 1": {
+                  "Type": "Task",
+                  "InputPath": "$.input",
+                  "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "Next": "Wait 1"
+                },
+                "Wait 1": {
+                  "Type": "Wait",
+                  "Seconds": 1,
+                  "End": true
+                }
+              }
+            },
+            {
+              "StartAt": "Pass State 2",
+              "States": {
+                "Pass State 2": {
+                  "Type": "Pass",
+                  "Result": "first",
+                  "End": true
+                }
+              }
+            },
+            {
+              "StartAt": "Pass State 3",
+              "States": {
+                "Pass State 3": {
+                  "Type": "Pass",
+                  "Result": "third",
+                  "End": true
+                }
+              }
+            }
+          ],
+          "Next": "NEXT_STATE"
+        },
+        "NEXT_STATE": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }
+}
+

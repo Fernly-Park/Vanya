@@ -135,6 +135,7 @@ export type TestStateMachineTestCase = {
     describe: string,
     executionName: string,
     activitiesToCreate?: ActivitiyToCreateForTests[],
+    expectedNumberOfEvents?: number,
     eventsExpectedDuration?: EventDurationExpectedForTests[],
     events?: HistoryEvent[],
 }
