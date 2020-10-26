@@ -62,6 +62,8 @@ export let jsondelAsync: (key: string, path?: string) => Promise<void>;
 export let zremAsync: (key: string, member: string) => Promise<number>;
 export let hmsetAsync: (key: string, arg: {[key: string]: string | number}) => Promise<void>;
 export let jsonNumIncrByAsync: (key: string, path: string, number: number) => Promise<number>
+export let keysAsync: (pattern: string) => Promise<string[]>
+
 export const quitAsync = async (): Promise<void> => {
     if (connectionPool) {
         await connectionPool.drain();
@@ -108,6 +110,7 @@ export const startRedis = () => {
     zremAsync = pooledFunctionFactory(client.zrem);
     hmsetAsync = pooledFunctionFactory(client.hmset)
     hgetAllAsync = pooledFunctionFactory(client.hgetall);
+    keysAsync = pooledFunctionFactory(client.keys);
 
     watchAsync = async (keyToWatch: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => {
         const watcher = await connectionPool.acquire();

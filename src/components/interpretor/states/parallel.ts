@@ -15,7 +15,7 @@ export const processParallelState = async (req: {task: RunningState, state: Para
 
     const parallelStateKey = uuid();
     Logger.logDebug(`setting parallel state info  of state '${task.stateName}' of execution '${task.executionArn}' with key '${parallelStateKey}'`)
-    await TaskService.setRunningParallelState({parallelStateKey, parallelStateInfo: {...task, numberOfBranchesLeft: state.Branches.length, 
+    await TaskService.setRunningParallelStateInfo({parallelStateKey, parallelStateInfo: {...task, numberOfBranchesLeft: state.Branches.length, 
         output: new Array(state.Branches.length).fill(null)}})
 
     for (let i = 0; i < state.Branches.length; i++) {
@@ -39,10 +39,11 @@ export const processParallelState = async (req: {task: RunningState, state: Para
 
 export const handleFinishedBranche = async (req: {brancheIndex: number, output: StateOutput, parallelStateKey: string}): Promise<void> => {
     Logger.logDebug(`finished branches number '${req.brancheIndex}' of parallel state key '${req.parallelStateKey}'`)
-    const numberOfBrancheLeft = await TaskService.updateRunningParallelState({brancheNumber: req.brancheIndex, 
+    const numberOfBrancheLeft = await TaskService.updateRunningParallelStateInfo({brancheNumber: req.brancheIndex, 
         output: JSON.stringify(req.output), parallelStateKey: req.parallelStateKey});
     if (numberOfBrancheLeft === 0) {
-        const task = await TaskService.getRunningParallelState(req.parallelStateKey);
+        const task = await TaskService.getRunningParallelStateInfo(req.parallelStateKey);
+        await TaskService.deleteParallelStateInfo(req.parallelStateKey);
         const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;
         const effectiveOutput = await filterOutput(task.rawInput, task.output, state, task);
         task.previousEventId = await onParallelStateSucceeded(task)

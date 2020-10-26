@@ -76,12 +76,12 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
     });
 }
 
-export const setParallelRunningState = async (req: {parallelStateKey: string, parallelStateInfo: RunningParallelState}): Promise<void> => {
+export const setParallelRunningStateInfo = async (req: {parallelStateKey: string, parallelStateInfo: RunningParallelState}): Promise<void> => {
     const redisKey = Redis.getParallelStateInfoKey(req.parallelStateKey);
     await Redis.jsonsetAsync(redisKey, '.', JSON.stringify(req.parallelStateInfo))
 }
 
-export const updateRunningParallelState = async (req: {parallelStateKey: string, output: string, brancheNumber: number}): Promise<number> => {
+export const updateRunningParallelStateInfo = async (req: {parallelStateKey: string, output: string, brancheNumber: number}): Promise<number> => {
     try {
         const redisKey = Redis.getParallelStateInfoKey(req.parallelStateKey);
         await Redis.jsonsetAsync(redisKey, `.output[${req.brancheNumber}]`, req.output);
@@ -93,7 +93,12 @@ export const updateRunningParallelState = async (req: {parallelStateKey: string,
 
 }
 
-export const getRunningParallelState = async (parallelStateKey: string): Promise<RunningParallelState> => {
+export const getRunningParallelStateInfo = async (parallelStateKey: string): Promise<RunningParallelState> => {
     const redisKey = Redis.getParallelStateInfoKey(parallelStateKey);
     return JSON.parse(await Redis.jsongetAsync(redisKey)) as RunningParallelState;
+}
+
+export const deleteRunningParallelStateInfo = async (parallelStateKey: string): Promise<void> => {
+    const redisKey = Redis.getParallelStateInfoKey(parallelStateKey);
+    await Redis.delAsync(redisKey);
 }

@@ -139,14 +139,18 @@ const ensureWorkerNameIsValid = (workerName: string): void  => {
     }
 }
 
-export const setRunningParallelState = async (req: {parallelStateKey: string, parallelStateInfo: RunningParallelState}): Promise<void> => {
-    return await TaskDAL.setParallelRunningState(req);
+export const setRunningParallelStateInfo = async (req: {parallelStateKey: string, parallelStateInfo: RunningParallelState}): Promise<void> => {
+    return await TaskDAL.setParallelRunningStateInfo(req);
 }
 
-export const updateRunningParallelState = async (req: {parallelStateKey: string, output: string, brancheNumber: number}): Promise<number> => {
-    return await TaskDAL.updateRunningParallelState(req);
+export const updateRunningParallelStateInfo = async (req: {parallelStateKey: string, output: string, brancheNumber: number}): Promise<number> => {
+    return await TaskDAL.updateRunningParallelStateInfo(req);
 }
 
-export const getRunningParallelState = async (parallelStateKey: string): Promise<RunningParallelState> => {
-    return await TaskDAL.getRunningParallelState(parallelStateKey);
+export const getRunningParallelStateInfo = async (parallelStateKey: string): Promise<RunningParallelState> => {
+    return await TaskDAL.getRunningParallelStateInfo(parallelStateKey);
+}
+
+export const deleteParallelStateInfo = async (parallelStateKey: string): Promise<void> => {
+    await TaskDAL.deleteRunningParallelStateInfo(parallelStateKey);
 }

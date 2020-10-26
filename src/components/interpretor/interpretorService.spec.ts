@@ -71,11 +71,13 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         }
         const numberOfRemainingTasks = await TaskService.numberOfGeneralTask();
         const numberOfDelayedTask = await TimerService.numberOfTimedTask();
+        const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel`);
         const events = await ExecutionService.getExecutionHistory(execution);
         const contextObj = await Redis.jsongetAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(numberOfDelayedTask).toBe(0);
+        expect(parallelStateInfoInRedis).toHaveLength(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         if (typeof currentTest.expectedOutput === 'object') {
             expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
@@ -166,7 +168,7 @@ const expectEventsToBeCorrect = (received: HistoryEvent[], expected: HistoryEven
 const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {
     if (stateMachineTested.stateMachineName === 'wait-timestamp') {
         const time = new Date();
-        time.setMilliseconds(time.getMilliseconds() + (1 * config.waitScale * 1000));
+        time.setMilliseconds(time.getMilliseconds() + (config.waitScale * 1000));
         (stateMachineTested.definition.States.Hello as WaitState).Timestamp = time.toISOString()
     }
 
@@ -205,4 +207,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'simple-parallel-outputPath'});
+generateStateMachinesTests({stateMachineName: 'simple-parallel-inputPath'});
