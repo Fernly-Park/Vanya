@@ -105,7 +105,7 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
     Logger.logDebug(`State '${req.stateName}' of '${req.executionArn}' finished successfully. stringified effective output : '${JSON.stringify(req.output)}'`)
     req.previousEventId = await onStateExitedEvent({...req, stateType: req.state.Type});
     if (req.nextStateName) {
-        await TaskService.addGeneralTask({executionArn: req.executionArn, stateName: req.nextStateName, 
+        return await processRunningState({executionArn: req.executionArn, stateName: req.nextStateName, 
             rawInput: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName, previousEventId: req.previousEventId,
             parallelInfo: req.parallelInfo})
     } else {
