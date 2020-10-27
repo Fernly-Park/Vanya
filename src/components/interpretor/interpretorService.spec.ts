@@ -71,7 +71,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         }
         const numberOfRemainingTasks = await TaskService.numberOfGeneralTask();
         const numberOfDelayedTask = await TimerService.numberOfTimedTask();
-        const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel`);
+        const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
         const events = await ExecutionService.getExecutionHistory(execution);
         const contextObj = await Redis.jsongetAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
         expect(contextObj).toBeNull();
@@ -207,4 +207,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({stateMachineName: 'simple-parallel-inputPath'});
+generateStateMachinesTests();

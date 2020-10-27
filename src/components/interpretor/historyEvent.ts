@@ -134,3 +134,10 @@ export const onParallelStateSucceeded = async (req: {executionArn: string, previ
         previousEventId: req.previousEventId
     }});
 }
+
+export const onParallelStateFailed = async (req: {executionArn: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.ParallelStateFailed,
+        previousEventId: req.previousEventId
+    }});
+}

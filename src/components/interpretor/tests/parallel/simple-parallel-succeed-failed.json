@@ -1,0 +1,430 @@
+{
+    "describe": "state machine with a parallel state containing notably a choice state leading to a succeed or fail state", 
+    "tests": [
+        {
+            "input": {"fail": true},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should fail due to the fail state inside",
+            "events": [
+                {
+                 "timestamp": "2020-10-26T13:45:28.863Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"fail\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:28.882Z",
+                 "type": "ParallelStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Parallel State",
+                  "input": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:28.882Z",
+                 "type": "ParallelStateStarted",
+                 "id": 3,
+                 "previousEventId": 2
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:28.983Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass State 1",
+                  "input": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:28.983Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "Pass State 1",
+                  "output": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:29.084Z",
+                 "type": "WaitStateEntered",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "stateEnteredEventDetails": {
+                  "name": "Wait 1",
+                  "input": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:30.084Z",
+                 "type": "WaitStateExited",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "stateExitedEventDetails": {
+                  "name": "Wait 1",
+                  "output": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:30.091Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateEnteredEventDetails": {
+                  "name": "Choice 1",
+                  "input": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:30.091Z",
+                 "type": "ChoiceStateExited",
+                 "id": 9,
+                 "previousEventId": 8,
+                 "stateExitedEventDetails": {
+                  "name": "Choice 1",
+                  "output": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:30.192Z",
+                 "type": "FailStateEntered",
+                 "id": 10,
+                 "previousEventId": 9,
+                 "stateEnteredEventDetails": {
+                  "name": "Fail 1",
+                  "input": "{\"fail\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:30.192Z",
+                 "type": "ParallelStateFailed",
+                 "id": 11,
+                 "previousEventId": 10
+                },
+                {
+                 "timestamp": "2020-10-26T13:45:30.192Z",
+                 "type": "ExecutionFailed",
+                 "id": 12,
+                 "previousEventId": 11,
+                 "executionFailedEventDetails": {
+                  "error": "CustomError",
+                  "cause": "CustomCause"
+                 }
+                }
+            ]
+            
+        },
+        {
+          "input": {"fail": false},
+          "expectedStateMachineStatus": "SUCCEEDED",
+          "expectedOutput": [{"fail":false}],
+          "describe": "should fail due to the succeeded state inside",
+          "events": [
+            {
+             "timestamp": "2020-10-26T14:15:41.137Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"fail\":false}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:41.158Z",
+             "type": "ParallelStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:41.158Z",
+             "type": "ParallelStateStarted",
+             "id": 3,
+             "previousEventId": 2
+            },
+            {
+             "timestamp": "2020-10-26T14:15:41.259Z",
+             "type": "PassStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "Pass State 1",
+              "input": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:41.259Z",
+             "type": "PassStateExited",
+             "id": 5,
+             "previousEventId": 4,
+             "stateExitedEventDetails": {
+              "name": "Pass State 1",
+              "output": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:41.360Z",
+             "type": "WaitStateEntered",
+             "id": 6,
+             "previousEventId": 5,
+             "stateEnteredEventDetails": {
+              "name": "Wait 1",
+              "input": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.360Z",
+             "type": "WaitStateExited",
+             "id": 7,
+             "previousEventId": 6,
+             "stateExitedEventDetails": {
+              "name": "Wait 1",
+              "output": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.367Z",
+             "type": "ChoiceStateEntered",
+             "id": 8,
+             "previousEventId": 7,
+             "stateEnteredEventDetails": {
+              "name": "Choice 1",
+              "input": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.367Z",
+             "type": "ChoiceStateExited",
+             "id": 9,
+             "previousEventId": 8,
+             "stateExitedEventDetails": {
+              "name": "Choice 1",
+              "output": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.469Z",
+             "type": "SucceedStateEntered",
+             "id": 10,
+             "previousEventId": 9,
+             "stateEnteredEventDetails": {
+              "name": "Success 1",
+              "input": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.469Z",
+             "type": "SucceedStateExited",
+             "id": 11,
+             "previousEventId": 10,
+             "stateExitedEventDetails": {
+              "name": "Success 1",
+              "output": "{\"fail\":false}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.469Z",
+             "type": "ParallelStateSucceeded",
+             "id": 12,
+             "previousEventId": 11
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.469Z",
+             "type": "ParallelStateExited",
+             "id": 13,
+             "previousEventId": 11,
+             "stateExitedEventDetails": {
+              "name": "Parallel State",
+              "output": "[{\"fail\":false}]"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.475Z",
+             "type": "PassStateEntered",
+             "id": 14,
+             "previousEventId": 13,
+             "stateEnteredEventDetails": {
+              "name": "NEXT_STATE",
+              "input": "[{\"fail\":false}]"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.475Z",
+             "type": "PassStateExited",
+             "id": 15,
+             "previousEventId": 14,
+             "stateExitedEventDetails": {
+              "name": "NEXT_STATE",
+              "output": "[{\"fail\":false}]"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T14:15:42.475Z",
+             "type": "ExecutionSucceeded",
+             "id": 16,
+             "previousEventId": 15,
+             "executionSucceededEventDetails": {
+              "output": "[{\"fail\":false}]"
+             }
+            }
+          ]
+          
+        },
+        {
+          "input": {},
+          "expectedStateMachineStatus": "FAILED",
+          "expectedOutput": null,
+          "describe": "should fail because the 'fail' key is not in the input, and is needed for a choice state",
+          "events": [
+            {
+             "timestamp": "2020-10-26T15:00:04.614Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:04.816Z",
+             "type": "ParallelStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:04.816Z",
+             "type": "ParallelStateStarted",
+             "id": 3,
+             "previousEventId": 2
+            },
+            {
+             "timestamp": "2020-10-26T15:00:05.113Z",
+             "type": "PassStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "Pass State 1",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:05.113Z",
+             "type": "PassStateExited",
+             "id": 5,
+             "previousEventId": 4,
+             "stateExitedEventDetails": {
+              "name": "Pass State 1",
+              "output": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:05.214Z",
+             "type": "WaitStateEntered",
+             "id": 6,
+             "previousEventId": 5,
+             "stateEnteredEventDetails": {
+              "name": "Wait 1",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:06.215Z",
+             "type": "WaitStateExited",
+             "id": 7,
+             "previousEventId": 6,
+             "stateExitedEventDetails": {
+              "name": "Wait 1",
+              "output": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:06.223Z",
+             "type": "ChoiceStateEntered",
+             "id": 8,
+             "previousEventId": 7,
+             "stateEnteredEventDetails": {
+              "name": "Choice 1",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-10-26T15:00:06.223Z",
+             "type": "ExecutionFailed",
+             "id": 9,
+             "previousEventId": 8,
+             "executionFailedEventDetails": {
+              "error": "States.Runtime",
+              "cause": "An error occurred while executing the state 'Choice 1'. Invalid Path '$.fail'. The choice state's condition path references an invalid value"
+             }
+            }
+          ]
+        }
+    ],
+    "definition": {
+      "Comment": "Simple parallel state machine",
+      "StartAt": "Parallel State",
+      "States": {
+        "Parallel State": {
+          "Type": "Parallel",
+          "Branches": [
+            {
+              "StartAt": "Pass State 1",
+              "States": {
+                "Pass State 1": {
+                  "Type": "Pass",
+                  "Next": "Wait 1"
+                },
+                "Wait 1": {
+                  "Type": "Wait",
+                  "Seconds": 1,
+                  "Next": "Choice 1"
+                },
+                "Choice 1": {
+                  "Type": "Choice",
+                  "Choices": [
+                    {
+                      "Variable": "$.fail",
+                      "BooleanEquals": true,
+                      "Next": "Fail 1"
+                    }
+                  ],
+                  "Default": "Success 1"
+                },
+                "Success 1": {
+                  "Type": "Succeed"
+                },
+                "Fail 1": {
+                  "Type": "Fail",
+                  "Cause": "CustomCause",
+                  "Error": "CustomError"
+                }
+              }
+            }
+          ],
+          "Next": "NEXT_STATE"
+        },
+        "NEXT_STATE": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }
+}
+

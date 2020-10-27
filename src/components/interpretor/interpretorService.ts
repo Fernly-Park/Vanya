@@ -18,7 +18,7 @@ import { AWSConstant } from '@App/utils/constants';
 import { handleCatch, handleRetry } from './errorHandling';
 import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
-import { handleFinishedBranche, processParallelState } from './states/parallel';
+import { handleFailedBranche, handleFinishedBranche, processParallelState } from './states/parallel';
 import { FatalError } from '@App/errors/customErrors';
 
 let interpretor = true;
@@ -110,7 +110,8 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
             parallelInfo: req.parallelInfo})
     } else {
         if (req.parallelInfo) {
-            return handleFinishedBranche({output: req.output, brancheIndex: req.parallelInfo.currentBranche, parallelStateKey: req.parallelInfo.parentKey})
+            return handleFinishedBranche({output: req.output, brancheIndex: req.parallelInfo.currentBranche, 
+                parallelStateKey: req.parallelInfo.parentKey, previousEventId: req.previousEventId})
         }
         await onExecutionSucceededEvent({result: req.output, executionArn: req.executionArn, previousEventId: req.previousEventId});
         await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
@@ -119,15 +120,29 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
 
 export const endStateFailed = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
     Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}' failed, handling error`)
+
     let wasTheErrorHandled = await handleRetry(req);
     if (!wasTheErrorHandled) {
         wasTheErrorHandled = await handleCatch(req)
     }
 
     if (!wasTheErrorHandled) {
-        Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
-        await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
-        return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
+        if (req.task.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
+            return await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
+                previousEventId: req.task.previousEventId})
+        } else {
+            Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
+            await cleanFailedState(req);
+            await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
+            return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
+        }
+    }
+}
+
+export const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
+    const {task} = req
+    if (task.parallelInfo) {
+        await TaskService.deleteParallelStateInfo(task.parallelInfo.parentKey);
     }
 }
 
