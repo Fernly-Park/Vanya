@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-import {  StateInput, StateOutput } from '../task/task.interfaces';
+import {  StateInput, StateOutput } from './interpretor.interfaces';
 import { InvalidPathError, InvalidParameterError } from '@App/errors/customErrors';
 import { ContextObject, ExecutionInput } from '../execution/execution.interfaces';
 import { addProps } from '@App/utils/objectUtils';

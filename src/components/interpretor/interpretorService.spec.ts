@@ -16,12 +16,12 @@ import { ISO8601_REGEX } from '@App/utils/validationHelper';
 import { WaitState } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
 import { ExecutionService } from '../execution';
-import { TaskService } from '../task';
 import { TimerService } from '../timer';
 import { ActivityService } from '../activity';
 import { clearInterval, setInterval } from 'timers';
 import config from '@App/config';
 import { Logger } from '@App/modules';
+import { InterpretorService } from '.';
 
 jest.setTimeout(10000)
 
@@ -69,7 +69,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             finishedExecution = await ExecutionService.describeExecution(execution);
             await manageWorkers(activities);
         }
-        const numberOfRemainingTasks = await TaskService.numberOfGeneralTask();
+        const numberOfRemainingTasks = await Redis.llenAsync(Redis.systemTaskKey);
         const numberOfDelayedTask = await TimerService.numberOfTimedTask();
         const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
         const events = await ExecutionService.getExecutionHistory(execution);
@@ -101,12 +101,12 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
     }
     for(const activity of activities) {
         activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
-        const res = await TaskService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
+        const res = await InterpretorService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
         if (res.input) {
             const interval = activity.heartbeatIntervalSeconds 
             ? setInterval(() => {
                 // eslint-disable-next-line jest/valid-expect-in-promise
-                void TaskService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch((err) => {
+                void InterpretorService.sendTaskHeartbeat({taskToken: res.taskToken}).then().catch((err) => {
                     Logger.logError(err ?? 'error while sending heartbeat')
                     return clearInterval(interval);
                 })
@@ -121,10 +121,10 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
                 const stillNeedToSendAFailSignal = (!Array.isArray(activity.fail) || activity.fail.length > 0)
                 if (activity.fail && stillNeedToSendAFailSignal) {
                     const fail = Array.isArray(activity.fail) ? activity.fail.shift() : activity.fail
-                    await TaskService.sendTaskFailure({taskToken: res.taskToken, cause: fail.cause, error: fail.error});
+                    await InterpretorService.sendTaskFailure({taskToken: res.taskToken, cause: fail.cause, error: fail.error});
                     await TestHelper.sleep(100)
                 } else {
-                    await TaskService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
+                    await InterpretorService.sendTaskSuccess({output: activity.output, taskToken: res.taskToken});
                 }
             // eslint-disable-next-line no-empty
             } catch (err){

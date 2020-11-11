@@ -2,7 +2,7 @@ import { AWSConstant } from '@App/utils/constants';
 import { StateType } from '../stateMachines/stateMachine.interfaces';
 import { HistoryEventType, IExecution } from '../execution/execution.interfaces';
 import { ExecutionService } from '../execution';
-import { RunningTaskState } from '../task/task.interfaces';
+import { RunningTaskState } from './interpretor.interfaces';
 
 export enum InterpretorEvents {
     ActivityScheduled = 'ActivityScheduled',

@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-import { RunningState, StateInput, StateOutput } from '../task/task.interfaces';
+import { ActivityTaskStatus, RunningState, StateInput, StateOutput } from './interpretor.interfaces';
 import { ChoiceState, FailState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
@@ -10,7 +10,6 @@ import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
 import { processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
 import * as Event from '../events';
-import { TaskService } from '../task';
 import { ExecutionService } from '../execution';
 import { StateMachineService } from '../stateMachines';
 import { TimerService } from '../timer';
@@ -20,6 +19,18 @@ import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
 import { handleFailedBranche, handleFinishedBranche, processParallelState } from './states/parallel';
 import { FatalError } from '@App/errors/customErrors';
+import { InterpretorDAL, InterpretorService } from '.';
+import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskFailureInput, SendTaskHeartbeatInput, SendTaskSuccessInput } from 'aws-sdk/clients/stepfunctions';
+import Joi from '@hapi/joi';
+import { ActivityService } from '../activity';
+import { ActivityDoesNotExistError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from '@App/errors/AWSErrors';
+import { causeMaxLength, ensureWorkerNameIsValid, maxResourceNameLength, taskOutputMaxLength, taskTokenMaxLength } from '@App/utils/validationHelper';
+import { isJSON } from '@App/utils/objectUtils';
+import { isAString } from '@App/utils/stringUtils';
+
+export const execute = async (firstState: RunningState): Promise<void> => {
+    await InterpretorDAL.pushToStateToRunQueue(firstState);
+};
 
 let interpretor = true;
 export const startInterpretor = (): void => {
@@ -38,7 +49,7 @@ export const stopInterpreter = (): void => {
 
 const startInterpretorPoll = async (): Promise<void> => {
     while(interpretor) {
-        const task = await TaskService.getGeneralTaskBlocking();
+        const task = await InterpretorDAL.retrieveNextStateToExecute();
         if (task) {
             void processRunningState(task).then();
         }
@@ -142,7 +153,7 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
 export const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
     const {task} = req
     if (task.parallelInfo) {
-        await TaskService.deleteParallelStateInfo(task.parallelInfo.parentKey);
+        await InterpretorDAL.deleteRunningParallelStateInfo(task.parallelInfo.parentKey);
     }
 }
 
@@ -162,6 +173,93 @@ export const filterOutput = async (rawInput: StateInput, output: StateOutput, st
     toReturn = applyPath(toReturn, asTaskState.OutputPath);
     return toReturn;
 };
+
+export const modifyActivityTaskStatus = async (token: string, newStatus: ActivityTaskStatus, previousEventId?: number): Promise<void> => {
+    await InterpretorDAL.modifyActivityTaskStatus(token, newStatus, previousEventId);
+}
+
+export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetActivityTaskOutput> => {
+    ensureWorkerNameIsValid(req?.workerName);
+    if (!await ActivityService.getActivity(req.activityArn)) {
+        throw new ActivityDoesNotExistError(req?.activityArn)
+    }
+    //todo timeout
+    const task = await InterpretorDAL.popActivityTask(req.activityArn);
+    if (task) {
+        await InterpretorDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
+        await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})
+    }
+    return {
+        input: task === null ? null : JSON.stringify(task.effectiveInput),
+        taskToken: task === null ? null : task.token
+    }
+}
+
+export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<void> => {
+    ensureTaskTokenIsValid(req?.taskToken);
+    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(req.taskToken);
+
+    if (!activityTask) {
+        throw new TaskDoesNotExistError(req.taskToken);
+    }
+    // todo timeout
+    await Event.activityTaskHeartbeat.emit(activityTask);
+}
+
+export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {
+    ensureSendTaskSuccessInputIsValid(req);
+    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(req.taskToken);
+    if (!activityTask) {
+        throw new TaskDoesNotExistError(req.taskToken);
+    }
+    // todo timeout
+    
+    await Event.workerOutputReceivedEvent.emit({...activityTask, output: JSON.parse(req.output)})
+}
+
+const ensureSendTaskSuccessInputIsValid = (req: SendTaskSuccessInput) => {
+    if (!req?.output || !isJSON(req.output) || req.output.length > taskOutputMaxLength) {
+        throw new InvalidOutputError(`Invalid Output: '${req?.output ?? ''}' is not a valid JSON`);
+    }
+
+    ensureTaskTokenIsValid(req?.taskToken);
+}
+
+
+const ensureTaskTokenIsValid = (taskToken: string): void => {
+    if (typeof taskToken !== 'string' || taskToken.length === 0 || taskToken.length > taskTokenMaxLength) { // todo changé lorsque réussi a répliqué le token d'amazon
+        throw new InvalidTokenError(taskToken ?? '');
+    }
+}
+
+export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> => {
+    ensureSendTaskFailureInputIsValid(req);
+    Logger.logInfo(`Task failure sent for '${req.taskToken}'`)
+    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(req.taskToken);
+    if (!activityTask) {
+        Logger.logWarning(`Task failure sent for '${req.taskToken}'`)
+        throw new TaskDoesNotExistError(req.taskToken);
+    }
+    await Event.sendTaskFailureEvent.emit({activityTask, cause: req.cause, error: req.error})
+}
+
+const ensureSendTaskFailureInputIsValid = (req: SendTaskFailureInput): void => {
+    ensureTaskTokenIsValid(req?.taskToken);
+    if (req?.cause != null && !isAString(req.cause)) {
+        throw new InvalidParameterTypeError('Expected params.cause to be a string');
+    }
+    if (req?.cause != null && req.cause.length > causeMaxLength) {
+        throw new ValidationExceptionError("Value at 'cause' failed to satisfy constraint: Member must have length less than or equal to 32768")
+    }
+
+    if (req?.error != null && !isAString(req.error)){
+        throw new InvalidParameterTypeError('Expected params.error to be a string');
+    }
+
+    if (req?.error != null && req.error.length > causeMaxLength) {
+        throw new ValidationExceptionError("Value at 'error' failed to satisfy constraint: Member must have length less than or equal to 256")
+    }
+}
 
 const registerEvents = (): void => {
     Event.sendTaskFailureEvent.on(processTaskFailed);

@@ -1,5 +1,5 @@
 import { WaitState } from "@App/components/stateMachines/stateMachine.interfaces";
-import { RunningState } from "@App/components/task/task.interfaces";
+import { RunningState } from "@App/components/interpretor/interpretor.interfaces";
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";

@@ -1,5 +1,5 @@
 import { ChoiceRule, ChoiceState } from "@App/components/stateMachines/stateMachine.interfaces";
-import { RunningState, StateInput } from "@App/components/task/task.interfaces";
+import { RunningState, StateInput } from "@App/components/interpretor/interpretor.interfaces";
 import { FatalError, InvalidPathError, NoChoiceMatchedError } from "@App/errors/customErrors";
 import { stringMatches } from "@App/utils/stringUtils";
 import { ISO8601_REGEX } from "@App/utils/validationHelper";

@@ -1,6 +1,6 @@
 import { AWSConstant } from "@App/utils/constants";
 import { Catcher, Retrier, StateMachineStateValue, TaskState } from "../stateMachines/stateMachine.interfaces";
-import { RetryInformation, RunningState, RunningTaskState } from "../task/task.interfaces";
+import { RetryInformation, RunningState, RunningTaskState } from "./interpretor.interfaces";
 import { TimerService } from "../timer";
 import { endStateSuccess } from "./interpretorService";
 import { applyResultPath } from "./path";

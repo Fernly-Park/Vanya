@@ -3,9 +3,9 @@ import { createSMAndStartExecutionHelper, TestStateMachine } from "@Tests/testHe
 import fs from 'fs';
 import { join } from "path";
 import * as TestHelper from '@Tests/testHelper';
-import { TaskService } from "../task";
 import { ActivityService } from "../activity";
 import { TaskTimedOutError } from "@App/errors/customErrors";
+import { InterpretorService } from ".";
 
 generateServiceTest({describeText: 'test race condition in state machines', options: {mockDate: false, startInterpretor: true}, tests: (getUser => {
     describe('on task state', () => {
@@ -19,12 +19,12 @@ generateServiceTest({describeText: 'test race condition in state machines', opti
 
             let taskToken: string;
             do {
-                taskToken = (await TaskService.getActivityTask({activityArn: activity.activityArn})).taskToken;
+                taskToken = (await InterpretorService.getActivityTask({activityArn: activity.activityArn})).taskToken;
             } while (!taskToken)
 
             await TestHelper.sleep(1000);
-            await expect(TaskService.sendTaskSuccess({taskToken, output: JSON.stringify({})})).rejects.toThrow(TaskTimedOutError)
-            const newTaskToken = (await TaskService.getActivityTask({activityArn: activity.activityArn})).taskToken;
+            await expect(InterpretorService.sendTaskSuccess({taskToken, output: JSON.stringify({})})).rejects.toThrow(TaskTimedOutError)
+            const newTaskToken = (await InterpretorService.getActivityTask({activityArn: activity.activityArn})).taskToken;
             expect(taskToken).not.toBe(newTaskToken);
         });
     });

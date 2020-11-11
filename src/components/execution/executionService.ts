@@ -8,10 +8,10 @@ import { v4 as uuid } from 'uuid';
 import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, HistoryEventType } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
 import { StateMachineService } from "../stateMachines";
-import { TaskService } from "../task";
 import { UserService } from "../user";
 import { executionStartedEvent } from "../events";
 import { Logger } from "@App/modules";
+import { InterpretorService } from "../interpretor";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);
@@ -56,7 +56,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         },
     });
 
-    await TaskService.addGeneralTask({ stateName: firstStateName, rawInput: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
+    await InterpretorService.execute({ stateName: firstStateName, rawInput: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
     await executionStartedEvent.emit(result)
 
     return { executionArn, startDate: result.startDate }

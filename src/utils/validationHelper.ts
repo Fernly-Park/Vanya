@@ -4,6 +4,10 @@ import { InvalidInputError } from "@App/errors/customErrors";
 import { InvalidNameError, InvalidTokenError } from "@App/errors/AWSErrors";
 
 export const maxResourceNameLength = 80;
+export const taskOutputMaxLength = 262144;
+export const taskTokenMaxLength = 1024;
+export const causeMaxLength = 32768;
+export const errorMaxLength = 256;
 
 export const ensureResourceNameIsValid = (resourceName: string): void => {
     const activityNameValidator = Joi
@@ -19,6 +23,20 @@ export const ensureResourceNameIsValid = (resourceName: string): void => {
         throw new InvalidNameError(resourceName);
     }
 };
+
+export const ensureWorkerNameIsValid = (workerName: string): void  => {
+    if (workerName !== null && workerName !== undefined) {
+        const workerNameValidator = Joi.string()
+        .min(1)
+        .max(maxResourceNameLength);
+
+        const result = workerNameValidator.validate(workerName);
+
+        if (result.error) {
+            throw new InvalidNameError(workerName);
+        }
+    }
+}
 
 export const ensureListResourceInputAreValid = (req?: {maxResults?: number, nextToken?: string}): void => {
     const { maxResults, nextToken } = req || {};
