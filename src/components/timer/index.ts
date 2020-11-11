@@ -1,5 +1,1 @@
-import * as TimerService from './timerService';
-
-export {
-    TimerService
-}
+export * as TimerService from './timerService';

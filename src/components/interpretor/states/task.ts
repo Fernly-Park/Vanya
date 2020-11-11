@@ -147,3 +147,5 @@ export const processTaskHeartbeat = async (activityTask: RunningTaskState): Prom
     time.setSeconds(time.getSeconds() + activityTask.heartbeatSeconds);
     await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
 }
+
+

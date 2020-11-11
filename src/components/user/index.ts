@@ -1,5 +1,1 @@
-import * as UserService from './userService';
-
-export {
-    UserService
-}
+export * as UserService from './userService';

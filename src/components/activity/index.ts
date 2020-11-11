@@ -1,7 +1,2 @@
-import * as ActivityController from './activityController';
-import * as ActivityService from './activityService';
-
-export {
-    ActivityController,
-    ActivityService
-}
+export * as ActivityController from './activityController';
+export * as ActivityService from './activityService';

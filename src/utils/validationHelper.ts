@@ -1,7 +1,9 @@
 import { LIST_RESOURCE_MIN_RESULT, LIST_RESOURCE_MAX_RESULT, LIST_RESOURCE_NEXT_TOKEN_MIN_LENGTH, LIST_RESOURCE_NEXT_TOKEN_MAX_LENGTH } from "./constants";
 import Joi from "@hapi/joi";
 import { InvalidInputError } from "@App/errors/customErrors";
-import { InvalidNameError, InvalidTokenError } from "@App/errors/AWSErrors";
+import { InvalidNameError, InvalidOutputError, InvalidTokenError } from "@App/errors/AWSErrors";
+import { SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
+import { isJSON } from "./objectUtils";
 
 export const maxResourceNameLength = 80;
 export const taskOutputMaxLength = 262144;
@@ -71,6 +73,20 @@ const ensureIsValid = (resource: unknown, validator: Joi.Schema, error?: Error):
     if (result.error) {
         throw error ?? new InvalidInputError(result.error.message);
     }
+}
+
+export const ensureTaskTokenIsValid = (taskToken: string): void => {
+    if (typeof taskToken !== 'string' || taskToken.length === 0 || taskToken.length > taskTokenMaxLength) { // todo changé lorsque réussi a répliqué le token d'amazon
+        throw new InvalidTokenError(taskToken ?? '');
+    }
+}
+
+export const ensureSendTaskSuccessInputIsValid = (req: SendTaskSuccessInput) => {
+    if (!req?.output || !isJSON(req.output) || req.output.length > taskOutputMaxLength) {
+        throw new InvalidOutputError(`Invalid Output: '${req?.output ?? ''}' is not a valid JSON`);
+    }
+
+    ensureTaskTokenIsValid(req?.taskToken);
 }
 
 export const ISO8601_REGEX = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$/i

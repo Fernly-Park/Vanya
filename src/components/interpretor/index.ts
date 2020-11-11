@@ -1,7 +1,2 @@
-import * as InterpretorService from './interpretorService';
-import * as InterpretorDAL from './interpretorDAL';
-
-export {
-    InterpretorService,
-    InterpretorDAL
-}
+export * as InterpretorService from './interpretorService';
+export * as InterpretorDAL from './interpretorDAL';
