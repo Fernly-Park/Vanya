@@ -4,7 +4,7 @@ import { FatalError, InvalidPathError, NoChoiceMatchedError } from "@App/errors/
 import { stringMatches } from "@App/utils/stringUtils";
 import { ISO8601_REGEX } from "@App/utils/validationHelper";
 import { filterInput } from "../interpretorService";
-import { retrieveField } from "../path";
+import { retrieveField } from "../path/path";
 
 export const processChoiceState = async (req: {state: ChoiceState, task: RunningState}): Promise<{next: string, effectiveInput: StateInput}> => {
     const {state} = req;

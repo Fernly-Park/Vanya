@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-import {  StateInput, StateOutput } from './interpretor.interfaces';
+import {  StateInput, StateOutput } from '../interpretor.interfaces';
 import { InvalidPathError, InvalidParameterError } from '@App/errors/customErrors';
-import { ContextObject, ExecutionInput } from '../execution/execution.interfaces';
+import { ContextObject, ExecutionInput } from '../../execution/execution.interfaces';
 import { addProps } from '@App/utils/objectUtils';
 import { JSONPath } from 'jsonpath-plus';
 

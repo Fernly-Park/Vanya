@@ -1,6 +1,6 @@
 import { InvalidPathError } from "@App/errors/customErrors";
 import { dummyExecutionArn, dummyRoleARN, dummyStateMachineArn } from "@Tests/testHelper";
-import { ContextObject } from "../execution/execution.interfaces";
+import { ContextObject } from "../../execution/execution.interfaces";
 import { applyPath, applyPayloadTemplate, applyResultPath, } from './path';
 
 describe('inputPath tests', () => {

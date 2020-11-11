@@ -3,7 +3,7 @@ import { Catcher, Retrier, StateMachineStateValue, TaskState } from "../stateMac
 import { RetryInformation, RunningState, RunningTaskState } from "./interpretor.interfaces";
 import { TimerService } from "../timer";
 import { endStateSuccess } from "./interpretorService";
-import { applyResultPath } from "./path";
+import { applyResultPath } from "./path/path";
 import * as Event from '../events';
 import { Logger } from "@App/modules";
 import * as DateUtil from '@App/utils/date';

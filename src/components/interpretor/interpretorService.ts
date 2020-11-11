@@ -3,7 +3,7 @@
 import { ActivityTaskStatus, RunningState, StateInput, StateOutput } from './interpretor.interfaces';
 import { ChoiceState, FailState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { ExecutionStatus } from '../execution/execution.interfaces';
-import { applyPath, applyPayloadTemplate, applyResultPath } from './path';
+import { applyPath, applyPayloadTemplate, applyResultPath } from './path/path';
 import { onStateEnteredEvent, onStateExitedEvent, onExecutionFailedEvent, onExecutionSucceededEvent, onExecutionStartedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';

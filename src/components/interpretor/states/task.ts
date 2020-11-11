@@ -2,7 +2,7 @@ import { TaskState } from "@App/components/stateMachines/stateMachine.interfaces
 import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningState } from "@App/components/interpretor/interpretor.interfaces";
 import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
-import { retrieveField } from "../path";
+import { retrieveField } from "../path/path";
 import { endStateSuccess, filterOutput, endStateFailed, filterInput } from "../interpretorService";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
