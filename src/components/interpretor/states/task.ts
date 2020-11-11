@@ -3,7 +3,6 @@ import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningS
 import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
 import { retrieveField } from "../path/path";
-import { endStateSuccess, filterOutput, endStateFailed, filterInput } from "../interpretorService";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
 import { AWSConstant } from "@App/utils/constants";
@@ -12,6 +11,7 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../historyEvent";
 import { Logger } from "@App/modules";
 import { InterpretorDAL } from "..";
+import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../stateProcessing";
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
     const {task, state, token} = req;

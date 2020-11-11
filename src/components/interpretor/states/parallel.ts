@@ -5,7 +5,7 @@ import { Logger } from "@App/modules";
 import { v4 as uuid } from 'uuid';
 import { InterpretorDAL } from "..";
 import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted } from "../historyEvent";
-import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../interpretorService";
+import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../stateProcessing";
 
 export const processParallelState = async (req: {task: RunningState, state: ParallelState}): Promise<void> => {
     const {task, state} = req;

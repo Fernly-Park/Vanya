@@ -3,13 +3,13 @@ import { RunningState } from "@App/components/interpretor/interpretor.interfaces
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
-import { endStateSuccess, endStateFailed, filterInput, filterOutput } from "../interpretorService";
 import { retrieveField } from "../path/path";
 import * as Event from '../../events';
 import { AWSConstant } from "@App/utils/constants";
 import { StateMachineService } from "@App/components/stateMachines";
 import { Logger } from "@App/modules";
 import { getDateIn } from "@App/utils/date";
+import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../stateProcessing";
 
 export const processWaitTask = async (task: RunningState, state: WaitState): Promise<void> => {
     const effectiveInput = await filterInput(task, state);

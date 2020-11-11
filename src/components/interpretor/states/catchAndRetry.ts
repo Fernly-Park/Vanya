@@ -1,14 +1,14 @@
 import { AWSConstant } from "@App/utils/constants";
-import { Catcher, Retrier, StateMachineStateValue, TaskState } from "../stateMachines/stateMachine.interfaces";
-import { RetryInformation, RunningState, RunningTaskState } from "./interpretor.interfaces";
-import { TimerService } from "../timer";
-import { endStateSuccess } from "./interpretorService";
-import { applyResultPath } from "./path/path";
-import * as Event from '../events';
+import { Catcher, Retrier, StateMachineStateValue, TaskState } from "../../stateMachines/stateMachine.interfaces";
+import { RetryInformation, RunningState, RunningTaskState } from "../interpretor.interfaces";
+import { TimerService } from "../../timer";
+import { applyResultPath } from "../path/path";
+import * as Event from '../../events';
 import { Logger } from "@App/modules";
 import * as DateUtil from '@App/utils/date';
 import { v4 as uuid } from 'uuid';
-import { ExecutionService } from "../execution";
+import { ExecutionService } from "../../execution";
+import { endStateSuccess } from "../stateProcessing";
 
 export const handleCatch = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
     const asTaskState = req.state as TaskState
