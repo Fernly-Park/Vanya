@@ -132,6 +132,12 @@ export type TestStateMachineTestCase = {
     input: Record<string, unknown>,
     expectedStateMachineStatus: StateMachineStatus,
     expectedOutput: string | Record<string, unknown>,
+    stopExecution? : {
+        afterStateName: string,
+        afterNumberOfPass?: number,
+        cause?: string,
+        error?: string,
+    },
     describe: string,
     executionName: string,
     activitiesToCreate?: ActivitiyToCreateForTests[],

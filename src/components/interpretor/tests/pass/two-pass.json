@@ -67,7 +67,60 @@
                    }
                 }
              ]
-        }
+        },
+        {
+         "input": {},
+         "expectedStateMachineStatus": "ABORTED",
+         "expectedOutput": null,
+         "stopExecution" : {
+             "afterStateName": "First",
+             "cause": "randomCause",
+             "error": "randomError"
+         },
+         "describe": "should return successfully when stopExecution is send after the last event (hello world)",
+         "events": [
+            {
+               "previousEventId": 0,
+               "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+               },
+               "type": "ExecutionStarted",
+               "timestamp": "2020-11-15T22:25:15.242Z",
+               "id": 1
+            },
+            {
+               "type": "PassStateEntered",
+               "previousEventId": 0,
+               "stateEnteredEventDetails": {
+                  "name": "First",
+                  "input": "{}"
+               },
+               "timestamp": "2020-11-15T22:25:15.255Z",
+               "id": 2
+            },
+            {
+               "type": "PassStateExited",
+               "previousEventId": 2,
+               "stateExitedEventDetails": {
+                  "name": "First",
+                  "output": "{}"
+               },
+               "timestamp": "2020-11-15T22:25:15.260Z",
+               "id": 3
+            },
+            {
+               "type": "ExecutionAborted",
+               "previousEventId": 0,
+               "executionFailedEventDetails": {
+                  "cause": "randomCause",
+                  "error": "randomError"
+               },
+               "timestamp": "2020-11-15T22:25:15.263Z",
+               "id": 4
+            }
+         ]
+     }
     ],
     "definition": {
         "Comment": "A Hello World example of the Amazon States Language using a Pass state",

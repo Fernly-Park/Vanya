@@ -92,15 +92,16 @@ export const describeExecution = async (req: DescribeExecutionInput): Promise<IE
 
 export const stopExecution = async (req: StopExecutionInput): Promise<StopExecutionOutput> => {
     ValidationHelper.ensureCauseAndErrorInInputAreValid(req);
-    const {executionArn, cause, error} = req;
+    const {executionArn} = req;
 
     const execution = await describeExecution(req);
     if (execution.status !== ExecutionStatus.running) {
         return {stopDate: execution.stopDate};
     }
 
-    void Event.stopExecutionEvent.emit(req).then();
+    await Event.stopExecutionEvent.emit(req);
     await ExecutionDAL.updateExecutionStatus(db, {executionArn, newStatus: ExecutionStatus.aborted})
+    await ExecutionDAL.deleteContextObject(req.executionArn)
 
     return {stopDate: (await describeExecution(req)).stopDate}
 };

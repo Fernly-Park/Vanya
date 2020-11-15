@@ -164,6 +164,10 @@ export const getExecutionEventKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:events`
 }
 
+export const getExecutionStatusKey = (executionArn: string): string => {
+    return `${config.redis_prefix}:${executionArn}:status` 
+}
+
 export const getExecutionEventCurrentIdKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:currentEventId`;
 }

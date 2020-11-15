@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RunningState, StateInput, StateOutput } from './interpretor.interfaces';
 import { ChoiceState, FailState, ParallelState, PassState, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
-import { onStateEnteredEvent, onExecutionStartedEvent } from './historyEvent';
+import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
@@ -18,6 +18,7 @@ import {  processParallelState } from './states/parallel';
 import { FatalError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from './stateProcessing';
+import { ExecutionStatus } from '../execution/execution.interfaces';
 export * from './activityTask';
 
 let interpretor = false;
@@ -26,7 +27,7 @@ export const execute = async (state: RunningState): Promise<void> => {
     if (!interpretor) {
         await InterpretorDAL.pushToStateToRunQueue(state);
     } else {
-        void processRunningState(state).then();
+        void processState(state).then();
     }
 };
 
@@ -37,6 +38,12 @@ export const startInterpretor = (): void => {
     void TimerService.startTimerPoll().then()
     void startInterpretorPoll().then();
 };
+
+export const startManualControlForTest = (): void => {
+    interpretor = false;
+    registerEvents();
+    void TimerService.startTimerPoll().then()
+}
 
 export const stopInterpreter = (): void => {
     interpretor = false;
@@ -49,12 +56,24 @@ const startInterpretorPoll = async (): Promise<void> => {
     while(interpretor) {
         const task = await InterpretorDAL.retrieveNextStateToExecute();
         if (task) {
-            void processRunningState(task).then();
+            void processState(task).then();
         }
     }
 }
 
-const processRunningState = async (task: RunningState): Promise<void> => {
+export const processNextState = async (): Promise<string> => {
+    const task = await InterpretorDAL.retrieveNextStateToExecute();
+    if (task) {
+        await processState(task);
+    }
+    return task?.stateName;
+}
+
+const processState = async (task: RunningState): Promise<void> => {
+    const executionStatus = await InterpretorDAL.getExecutionStatus(task.executionArn)
+    if (executionStatus !== ExecutionStatus.running) {
+        return;
+    }
     let rawOutput: StateInput;
     let next: string;
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
@@ -116,6 +135,7 @@ const registerEvents = (): void => {
     Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
     Event.executionStartedEvent.on(onExecutionStartedEvent);
+    Event.stopExecutionEvent.on(onExecutionAbortedEvent);
     Event.on(Event.CustomEvents.ActivityTaskRetry, processTaskState);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
@@ -128,6 +148,7 @@ const unregisterEvents = (): void => {
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
     Event.executionStartedEvent.removeListener(onExecutionStartedEvent);
+    Event.stopExecutionEvent.removeListener(onExecutionAbortedEvent);
     Event.removeListener(Event.CustomEvents.ActivityTaskRetry, processTaskState)
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);

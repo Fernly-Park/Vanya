@@ -100,6 +100,16 @@ export const onExecutionFailedEvent = async (req: {executionArn: string, stateNa
     }});
 }
 
+export const onExecutionAbortedEvent = async (req: {executionArn: string, cause?: string, error?: string}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.ExecutionAborted,
+        previousEventId: 0,
+        executionFailedEventDetails: {
+            cause: req.cause === null ? undefined : req.cause, 
+            error: req.error === null ? undefined : req.error
+        }
+    }});
+};
 export const onExecutionSucceededEvent = async (req: {executionArn: string, result: unknown, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionSucceeded,

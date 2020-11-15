@@ -56,6 +56,13 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
     it(currentTest.executionName + ' - ' + currentTest.describe, async () => {
         modifieTimestampInWaitTests(testStateMachine)
         const activities = await createActivities(currentTest.activitiesToCreate, getUser().id)
+
+        const mustManuallyControlTheExecution = currentTest.stopExecution != null;
+        if (mustManuallyControlTheExecution) {
+            InterpretorService.stopInterpreter();
+            InterpretorService.startManualControlForTest();
+        }
+
         const {execution} = await TestHelper.createSMAndStartExecutionHelper({
             userId: getUser().id,
             stateMachineDef: JSON.stringify(testStateMachine.definition), 
@@ -63,17 +70,28 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             stateMachineName: currentTest.executionName,
             executionName: currentTest.executionName ?? 'executionName'
         });
-
         let finishedExecution = await ExecutionService.describeExecution(execution);
-        while (finishedExecution.status === ExecutionStatus.running) {
-            finishedExecution = await ExecutionService.describeExecution(execution);
-            await manageWorkers(activities);
+
+        if (mustManuallyControlTheExecution && finishedExecution.status === ExecutionStatus.running) {
+            const stateName = await InterpretorService.processNextState();
+            if (stateName === currentTest.stopExecution.afterStateName) {
+                await ExecutionService.stopExecution({...execution, cause: currentTest.stopExecution.cause, error: currentTest.stopExecution.error});
+                while (await InterpretorService.processNextState());
+                finishedExecution = await ExecutionService.describeExecution(execution);                
+            }
+        } else {
+            while (finishedExecution.status === ExecutionStatus.running) {
+                finishedExecution = await ExecutionService.describeExecution(execution);
+                await manageWorkers(activities);
+            }
         }
+        
         const numberOfRemainingTasks = await Redis.llenAsync(Redis.systemTaskKey);
         const numberOfDelayedTask = await TimerService.numberOfTimedTask();
         const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
         const events = await ExecutionService.getExecutionHistory(execution);
-        const contextObj = await Redis.jsongetAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
+        const contextObj = await Redis.hgetAllAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
+
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(numberOfDelayedTask).toBe(0);

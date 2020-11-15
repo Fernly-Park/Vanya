@@ -66,6 +66,17 @@
             "expectedStateMachineStatus": "SUCCEEDED",
             "expectedOutput": [1,2],
             "describe": "should return the input as output with the input set as '[1,2]'"
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "stopExecution" : {
+                "afterStateName": "HelloWorld",
+                "cause": "randomCause",
+                "error": "randomError"
+            },
+            "describe": "should return successfully when stopExecution is send after the last event (hello world)"
         }
     ],
     "definition": {

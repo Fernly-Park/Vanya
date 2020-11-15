@@ -22,6 +22,8 @@ const modifyExecutionInputType = (functionToEnhance: (...d: any) => Promise<IExe
 }
 
 const insertExecutionB = async (db: DbOrTransaction, execution: InsertExecutionReq): Promise<IExecution> => {
+    const key = Redis.getExecutionStatusKey(execution.executionArn);
+    await Redis.setAsync(key, ExecutionStatus.running);
     return (await db(ExecutionTable.tableName).insert({
         [ExecutionTable.executionArnColumn]: execution.executionArn,
         [ExecutionTable.inputColumn]: execution.input,
@@ -66,7 +68,7 @@ export const updateExecutionStatus = async (db: DbOrTransaction, req: UpdateExec
             [ExecutionTable.outputColumn]: typeof req.output === 'string' ? req.output : JSON.stringify(req.output)
         });
     });
-
+    await Redis.setAsync(Redis.getExecutionStatusKey(req.executionArn), req.newStatus);
     await Redis.delAsync(key);
 }
 

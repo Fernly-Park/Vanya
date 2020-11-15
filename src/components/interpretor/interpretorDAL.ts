@@ -3,6 +3,7 @@ import * as Redis from '@App/modules/database/redis';
 import config from "@App/config";
 import { Logger } from "@App/modules";
 import { DALError } from "@App/errors/customErrors";
+import { ExecutionStatus } from "../execution/execution.interfaces";
 
 export const pushToStateToRunQueue = async (task: RunningState): Promise<void> => {
     await Redis.rpushAsync(Redis.systemTaskKey, JSON.stringify(task));
@@ -93,5 +94,10 @@ export const popActivityTask = async (activityArn: string): Promise<RunningTaskS
     const key = Redis.getActivityTaskKey(activityArn);
     const result = await Redis.blpopAsync(key, config.activityTaskDefaultTimeout);
     return result ? JSON.parse(result[1]) as RunningTaskState : null;
+}
+
+export const getExecutionStatus = async (executionArn: string): Promise<ExecutionStatus> => {
+    const key = Redis.getExecutionStatusKey(executionArn);
+    return await Redis.getAsync(key) as ExecutionStatus;
 }
 
