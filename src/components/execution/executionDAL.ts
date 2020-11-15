@@ -1,9 +1,8 @@
 import db, { DbOrTransaction } from '@App/modules/database/db';
-import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable, ContextObjectEnteredState } from './execution.interfaces';
+import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable } from './execution.interfaces';
 import * as DALFactory from '@App/components/DALFactory';
 import * as Redis from '@App/modules/database/redis';
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
-import { DALError } from '@App/errors/customErrors';
 
 type InsertExecutionReq = {
     executionArn: string,

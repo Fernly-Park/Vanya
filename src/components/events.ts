@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
 import { HistoryEventType, IExecution } from './execution/execution.interfaces';
 import { RunningTaskState } from './interpretor/interpretor.interfaces';
 
 export type ProcessTaskDoneInput = RunningTaskState;
 export type ActivityTaskHeartbeatInput = RunningTaskState;
 export type SendTaskFailureEventInput = {activityTask: RunningTaskState, cause?: string, error?: string};
+export type StopExecutionEventInput = StopExecutionInput;
 
 type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};
 
 export enum CustomEvents {
     ExecutionStarted = 'ExecutionStarted',
+    ExecutionStopped = 'ExecutionStopped',
     StartListeningToEvents = 'StartListeningToEvents',
     WaitingStateDone = 'WaitingStateDone',
     TaskTimeout = 'TaskTimeout',
@@ -76,3 +79,4 @@ export const activityTaskSucceededEvent = factoryCustomEvent<RunningTaskState>(C
 export const activityStartedEvent = factoryCustomEvent<{task: RunningTaskState, workerName?: string}>(HistoryEventType.ActivityStarted);
 export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.ActivityTaskHeartbeat);
 export const sendTaskFailureEvent = factoryCustomEvent<SendTaskFailureEventInput>(CustomEvents.SendTaskFailure);
+export const stopExecutionEvent = factoryCustomEvent<StopExecutionEventInput>(CustomEvents.ExecutionStopped);

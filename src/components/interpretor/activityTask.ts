@@ -2,7 +2,7 @@ import { ActivityDoesNotExistError, TaskDoesNotExistError, InvalidOutputError, I
 import { Logger } from "@App/modules";
 import { isJSON } from "@App/utils/objectUtils";
 import { isAString } from "@App/utils/stringUtils";
-import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, causeMaxLength } from "@App/utils/validationHelper";
+import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, causeMaxLength, ensureCauseAndErrorInInputAreValid } from "@App/utils/validationHelper";
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskHeartbeatInput, SendTaskSuccessInput, SendTaskFailureInput } from "aws-sdk/clients/stepfunctions";
 import { InterpretorDAL } from ".";
 import { ActivityService } from "../activity";
@@ -76,18 +76,5 @@ export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> 
 
 const ensureSendTaskFailureInputIsValid = (req: SendTaskFailureInput): void => {
     ensureTaskTokenIsValid(req?.taskToken);
-    if (req?.cause != null && !isAString(req.cause)) {
-        throw new InvalidParameterTypeError('Expected params.cause to be a string');
-    }
-    if (req?.cause != null && req.cause.length > causeMaxLength) {
-        throw new ValidationExceptionError("Value at 'cause' failed to satisfy constraint: Member must have length less than or equal to 32768")
-    }
-
-    if (req?.error != null && !isAString(req.error)){
-        throw new InvalidParameterTypeError('Expected params.error to be a string');
-    }
-
-    if (req?.error != null && req.error.length > causeMaxLength) {
-        throw new ValidationExceptionError("Value at 'error' failed to satisfy constraint: Member must have length less than or equal to 256")
-    }
+    ensureCauseAndErrorInInputAreValid(req);
 }

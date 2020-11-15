@@ -1,9 +1,10 @@
 import { LIST_RESOURCE_MIN_RESULT, LIST_RESOURCE_MAX_RESULT, LIST_RESOURCE_NEXT_TOKEN_MIN_LENGTH, LIST_RESOURCE_NEXT_TOKEN_MAX_LENGTH } from "./constants";
 import Joi from "@hapi/joi";
 import { InvalidInputError } from "@App/errors/customErrors";
-import { InvalidNameError, InvalidOutputError, InvalidTokenError } from "@App/errors/AWSErrors";
+import { InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, ValidationExceptionError } from "@App/errors/AWSErrors";
 import { SendTaskSuccessInput } from "aws-sdk/clients/stepfunctions";
 import { isJSON } from "./objectUtils";
+import { isAString } from "./stringUtils";
 
 export const maxResourceNameLength = 80;
 export const taskOutputMaxLength = 262144;
@@ -88,5 +89,22 @@ export const ensureSendTaskSuccessInputIsValid = (req: SendTaskSuccessInput) => 
 
     ensureTaskTokenIsValid(req?.taskToken);
 }
+
+export const ensureCauseAndErrorInInputAreValid = (req: {cause?: string, error?: string}): void => {
+    if (req?.cause != null && !isAString(req.cause)) {
+        throw new InvalidParameterTypeError('Expected params.cause to be a string');
+    }
+    if (req?.cause != null && req.cause.length > causeMaxLength) {
+        throw new ValidationExceptionError("Value at 'cause' failed to satisfy constraint: Member must have length less than or equal to 32768")
+    }
+
+    if (req?.error != null && !isAString(req.error)){
+        throw new InvalidParameterTypeError('Expected params.error to be a string');
+    }
+
+    if (req?.error != null && req.error.length > errorMaxLength) {
+        throw new ValidationExceptionError("Value at 'error' failed to satisfy constraint: Member must have length less than or equal to 256")
+    }
+} 
 
 export const ISO8601_REGEX = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$/i

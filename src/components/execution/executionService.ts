@@ -1,4 +1,4 @@
-import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, HistoryEvent, GetExecutionHistoryInput } from "aws-sdk/clients/stepfunctions";
+import { StartExecutionInput, StartExecutionOutput, DescribeExecutionInput, HistoryEvent, GetExecutionHistoryInput, StopExecutionInput, StopExecutionOutput } from "aws-sdk/clients/stepfunctions";
 import * as ArnHelper from '@App/utils/ArnHelper';
 import * as ValidationHelper from '@App/utils/validationHelper';
 import * as ExecutionDAL from './executionDAL';
@@ -12,6 +12,7 @@ import { UserService } from "../user";
 import { executionStartedEvent } from "../events";
 import { Logger } from "@App/modules";
 import { InterpretorService } from "../interpretor";
+import * as Event from '../events';
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);
@@ -87,6 +88,21 @@ export const describeExecution = async (req: DescribeExecutionInput): Promise<IE
         throw new ExecutionDoesNotExistError(req.executionArn);
     }
     return toReturn;
+};
+
+export const stopExecution = async (req: StopExecutionInput): Promise<StopExecutionOutput> => {
+    ValidationHelper.ensureCauseAndErrorInInputAreValid(req);
+    const {executionArn, cause, error} = req;
+
+    const execution = await describeExecution(req);
+    if (execution.status !== ExecutionStatus.running) {
+        return {stopDate: execution.stopDate};
+    }
+
+    void Event.stopExecutionEvent.emit(req).then();
+    await ExecutionDAL.updateExecutionStatus(db, {executionArn, newStatus: ExecutionStatus.aborted})
+
+    return {stopDate: (await describeExecution(req)).stopDate}
 };
 
 export const endExecution = async (req: {executionArn: string, output?: unknown, status: ExecutionStatus}): Promise<void> => {

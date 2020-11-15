@@ -4,10 +4,12 @@ import * as Redis from '@App/modules/database/redis';
 import * as TestHelper from '@Tests/testHelper';
 import { ExecutionStatus, HistoryEventType, IExecution } from '@App/components/execution/execution.interfaces';
 import { UserDoesNotExistsError } from '@App/errors/customErrors';
-import { InvalidExecutionInputError, InvalidNameError, InvalidArnError, StateMachineDoesNotExistsError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from '@App/errors/AWSErrors';
+import { InvalidExecutionInputError, InvalidNameError, InvalidArnError, StateMachineDoesNotExistsError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError, InvalidParameterTypeError, ValidationExceptionError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import { ExecutionService } from '.';
 import { executionStartedEvent } from '../events';
+import * as Event from '../events';
+import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
 
 generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
@@ -161,7 +163,102 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
         })
     });
 
-    
+    describe('stop execution', () => {
+        it('should work', async () => {
+            expect.assertions(8);
+
+            const cause = 'customCause';
+            const error = 'customError';
+            let executionArn = '';
+
+            const expectedEventSent = async (req: StopExecutionInput) => {
+                expect(req.cause).toBe(cause);
+                expect(req.error).toBe(error);
+                return Promise.resolve(expect(req.executionArn).toBe(executionArn))
+            }
+            Event.stopExecutionEvent.on(expectedEventSent);
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+            executionArn = execution.executionArn;
+            const {stopDate} = await ExecutionService.stopExecution({...execution, cause, error});
+            const abortedExecution = await ExecutionService.describeExecution(execution);
+
+            expect(abortedExecution).toBeDefined();
+            expect(abortedExecution.output).toBeNull();
+            expect(abortedExecution.stopDate).toBeInstanceOf(Date);
+            expect(stopDate).toStrictEqual(abortedExecution.stopDate)
+            expect(abortedExecution.status).toBe(ExecutionStatus.aborted);
+            Event.stopExecutionEvent.removeListener(expectedEventSent);
+        });
+
+        it('should still work and return the stop date if the execution was already aborted', async () => {
+            expect.assertions(3);
+
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+            const {stopDate: firstStopDate} = await ExecutionService.stopExecution(execution);
+            const {stopDate: secondStopDate} = await ExecutionService.stopExecution(execution);
+            const abortedExecution = await ExecutionService.describeExecution(execution);
+
+            expect(firstStopDate).toStrictEqual(abortedExecution.stopDate);
+            expect(secondStopDate).toStrictEqual(firstStopDate);
+            expect(firstStopDate).toBeInstanceOf(Date);
+        });
+
+        it.each([null, undefined, '', 'badArn', false, true, 0, 1])("should fail if the executionArn is '%p'", async (executionArn: string) => {
+            expect.assertions(1);
+
+            await expect(ExecutionService.stopExecution({executionArn})).rejects.toThrow(InvalidArnError);
+        });
+
+        it('should fail if the execution does not exists', async () => {
+            expect.assertions(1);
+
+            await expect(ExecutionService.stopExecution({executionArn: TestHelper.dummyExecutionArn})).rejects.toThrow(ExecutionDoesNotExistError);
+        });
+
+        it.each([true, false, 0, 1, NaN])("should fail is the cause is '%p'", async (cause) => {
+            expect.assertions(1);
+
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+
+            await expect(ExecutionService.stopExecution({...execution, cause: cause as unknown as string})).rejects.toThrow(InvalidParameterTypeError);
+        });
+
+        it('should fail if the cause is bigger than 32768 character', async () => {
+            expect.assertions(1);
+
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+
+            await expect(ExecutionService.stopExecution({...execution, cause: 'a'.repeat(32769)})).rejects.toThrow(ValidationExceptionError);
+        });
+
+        it.each([true, false, 0, 1, NaN])("should fail is the error is '%p'", async (error) => {
+            expect.assertions(1);
+
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+
+            await expect(ExecutionService.stopExecution({...execution, error: error as unknown as string})).rejects.toThrow(InvalidParameterTypeError);
+        });
+
+        it('should fail if the cause is bigger than 256 character', async () => {
+            expect.assertions(1);
+
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+
+            await expect(ExecutionService.stopExecution({...execution, error: 'a'.repeat(257)})).rejects.toThrow(ValidationExceptionError);
+        });
+
+        it('should work if the cause and error are empty strings', async () => {
+            expect.assertions(2);
+
+            const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
+            const {stopDate} = await ExecutionService.stopExecution({...execution, error: '', cause: ''});
+            const finishedExecution = await ExecutionService.describeExecution(execution);
+
+            expect(finishedExecution.stopDate).toStrictEqual(stopDate);
+            expect(finishedExecution.status).toBe(ExecutionStatus.aborted);
+        });
+    });
+
     describe('select execution by arn', () => {
 
         it('should correctly retrieve an execution', async () => {
