@@ -17,7 +17,7 @@ import { processChoiceState } from './states/choice';
 import {  processParallelState } from './states/parallel';
 import { FatalError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
-import { endStateFailed, endStateSuccess, filterInput, filterOutput } from './stateProcessing';
+import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
 import { ExecutionStatus } from '../execution/execution.interfaces';
 export * from './activityTask';
 
@@ -70,8 +70,7 @@ export const processNextState = async (): Promise<string> => {
 }
 
 const processState = async (task: RunningState): Promise<void> => {
-    const executionStatus = await InterpretorDAL.getExecutionStatus(task.executionArn)
-    if (executionStatus !== ExecutionStatus.running) {
+    if (!await isExecutionStillRunning(task.executionArn)) {
         return;
     }
     let rawOutput: StateInput;

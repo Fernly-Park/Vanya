@@ -112,7 +112,7 @@
             {
                "type": "ExecutionAborted",
                "previousEventId": 0,
-               "executionFailedEventDetails": {
+               "executionAbortedEventDetails": {
                   "cause": "randomCause",
                   "error": "randomError"
                },

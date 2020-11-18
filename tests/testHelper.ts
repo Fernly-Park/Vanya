@@ -133,8 +133,9 @@ export type TestStateMachineTestCase = {
     expectedStateMachineStatus: StateMachineStatus,
     expectedOutput: string | Record<string, unknown>,
     stopExecution? : {
-        afterStateName: string,
+        afterStateName?: string,
         afterNumberOfPass?: number,
+        stopAfterSeconds : number,
         cause?: string,
         error?: string,
     },

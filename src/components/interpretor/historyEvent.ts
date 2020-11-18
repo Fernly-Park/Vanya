@@ -104,7 +104,7 @@ export const onExecutionAbortedEvent = async (req: {executionArn: string, cause?
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: HistoryEventType.ExecutionAborted,
         previousEventId: 0,
-        executionFailedEventDetails: {
+        executionAbortedEventDetails: {
             cause: req.cause === null ? undefined : req.cause, 
             error: req.error === null ? undefined : req.error
         }

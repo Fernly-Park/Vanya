@@ -28,9 +28,16 @@ export const filterOutput = async (rawInput: StateInput, output: StateOutput, st
     return toReturn;
 };
 
+export const isExecutionStillRunning = async (executionArn: string): Promise<boolean> => {
+    const executionStatus = await InterpretorDAL.getExecutionStatus(executionArn)
+    return executionStatus === ExecutionStatus.running;
+}
 
 export const endStateSuccess = async (req: RunningState & {nextStateName: string, output: StateOutput, state: StateMachineStateValue}): Promise<void> => {
     Logger.logDebug(`State '${req.stateName}' of '${req.executionArn}' finished successfully. stringified effective output : '${JSON.stringify(req.output)}'`)
+    if (!await isExecutionStillRunning(req.executionArn)) {
+        return;
+    }
     req.previousEventId = await onStateExitedEvent({...req, stateType: req.state.Type});
     if (req.nextStateName) {
         return await execute({executionArn: req.executionArn, stateName: req.nextStateName, 
@@ -48,7 +55,9 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
 
 export const endStateFailed = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
     Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}' failed, handling error`)
-
+    if (!await isExecutionStillRunning(req.task.executionArn)) {
+        return;
+    }
     let wasTheErrorHandled = await handleRetry(req);
     if (!wasTheErrorHandled) {
         wasTheErrorHandled = await handleCatch(req)

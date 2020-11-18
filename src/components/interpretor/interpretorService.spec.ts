@@ -57,11 +57,11 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         modifieTimestampInWaitTests(testStateMachine)
         const activities = await createActivities(currentTest.activitiesToCreate, getUser().id)
 
-        const mustManuallyControlTheExecution = currentTest.stopExecution != null;
+        const mustManuallyControlTheExecution = currentTest.stopExecution != null && currentTest.stopExecution.stopAfterSeconds == null;
         if (mustManuallyControlTheExecution) {
             InterpretorService.stopInterpreter();
             InterpretorService.startManualControlForTest();
-        }
+        } 
 
         const {execution} = await TestHelper.createSMAndStartExecutionHelper({
             userId: getUser().id,
@@ -70,14 +70,21 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             stateMachineName: currentTest.executionName,
             executionName: currentTest.executionName ?? 'executionName'
         });
+        if (currentTest.stopExecution?.stopAfterSeconds != null) {
+            setTimeout(() => {
+                void ExecutionService.stopExecution(execution)
+            }, currentTest.stopExecution.stopAfterSeconds * 1000 * config.waitScale)
+        }
         let finishedExecution = await ExecutionService.describeExecution(execution);
 
         if (mustManuallyControlTheExecution && finishedExecution.status === ExecutionStatus.running) {
             const stateName = await InterpretorService.processNextState();
             if (stateName === currentTest.stopExecution.afterStateName) {
                 await ExecutionService.stopExecution({...execution, cause: currentTest.stopExecution.cause, error: currentTest.stopExecution.error});
-                while (await InterpretorService.processNextState());
-                finishedExecution = await ExecutionService.describeExecution(execution);                
+                while (finishedExecution.status === ExecutionStatus.running) {
+                    finishedExecution = await ExecutionService.describeExecution(execution);  
+                    while (await InterpretorService.processNextState());
+                }
             }
         } else {
             while (finishedExecution.status === ExecutionStatus.running) {
@@ -87,14 +94,20 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         }
         
         const numberOfRemainingTasks = await Redis.llenAsync(Redis.systemTaskKey);
-        const numberOfDelayedTask = await TimerService.numberOfTimedTask();
+        const executionWasAborted = await TimerService.numberOfTimedTask() !== 0;
         const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
         const events = await ExecutionService.getExecutionHistory(execution);
         const contextObj = await Redis.hgetAllAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
 
+        if (executionWasAborted) {
+            while (await TimerService.numberOfTimedTask() !== 0);
+            const executionAfterTaskTimedOut = await ExecutionService.describeExecution(execution);
+            const eventsAfterTaskTimedOut = await ExecutionService.getExecutionHistory(execution);
+            expect(executionAfterTaskTimedOut).toStrictEqual(finishedExecution);
+            expect(eventsAfterTaskTimedOut).toStrictEqual(events);
+        }
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
-        expect(numberOfDelayedTask).toBe(0);
         expect(parallelStateInfoInRedis).toHaveLength(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         if (typeof currentTest.expectedOutput === 'object') {
@@ -163,14 +176,14 @@ const createActivities = async (activities: ActivitiyToCreateForTests[], userId:
     return toReturn;
 }
 
-const expectEventsToBeCorrect = (received: HistoryEvent[], expected: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
+const expectEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
     expect(expected).toHaveLength(received.length)
     for (let i = 0; i < expected.length; i++) {
         expect(received[i].timestamp).toMatch(ISO8601_REGEX);
         const expectedDuration = expectedDurations?.find(x => x.eventId === received[i].id);
         if (expectedDuration){
-            const previousEventTime = expected.find(x => x.id === received[i].previousEventId).timestamp;
-            const currentEventTime = new Date(expected[i].timestamp);
+            const previousEventTime = received.find(x => x.id === received[i].previousEventId).timestamp;
+            const currentEventTime = new Date(received[i].timestamp);
             const previousDate = new Date(previousEventTime);
             const seconds = (currentEventTime.getTime() - previousDate.getTime()) / 1000;
             expect(Math.round(seconds * 10) / 10).toBe(expectedDuration.expectedDurationInSeconds * config.waitScale);
@@ -225,4 +238,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests();
+generateStateMachinesTests({executionName: 'wait-secondsPath6'});

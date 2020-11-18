@@ -1,5 +1,5 @@
 {
-    "describe": "simple state machine with a wait state and a secondsPath", 
+    "describe": "simple state machine with a pass state and a wait state with a secondsPath", 
     "tests": [
         {
             "input": {"seconds": 2},
@@ -8,49 +8,69 @@
             "describe": "should correctly wait for 2 seconds (from the secondsPath)",
             "eventsExpectedDuration": [
                 {
-                    "eventId": 3,
+                    "eventId": 5,
                     "expectedDurationInSeconds": 2
                 }
             ],
             "events":[
                 {
-                   "timestamp":"2020-06-07T00:00:01.000Z",
-                   "type":"ExecutionStarted",
-                   "id":1,
-                   "previousEventId":0,
-                   "executionStartedEventDetails":{
-                      "input":"{\"seconds\":2}",
-                      "roleArn":"todo"
-                   }
+                 "timestamp": "2020-11-18T16:05:10.926Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"seconds\":2}",
+                  "roleArn": "todo"
+                 }
                 },
                 {
-                   "timestamp":"2020-06-07T00:00:01.000Z",
-                   "type":"WaitStateEntered",
-                   "id":2,
-                   "previousEventId":0,
-                   "stateEnteredEventDetails":{
-                      "name":"Hello",
-                      "input":"{\"seconds\":2}"
-                   }
+                 "timestamp": "2020-11-18T16:05:10.959Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{\"seconds\":2}"
+                 }
                 },
                 {
-                   "timestamp":"2020-06-07T00:00:01.000Z",
-                   "type":"WaitStateExited",
-                   "id":3,
-                   "previousEventId":2,
-                   "stateExitedEventDetails":{
-                      "name":"Hello",
-                      "output":"{\"seconds\":2}"
-                   }
+                 "timestamp": "2020-11-18T16:05:10.959Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{\"seconds\":2}"
+                 }
                 },
                 {
-                   "timestamp":"2020-06-07T00:00:01.000Z",
-                   "type":"ExecutionSucceeded",
-                   "id":4,
-                   "previousEventId":3,
-                   "executionSucceededEventDetails":{
-                      "output":"{\"seconds\":2}"
-                   }
+                 "timestamp": "2020-11-18T16:05:11.059Z",
+                 "type": "WaitStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "Wait",
+                  "input": "{\"seconds\":2}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T16:05:13.060Z",
+                 "type": "WaitStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "Wait",
+                  "output": "{\"seconds\":2}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T16:05:13.060Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"seconds\":2}"
+                 }
                 }
             ]
         },
@@ -83,18 +103,80 @@
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
             "describe": "should fail if the secondsPath is not present in the input"
+        },
+        {
+            "input": {"seconds": 2},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should stop if the stopExecution is send during the waiting",
+            "stopExecution" : {
+                "stopAfterSeconds": 1.9,
+                "cause": "randomCause"
+            },
+            "events":[
+                {
+                 "timestamp": "2020-11-18T16:11:03.808Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"seconds\":2}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T16:11:03.829Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{\"seconds\":2}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T16:11:03.829Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{\"seconds\":2}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T16:11:03.930Z",
+                 "type": "WaitStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "Wait",
+                  "input": "{\"seconds\":2}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T16:11:05.056Z",
+                 "type": "ExecutionAborted",
+                 "id": 5,
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {}
+                }
+            ]
         }
     ],
     "definition": {
-        "Comment": "A Hello World example of the Amazon States Language using Pass states",
-        "StartAt": "Hello",
+        "StartAt": "Pass",
         "States": {
-            "Hello": {
-            "Type": "Wait",
-            "SecondsPath": "$.seconds",
-            "End": true
+            "Pass": {
+              "Type": "Pass",
+              "Next": "Wait"
+            },
+            "Wait": {
+                "Type": "Wait",
+                "SecondsPath": "$.seconds",
+                "End": true
             }
         }
-    }   
+    }  
 }
 
