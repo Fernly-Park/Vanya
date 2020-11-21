@@ -11,7 +11,7 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../historyEvent";
 import { Logger } from "@App/modules";
 import { InterpretorDAL } from "..";
-import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../stateProcessing";
+import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from "../stateProcessing";
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
     const {task, state, token} = req;
@@ -70,8 +70,11 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
     if (activityTask.status === ActivityTaskStatus.TimedOut) {
         throw new TaskTimedOutError(activityTask.token);
     }
-    await InterpretorDAL.modifyActivityTaskStatus(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
 
+    if (!await isExecutionStillRunning(activityTask.executionArn)) {
+        await cleanTaskStateEndedHelper(activityTask);
+        throw new TaskTimedOutError(activityTask.token);
+    }
 
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     let output: StateOutput;
@@ -87,8 +90,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
             state: taskState
         })
     } finally {
-        await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
-        await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
+        await cleanTaskStateEndedHelper(activityTask);
     }
 
     await endStateSuccess({...activityTask, output, nextStateName: taskState.Next, state: taskState});
@@ -100,7 +102,7 @@ export const processTaskTimeout = async (activityTaskToken: string): Promise<voi
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' timeout`)
 
-    await cleanTaskStateFailedHelper(activityTask);
+    await cleanTaskStateEndedHelper(activityTask);
     activityTask.previousEventId = await onActivityTimeoutEvent({executionArn: activityTask.executionArn, previousEventId: activityTask.previousEventId})
     await endStateFailed({task: activityTask,
         error: AWSConstant.error.STATE_TIMEOUT,
@@ -118,7 +120,7 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
         throw new TaskTimedOutError(activityTask.token);
     }
 
-    await cleanTaskStateFailedHelper(activityTask);
+    await cleanTaskStateEndedHelper(activityTask);
     Logger.logDebug(`sending event for '${activityTask.token}' failed`)
     activityTask.previousEventId = await onActivityFailedEvent({...input, previousEventId: activityTask.previousEventId});
     await endStateFailed({task: activityTask, 
@@ -128,7 +130,7 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
     });
 };
 
-const cleanTaskStateFailedHelper = async (activityTask: RunningTaskState) => {
+const cleanTaskStateEndedHelper = async (activityTask: RunningTaskState) => {
     await InterpretorDAL.modifyActivityTaskStatus(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})

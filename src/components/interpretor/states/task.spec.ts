@@ -5,8 +5,11 @@ import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
 import * as Event from '../../events';
 import { ActivityService } from '../../activity';
-import { InterpretorService } from '..';
+import { InterpretorDAL, InterpretorService } from '..';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/utils/validationHelper';
+import { ExecutionService } from '@App/components/execution';
+import { ActivityTaskStatus } from '../interpretor.interfaces';
+import { TaskTimedOutError } from '@App/errors/customErrors';
 
 generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', tests: (getUser) => {
 
@@ -14,12 +17,13 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
         const activityName = req?.activityName ?? 'tmp';
         const activity = await ActivityService.createActivity(getUser().id, activityName);
 
-        await createSMAndStartExecutionHelper({userId: getUser().id, stateMachineDef: req?.stateMachineDef ?? stateMachinesForTests.valid.validTask, 
+        const {execution} = await createSMAndStartExecutionHelper({userId: getUser().id, stateMachineDef: req?.stateMachineDef ?? stateMachinesForTests.valid.validTask, 
             input : JSON.stringify(req?.input) ?? '{}', stateMachineName: `stateMachine${activityName}`});
 
         await InterpretorService.processNextState();
         return {
-            activity
+            activity,
+            executionArn: execution.executionArn
         }
     };
 
@@ -159,7 +163,17 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             expect.assertions(1);            
             
             await expect(InterpretorService.sendTaskSuccess({taskToken, output: '{}'})).rejects.toThrow(InvalidTokenError);
-        }); 
+        });
+        
+        it('should send a task Timeout if the task is already aborted', async () => {
+            expect.assertions(1);
+
+            const {activity, executionArn} = await setupTest();
+            const result = await InterpretorService.getActivityTask(activity);
+            await ExecutionService.stopExecution({executionArn});
+
+            await expect(InterpretorService.sendTaskSuccess({taskToken: result.taskToken, output: '{}'})).rejects.toThrow(TaskTimedOutError);
+        });
     });
 
     describe('send task failure', () => {

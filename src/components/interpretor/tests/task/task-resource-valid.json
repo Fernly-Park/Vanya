@@ -342,6 +342,68 @@
                  "executionAbortedEventDetails": {}
                 }
             ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should abort if a stopExecution is sent while a worker is working on a task",
+            "stopExecution" : {
+                "stopAfterSeconds": 1
+            },
+            "activitiesToCreate": [
+                {
+                    "expectedInput": {},
+                    "workDurationSeconds": 2,
+                    "name": "tmp"
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-11-21T18:54:05.392Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-21T18:54:05.422Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-21T18:54:05.422Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-21T18:54:34.592Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-11-21T18:54:57.911Z",
+                 "type": "ExecutionAborted",
+                 "id": 5,
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {}
+                }
+            ]
         }
     ],
     "definition": {
