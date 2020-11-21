@@ -162,8 +162,8 @@ export type EventDurationExpectedForTests = {
 
 export type ActivitiyToCreateForTests = {
     name: string,
-    output: string,
-    expectedInput: Record<string, unknown>,
+    output?: string,
+    expectedInput?: Record<string, unknown>,
     workDurationSeconds?: number,
     fail?: {
         cause?: string,
@@ -173,6 +173,7 @@ export type ActivitiyToCreateForTests = {
         error?: string
     }[]
     waitBeforeGetActivityTaskSeconds?: number,
-    workerName: string
+    workerName?: string,
+    shouldReceiveATask?: boolean,
     heartbeatIntervalSeconds?: number
 }

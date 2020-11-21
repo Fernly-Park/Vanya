@@ -1,13 +1,13 @@
-import { ActivityDoesNotExistError, TaskDoesNotExistError, InvalidOutputError, InvalidTokenError, InvalidParameterTypeError, ValidationExceptionError } from "@App/errors/AWSErrors";
+import { ActivityDoesNotExistError, TaskDoesNotExistError, InvalidOutputError, InvalidTokenError } from "@App/errors/AWSErrors";
 import { Logger } from "@App/modules";
 import { isJSON } from "@App/utils/objectUtils";
-import { isAString } from "@App/utils/stringUtils";
-import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, causeMaxLength, ensureCauseAndErrorInInputAreValid } from "@App/utils/validationHelper";
+import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, ensureCauseAndErrorInInputAreValid } from "@App/utils/validationHelper";
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskHeartbeatInput, SendTaskSuccessInput, SendTaskFailureInput } from "aws-sdk/clients/stepfunctions";
 import { InterpretorDAL } from ".";
 import { ActivityService } from "../activity";
 import { ActivityTaskStatus } from "./interpretor.interfaces";
 import * as Event from '../events';
+import { isExecutionStillRunning } from "./stateProcessing";
 
 export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetActivityTaskOutput> => {
     ensureWorkerNameIsValid(req?.workerName);
@@ -15,7 +15,12 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
         throw new ActivityDoesNotExistError(req?.activityArn)
     }
     //todo timeout
-    const task = await InterpretorDAL.popActivityTask(req.activityArn);
+
+    let task = await InterpretorDAL.popActivityTask(req.activityArn);
+    while (task && !await isExecutionStillRunning(task.executionArn)) {
+        await InterpretorDAL.deleteActivityTask(task.token);
+        task = await InterpretorDAL.popActivityTask(req.activityArn)
+    }
     if (task) {
         await InterpretorDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
         await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})

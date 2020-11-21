@@ -19,6 +19,11 @@ export const addActivityTask = async (activityArn: string, task: RunningTaskStat
     await addActivityTaskToActivityQueue(activityArn, task);
 }
 
+export const deleteActivityTask = async (taskToken: string): Promise<void> => {
+    const key = Redis.getActivityTaskInProgressKey(taskToken);
+    await Redis.delAsync(key);
+}
+
 const addActivityTaskKeyValue = async (task: RunningTaskState): Promise<void> => {
     const key = Redis.getActivityTaskInProgressKey(task.token);
     await Redis.setAsync(key, JSON.stringify(task));

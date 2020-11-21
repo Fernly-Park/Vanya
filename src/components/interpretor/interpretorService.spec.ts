@@ -133,6 +133,10 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
     for(const activity of activities) {
         activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
         const res = await InterpretorService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
+        if (activity.shouldReceiveATask != null) {
+            const receivedATask = res.taskToken != null;
+            expect(receivedATask).toBe(activity.shouldReceiveATask);
+        }
         if (res.input) {
             const interval = activity.heartbeatIntervalSeconds 
             ? setInterval(() => {
@@ -238,4 +242,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({executionName: 'wait-secondsPath6'});
+generateStateMachinesTests();

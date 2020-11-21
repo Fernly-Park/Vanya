@@ -62,11 +62,11 @@ const startInterpretorPoll = async (): Promise<void> => {
 }
 
 export const processNextState = async (): Promise<string> => {
-    const task = await InterpretorDAL.retrieveNextStateToExecute();
-    if (task) {
-        await processState(task);
+    const stateToRun = await InterpretorDAL.retrieveNextStateToExecute();
+    if (stateToRun) {
+        await processState(stateToRun);
     }
-    return task?.stateName;
+    return stateToRun?.stateName;
 }
 
 const processState = async (task: RunningState): Promise<void> => {

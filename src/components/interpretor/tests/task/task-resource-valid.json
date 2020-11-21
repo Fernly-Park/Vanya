@@ -287,6 +287,61 @@
                  }
                 }
             ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should abort if a stopExecution is sent before the task is picked up by a worker",
+            "stopExecution" : {
+                "stopAfterSeconds": 1
+            },
+            "activitiesToCreate": [
+                {
+                    "waitBeforeGetActivityTaskSeconds": 2,
+                    "name": "tmp",
+                    "shouldReceiveATask": false
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-11-18T20:05:26.981Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T20:05:27.015Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T20:05:27.015Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-18T20:05:29.587Z",
+                 "type": "ExecutionAborted",
+                 "id": 4,
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {}
+                }
+            ]
         }
     ],
     "definition": {
