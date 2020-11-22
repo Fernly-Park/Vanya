@@ -116,10 +116,8 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' failed`)
 
-    if (activityTask.status === ActivityTaskStatus.TimedOut) {
-        throw new TaskTimedOutError(activityTask.token);
-    }
-
+    await ensureTaskIsNotTimedOut(activityTask);
+    
     await cleanTaskStateEndedHelper(activityTask);
     Logger.logDebug(`sending event for '${activityTask.token}' failed`)
     activityTask.previousEventId = await onActivityFailedEvent({...input, previousEventId: activityTask.previousEventId});
@@ -137,13 +135,7 @@ const cleanTaskStateEndedHelper = async (activityTask: RunningTaskState) => {
 }
 
 export const processTaskHeartbeat = async (activityTask: RunningTaskState): Promise<void> => {
-    if (activityTask.status === ActivityTaskStatus.TimedOut) {
-        throw new TaskTimedOutError(activityTask.token);
-    }
-    if (!await isExecutionStillRunning(activityTask.executionArn)) {
-        await cleanTaskStateEndedHelper(activityTask);
-        throw new TaskTimedOutError(activityTask.token);
-    }
+    await ensureTaskIsNotTimedOut(activityTask);
     if (activityTask.heartbeatSeconds == null) {
         return;
     }
@@ -152,6 +144,16 @@ export const processTaskHeartbeat = async (activityTask: RunningTaskState): Prom
     const time = new Date();
     time.setSeconds(time.getSeconds() + activityTask.heartbeatSeconds);
     await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
+}
+
+const ensureTaskIsNotTimedOut = async (activityTask: RunningTaskState): Promise<void> => {
+    if (activityTask.status === ActivityTaskStatus.TimedOut) {
+        throw new TaskTimedOutError(activityTask.token);
+    }
+    if (!await isExecutionStillRunning(activityTask.executionArn)) {
+        await cleanTaskStateEndedHelper(activityTask);
+        throw new TaskTimedOutError(activityTask.token);
+    }
 }
 
 

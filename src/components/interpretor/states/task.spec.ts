@@ -5,10 +5,9 @@ import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
 import * as Event from '../../events';
 import { ActivityService } from '../../activity';
-import { InterpretorDAL, InterpretorService } from '..';
+import { InterpretorService } from '..';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/utils/validationHelper';
 import { ExecutionService } from '@App/components/execution';
-import { ActivityTaskStatus } from '../interpretor.interfaces';
 import { TaskTimedOutError } from '@App/errors/customErrors';
 
 generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', tests: (getUser) => {
@@ -130,6 +129,7 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             await InterpretorService.sendTaskSuccess({taskToken: result.taskToken, output: '{}'});
 
             expect(wasCalled).toBe(true);
+            Event.removeAllListeners();
         });
 
         it('should throw if the token does not exists', async () => {
@@ -175,15 +175,6 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             await expect(InterpretorService.sendTaskSuccess({taskToken: result.taskToken, output: '{}'})).rejects.toThrow(TaskTimedOutError);
         });
 
-        it('should send a task Timeout if the task is already aborted and a task heartbeat is sent', async () => {
-            expect.assertions(1);
-
-            const {activity, executionArn} = await setupTest();
-            const result = await InterpretorService.getActivityTask(activity);
-            await ExecutionService.stopExecution({executionArn});
-
-            await expect(InterpretorService.sendTaskHeartbeat({taskToken: result.taskToken})).rejects.toThrow(TaskTimedOutError);
-        });
     });
 
     describe('send task failure', () => {
@@ -194,17 +185,19 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             const error = 'error';
             let wasCalled = false;
 
-            Event.sendTaskFailureEvent.on(async (eventInput) => {
+            const listener = async (eventInput: Event.SendTaskFailureEventInput) => {
                 wasCalled = true;
                 expect(eventInput.cause).toBe(cause);
                 expect(eventInput.error).toBe(error)
                 return Promise.resolve()
-            });
+            }
+            Event.sendTaskFailureEvent.on(listener);
 
             const {activity} = await setupTest()
             const result = await InterpretorService.getActivityTask(activity);
             await InterpretorService.sendTaskFailure({taskToken: result.taskToken, cause, error});
             expect(wasCalled).toBe(true);
+            Event.sendTaskFailureEvent.removeListener(listener);
         });
 
         it('should throw if the token does not exists', async () => {
@@ -244,6 +237,28 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             const result = await InterpretorService.getActivityTask(activity);
             await expect(InterpretorService.sendTaskFailure({taskToken: result.taskToken, error: 'a'.repeat(32769)})).rejects.toThrow(ValidationExceptionError);
         });
+
+        it('should send a task Timeout if the task is already aborted and a task failure is sent', async () => {
+            expect.assertions(1);
+
+            const {activity, executionArn} = await setupTest();
+            const result = await InterpretorService.getActivityTask(activity);
+            await ExecutionService.stopExecution({executionArn});
+
+            await expect(InterpretorService.sendTaskFailure({taskToken: result.taskToken})).rejects.toThrow(TaskTimedOutError);
+        });
     });
+
+    describe('send task heartbeat', () => {
+        it('should send a task Timeout if the task is already aborted and a task heartbeat is sent', async () => {
+            expect.assertions(1);
+
+            const {activity, executionArn} = await setupTest();
+            const result = await InterpretorService.getActivityTask(activity);
+            await ExecutionService.stopExecution({executionArn});
+
+            await expect(InterpretorService.sendTaskHeartbeat({taskToken: result.taskToken})).rejects.toThrow(TaskTimedOutError);
+        });
+    })
 }});
 
