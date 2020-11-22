@@ -98,7 +98,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
         const events = await ExecutionService.getExecutionHistory(execution);
         const contextObj = await Redis.hgetAllAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
-
+        
         if (executionWasAborted) {
             while (await TimerService.numberOfTimedTask() !== 0);
             const executionAfterTaskTimedOut = await ExecutionService.describeExecution(execution);

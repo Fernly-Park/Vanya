@@ -414,6 +414,71 @@
                   "cause": "An error occurred while executing the state 'Hello'. Invalid path '$.heartbeat' : No valid results for path: '$.heartbeat'"                 }
                 }
             ]
+        },
+        {
+            "input": {"heartbeat": 2},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should abort if a stopExecution is sent when the execution is running",
+            "stopExecution" : {
+                "stopAfterSeconds": 1
+            },
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"heartbeat": 2},
+                    "workDurationSeconds" : 2,
+                    "output": {"hello": "world"},
+                    "heartbeatIntervalSeconds": 0.5
+                }
+            ],
+            "events": [
+                {
+                 "timestamp": "2020-11-21T21:21:58.695Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"heartbeat\":2}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-21T21:21:58.714Z",
+                 "type": "TaskStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"heartbeat\":2}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-21T21:21:58.714Z",
+                 "type": "ActivityScheduled",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{\"heartbeat\":2}",
+                  "heartbeatInSeconds": 2
+                 }
+                },
+                {
+                 "timestamp": "2020-11-21T21:21:58.900Z",
+                 "type": "ActivityStarted",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-11-21T21:21:59.073Z",
+                 "type": "ExecutionAborted",
+                 "id": 5,
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {}
+                }
+            ]
         }
     ],
     "definition": {

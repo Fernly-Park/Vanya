@@ -165,7 +165,7 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             await expect(InterpretorService.sendTaskSuccess({taskToken, output: '{}'})).rejects.toThrow(InvalidTokenError);
         });
         
-        it('should send a task Timeout if the task is already aborted', async () => {
+        it('should send a task Timeout if the task is already aborted and a task success is sent', async () => {
             expect.assertions(1);
 
             const {activity, executionArn} = await setupTest();
@@ -173,6 +173,16 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
             await ExecutionService.stopExecution({executionArn});
 
             await expect(InterpretorService.sendTaskSuccess({taskToken: result.taskToken, output: '{}'})).rejects.toThrow(TaskTimedOutError);
+        });
+
+        it('should send a task Timeout if the task is already aborted and a task heartbeat is sent', async () => {
+            expect.assertions(1);
+
+            const {activity, executionArn} = await setupTest();
+            const result = await InterpretorService.getActivityTask(activity);
+            await ExecutionService.stopExecution({executionArn});
+
+            await expect(InterpretorService.sendTaskHeartbeat({taskToken: result.taskToken})).rejects.toThrow(TaskTimedOutError);
         });
     });
 

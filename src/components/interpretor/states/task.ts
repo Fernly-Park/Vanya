@@ -138,7 +138,11 @@ const cleanTaskStateEndedHelper = async (activityTask: RunningTaskState) => {
 
 export const processTaskHeartbeat = async (activityTask: RunningTaskState): Promise<void> => {
     if (activityTask.status === ActivityTaskStatus.TimedOut) {
-        throw new Error('todo');
+        throw new TaskTimedOutError(activityTask.token);
+    }
+    if (!await isExecutionStillRunning(activityTask.executionArn)) {
+        await cleanTaskStateEndedHelper(activityTask);
+        throw new TaskTimedOutError(activityTask.token);
     }
     if (activityTask.heartbeatSeconds == null) {
         return;
