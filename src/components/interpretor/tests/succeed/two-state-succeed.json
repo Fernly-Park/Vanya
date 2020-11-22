@@ -1,0 +1,139 @@
+{
+    "describe": "simple state machine with only a succeed state", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {},
+            "describe": "should work with no input and output",
+            "events": [
+                {
+                 "timestamp": "2020-11-22T19:02:13.443Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T19:02:13.512Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T19:02:13.512Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T19:02:13.612Z",
+                 "type": "SucceedStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T19:02:13.612Z",
+                 "type": "SucceedStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T19:02:13.612Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "{}"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should abort if the stopExecution is sent before the succeed state.",
+            "stopExecution" : {
+                "afterStateName": "Pass",
+                "cause": "randomCause",
+                "error": "randomError"
+            },
+            "events": [
+                {
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 },
+                 "type": "ExecutionStarted",
+                 "timestamp": "2020-11-22T19:05:32.181Z",
+                 "id": 1
+                },
+                {
+                 "type": "PassStateEntered",
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{}"
+                 },
+                 "timestamp": "2020-11-22T19:05:32.186Z",
+                 "id": 2
+                },
+                {
+                 "type": "PassStateExited",
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{}"
+                 },
+                 "timestamp": "2020-11-22T19:05:32.191Z",
+                 "id": 3
+                },
+                {
+                 "type": "ExecutionAborted",
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {
+                  "cause": "randomCause",
+                  "error": "randomError"
+                 },
+                 "timestamp": "2020-11-22T19:05:32.194Z",
+                 "id": 4
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "Pass",
+        "States": {
+          "Pass": {
+            "Type": "Pass",
+            "Next": "Hello"
+          },
+          "Hello": {
+            "Type": "Succeed"
+          }
+        }
+      }
+}
+

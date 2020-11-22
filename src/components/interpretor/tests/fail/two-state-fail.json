@@ -1,0 +1,132 @@
+{
+    "describe": "simple state machine with only a succeed state", 
+    "tests": [
+        {
+            "input": {},
+            "expectedStateMachineStatus": "FAILED",
+            "expectedOutput": null,
+            "describe": "should simply fail",
+            "events": [
+                {
+                 "timestamp": "2020-11-22T18:36:52.458Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T18:36:52.493Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T18:36:52.493Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T18:36:52.595Z",
+                 "type": "FailStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-11-22T18:36:52.595Z",
+                 "type": "ExecutionFailed",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "executionFailedEventDetails": {
+                  "error": "MyError",
+                  "cause": "MyCause"
+                 }
+                }
+            ]
+        },
+        {
+            "input": {},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should abort if a stopExecution is sent before the failure state",
+            "stopExecution" : {
+                "afterStateName": "Pass",
+                "cause": "randomCause",
+                "error": "randomError"
+            },
+            "events": [
+                {
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 },
+                 "type": "ExecutionStarted",
+                 "timestamp": "2020-11-22T18:56:39.605Z",
+                 "id": 1
+                },
+                {
+                 "type": "PassStateEntered",
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{}"
+                 },
+                 "timestamp": "2020-11-22T18:56:39.612Z",
+                 "id": 2
+                },
+                {
+                 "type": "PassStateExited",
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{}"
+                 },
+                 "timestamp": "2020-11-22T18:56:39.616Z",
+                 "id": 3
+                },
+                {
+                 "type": "ExecutionAborted",
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {
+                  "cause": "randomCause",
+                  "error": "randomError"
+                 },
+                 "timestamp": "2020-11-22T18:56:39.618Z",
+                 "id": 4
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "Comment": "A Hello World example of the Amazon States Language using a Pass state",
+        "StartAt": "Pass",
+        "States": {
+          "Pass": {
+            "Type": "Pass",
+            "Next": "Hello"
+          },
+          "Hello": {
+            "Type": "Fail",
+            "Cause": "MyCause",
+            "Error": "MyError"
+          }
+        }
+    }
+}
+
