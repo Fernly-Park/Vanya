@@ -318,6 +318,24 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             expect(eventsFromRedisBefore).toHaveLength(1);
             expect(eventsFromRedisAfter).toHaveLength(0);
         });
+
+        it('should correcly delete the currentEventIdKey from redis once the execution is finished', async () => {
+            expect.assertions(2);
+
+            const {execution} = await createSMAndStartExecutionHelper();
+            await ExecutionService.addEvent({executionArn: execution.executionArn, event: {
+                type: HistoryEventType.ExecutionStarted,
+            }});
+
+            const getCurrentEventId = async () => await Redis.getAsync(Redis.getExecutionEventCurrentIdKey(execution.executionArn));
+
+            const beforeEndingExecution = await getCurrentEventId();
+            await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});
+            const afterEndingExecution = await getCurrentEventId();
+
+            expect(+beforeEndingExecution).toBe(1);
+            expect(afterEndingExecution).toBeNull();
+        });
     });
 
     describe('update context object', () => {
