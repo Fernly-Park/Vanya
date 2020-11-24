@@ -596,6 +596,54 @@
                  }
                 }
             ]
+        },
+        {
+            "input": {"variable": true},
+            "expectedStateMachineStatus": "ABORTED",
+            "expectedOutput": null,
+            "describe": "should abort if the execution is stopped after the choice state",
+            "stopExecution" : {
+                "afterStateName": "Hello"
+            },
+            "events": [
+                {
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"variable\":true}",
+                  "roleArn": "todo"
+                 },
+                 "type": "ExecutionStarted",
+                 "timestamp": "2020-11-24T15:15:45.044Z",
+                 "id": 1
+                },
+                {
+                 "type": "ChoiceStateEntered",
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"variable\":true}"
+                 },
+                 "timestamp": "2020-11-24T15:15:45.049Z",
+                 "id": 2
+                },
+                {
+                 "type": "ChoiceStateExited",
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "{\"variable\":true}"
+                 },
+                 "timestamp": "2020-11-24T15:15:45.054Z",
+                 "id": 3
+                },
+                {
+                 "type": "ExecutionAborted",
+                 "previousEventId": 0,
+                 "executionAbortedEventDetails": {},
+                 "timestamp": "2020-11-24T15:15:45.056Z",
+                 "id": 4
+                }
+            ]
         }
     ],
     "definition": {
