@@ -2,16 +2,16 @@ import { TaskState } from "@App/components/stateMachines/stateMachine.interfaces
 import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningState } from "@App/components/interpretor/interpretor.interfaces";
 import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
-import { retrieveField } from "../path/path";
+import { retrieveField } from "../../path/path";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
 import { AWSConstant } from "@App/utils/constants";
 import { SendTaskFailureEventInput } from "@App/components/events";
 import { StateMachineService } from "@App/components/stateMachines";
-import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../historyEvent";
+import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../../historyEvent";
 import { Logger } from "@App/modules";
-import { InterpretorDAL } from "..";
-import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from "../stateProcessing";
+import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from "../../stateProcessing";
+import * as TaskDAL from './taskDAL';
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
     const {task, state, token} = req;
@@ -29,7 +29,7 @@ export const processTaskState = async (req: {task: RunningState, state: TaskStat
         input: effectiveInput, timeoutSeconds: timeoutSeconds, previousEventId: task.previousEventId})
     const activityTask: RunningTaskState = {...task, token, status: ActivityTaskStatus.Waiting, effectiveInput, heartbeatSeconds, timeoutSeconds}
     Logger.logDebug(`adding task state '${task.stateName}' from '${task.executionArn}' with token '${token}' to the queues.`);
-    await InterpretorDAL.addActivityTask(resource, activityTask);
+    await TaskDAL.addActivityTask(resource, activityTask);
 }
 
 
@@ -50,7 +50,7 @@ export const processActivityTaskStarted = async (input: {task: RunningTaskState,
     const { heartbeatSeconds, timeoutSeconds } = activityTask;
     Logger.logDebug(`Activity task '${activityTask.token}' started`)
     activityTask.previousEventId = await onActivityStartedEvent(input)
-    await InterpretorDAL.modifyActivityTaskStatus(activityTask.token, activityTask.status, activityTask.previousEventId);
+    await TaskDAL.modifyActivityTaskStatus(activityTask.token, activityTask.status, activityTask.previousEventId);
     if (timeoutSeconds != null) {
         const time = new Date();
         time.setSeconds(time.getSeconds() + timeoutSeconds);
@@ -98,7 +98,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
     
-    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(activityTaskToken);
+    const activityTask = await TaskDAL.retrieveActivityTaskInProgress(activityTaskToken);
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' timeout`)
 
@@ -129,7 +129,7 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
 };
 
 const cleanTaskStateEndedHelper = async (activityTask: RunningTaskState) => {
-    await InterpretorDAL.modifyActivityTaskStatus(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
+    await TaskDAL.modifyActivityTaskStatus(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
 }

@@ -375,7 +375,112 @@
              }
             }
           ]
-        }
+        },
+        {
+          "input": {"fail": false},
+          "expectedStateMachineStatus": "ABORTED",
+          "expectedOutput": null,
+          "describe": "should abort if a stopExecution is issued before the success state",
+          "stopExecution" : {
+            "afterStateName": "Choice 1"
+          },
+          "events": [
+            {
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"fail\":false}",
+              "roleArn": "todo"
+             },
+             "type": "ExecutionStarted",
+             "timestamp": "2020-11-24T20:16:35.569Z",
+             "id": 1
+            },
+            {
+             "type": "ParallelStateEntered",
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.576Z",
+             "id": 2
+            },
+            {
+             "type": "ParallelStateStarted",
+             "previousEventId": 2,
+             "timestamp": "2020-11-24T20:16:35.577Z",
+             "id": 3
+            },
+            {
+             "type": "PassStateEntered",
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "Pass State 1",
+              "input": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.584Z",
+             "id": 4
+            },
+            {
+             "type": "PassStateExited",
+             "previousEventId": 4,
+             "stateExitedEventDetails": {
+              "name": "Pass State 1",
+              "output": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.587Z",
+             "id": 5
+            },
+            {
+             "type": "WaitStateEntered",
+             "previousEventId": 5,
+             "stateEnteredEventDetails": {
+              "name": "Wait 1",
+              "input": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.592Z",
+             "id": 6
+            },
+            {
+             "type": "WaitStateExited",
+             "previousEventId": 6,
+             "stateExitedEventDetails": {
+              "name": "Wait 1",
+              "output": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.702Z",
+             "id": 7
+            },
+            {
+             "type": "ChoiceStateEntered",
+             "previousEventId": 7,
+             "stateEnteredEventDetails": {
+              "name": "Choice 1",
+              "input": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.705Z",
+             "id": 8
+            },
+            {
+             "type": "ChoiceStateExited",
+             "previousEventId": 8,
+             "stateExitedEventDetails": {
+              "name": "Choice 1",
+              "output": "{\"fail\":false}"
+             },
+             "timestamp": "2020-11-24T20:16:35.710Z",
+             "id": 9
+            },
+            {
+             "type": "ExecutionAborted",
+             "previousEventId": 0,
+             "executionAbortedEventDetails": {},
+             "timestamp": "2020-11-24T20:16:35.714Z",
+             "id": 10
+            }
+          ]
+          
+      }
     ],
     "definition": {
       "Comment": "Simple parallel state machine",

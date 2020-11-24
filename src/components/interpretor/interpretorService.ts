@@ -6,7 +6,7 @@ import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent }
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
-import { processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task';
+import { processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task/task';
 import * as Event from '../events';
 import { ExecutionService } from '../execution';
 import { StateMachineService } from '../stateMachines';
@@ -14,11 +14,10 @@ import { TimerService } from '../timer';
 import { AWSConstant } from '@App/utils/constants';
 import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
-import {  processParallelState } from './states/parallel';
+import {  processParallelState } from './states/parallel/parallel';
 import { FatalError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
-import { ExecutionStatus } from '../execution/execution.interfaces';
 export * from './activityTask';
 
 let interpretor = false;

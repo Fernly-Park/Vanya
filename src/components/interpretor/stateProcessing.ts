@@ -3,13 +3,14 @@ import { StateMachineStateValue, PassState, TaskState } from "@App/components/st
 import { Logger } from "@App/modules";
 import { AWSConstant } from "@App/utils/constants";
 import { InterpretorDAL } from ".";
+import * as ParallelDAL from './states/parallel/parallelDAL'
 import { ExecutionStatus } from "../execution/execution.interfaces";
 import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent } from "./historyEvent";
 import { RunningState, StateInput, StateOutput } from "./interpretor.interfaces";
 import { execute } from "./interpretorService";
 import { applyPath, applyPayloadTemplate, applyResultPath } from "./path/path";
 import { handleCatch, handleRetry } from "./states/catchAndRetry";
-import { handleFailedBranche, handleFinishedBranche } from "./states/parallel";
+import { handleFailedBranche, handleFinishedBranche } from "./states/parallel/parallel";
 
 export const filterInput = async (task: RunningState, state: StateMachineStateValue): Promise<StateInput> => {
     const asPassState = state as PassState;
@@ -79,6 +80,6 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
 export const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
     const {task} = req
     if (task.parallelInfo) {
-        await InterpretorDAL.deleteRunningParallelStateInfo(task.parallelInfo.parentKey);
+        await ParallelDAL.deleteRunningParallelStateInfo(task.parallelInfo.parentKey);
     }
 }

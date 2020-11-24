@@ -3,11 +3,11 @@ import { Logger } from "@App/modules";
 import { isJSON } from "@App/utils/objectUtils";
 import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, ensureCauseAndErrorInInputAreValid } from "@App/utils/validationHelper";
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskHeartbeatInput, SendTaskSuccessInput, SendTaskFailureInput } from "aws-sdk/clients/stepfunctions";
-import { InterpretorDAL } from ".";
 import { ActivityService } from "../activity";
 import { ActivityTaskStatus } from "./interpretor.interfaces";
 import * as Event from '../events';
 import { isExecutionStillRunning } from "./stateProcessing";
+import * as TaskDAL from './states/task/taskDAL';
 
 export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetActivityTaskOutput> => {
     ensureWorkerNameIsValid(req?.workerName);
@@ -16,13 +16,13 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
     }
     //todo timeout
 
-    let task = await InterpretorDAL.popActivityTask(req.activityArn);
+    let task = await TaskDAL.popActivityTask(req.activityArn);
     while (task && !await isExecutionStillRunning(task.executionArn)) {
-        await InterpretorDAL.deleteActivityTask(task.token);
-        task = await InterpretorDAL.popActivityTask(req.activityArn)
+        await TaskDAL.deleteActivityTask(task.token);
+        task = await TaskDAL.popActivityTask(req.activityArn)
     }
     if (task) {
-        await InterpretorDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
+        await TaskDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
         await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})
     }
     return {
@@ -33,7 +33,7 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
 
 export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<void> => {
     ensureTaskTokenIsValid(req?.taskToken);
-    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(req.taskToken);
+    const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
 
     if (!activityTask) {
         throw new TaskDoesNotExistError(req.taskToken);
@@ -44,7 +44,7 @@ export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<vo
 
 export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {
     ensureSendTaskSuccessInputIsValid(req);
-    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(req.taskToken);
+    const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
     if (!activityTask) {
         throw new TaskDoesNotExistError(req.taskToken);
     }
@@ -71,7 +71,7 @@ const ensureTaskTokenIsValid = (taskToken: string): void => {
 export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> => {
     ensureSendTaskFailureInputIsValid(req);
     Logger.logInfo(`Task failure sent for '${req.taskToken}'`)
-    const activityTask = await InterpretorDAL.retrieveActivityTaskInProgress(req.taskToken);
+    const activityTask = await TaskDAL.retrieveActivityTaskInProgress(req.taskToken);
     if (!activityTask) {
         Logger.logWarning(`Task failure sent for '${req.taskToken}'`)
         throw new TaskDoesNotExistError(req.taskToken);

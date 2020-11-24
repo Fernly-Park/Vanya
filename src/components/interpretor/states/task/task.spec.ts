@@ -3,9 +3,9 @@ import { createSMAndStartExecutionHelper, dummyActivityArn, stateMachinesForTest
 import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
-import * as Event from '../../events';
-import { ActivityService } from '../../activity';
-import { InterpretorService } from '..';
+import * as Event from '../../../events';
+import { ActivityService } from '../../../activity';
+import { InterpretorService } from '../..';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/utils/validationHelper';
 import { ExecutionService } from '@App/components/execution';
 import { TaskTimedOutError } from '@App/errors/customErrors';
