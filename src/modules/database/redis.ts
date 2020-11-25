@@ -66,6 +66,8 @@ export let keysAsync: (pattern: string) => Promise<string[]>
 export let saddAsync: (key: string, member: string) => Promise<void>;
 export let sremAsync: (key: string, member: string) => Promise<void>;
 export let smembersAsync: (key: string) => Promise<string[]>;
+export let expireAsync: (key: string, seconds: number) => Promise<void>;
+export let ttlAsync: (key: string) => Promise<number>;
 
 let existsAsyncWithNumber: (key: string) => Promise<number>;
 export const existsAsync = async (key: string): Promise<boolean> => {
@@ -123,6 +125,8 @@ export const startRedis = () => {
     sremAsync = pooledFunctionFactory(client.srem);
     smembersAsync = pooledFunctionFactory(client.smembers);
     existsAsyncWithNumber = pooledFunctionFactory(client.exists);
+    expireAsync = pooledFunctionFactory(client.expire);
+    ttlAsync = pooledFunctionFactory(client.ttl);
 
     watchAsync = async (keyToWatch: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => {
         const watcher = await connectionPool.acquire();
@@ -188,7 +192,7 @@ export const getActivityTaskKey = (activityArn: string): string => {
     return `${config.redis_prefix}:${activityArn}:tasks`;
 }
 
-export const getActivityTaskInProgressKey = (token: string): string => {
+export const getRunningTaskStateKey = (token: string): string => {
     return `${config.redis_prefix}:tasks:${token}`;
 }
 

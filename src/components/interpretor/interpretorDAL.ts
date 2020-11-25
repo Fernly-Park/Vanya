@@ -23,7 +23,11 @@ export const deleteRunningStateInfo = async (executionArn: string): Promise<void
     const key = Redis.getCurrentlyRunningStateKey(executionArn);
     const keysToDelete = await Redis.smembersAsync(key);
     for (const keyToDelete of keysToDelete) {
-        await Redis.delAsync(keyToDelete);
+        if (keyToDelete.startsWith(`${config.redis_prefix}:tasks`)) {
+            await Redis.expireAsync(keyToDelete, config.taskTokenTimeoutSeconds);
+        } else {
+            await Redis.delAsync(keyToDelete);
+        }
     }
     await Redis.delAsync(key);
 }

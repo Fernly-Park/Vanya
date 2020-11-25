@@ -99,6 +99,9 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
     
     const activityTask = await TaskDAL.retrieveActivityTaskInProgress(activityTaskToken);
+    if (activityTask == null) {
+        return;
+    }
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' timeout`)
 

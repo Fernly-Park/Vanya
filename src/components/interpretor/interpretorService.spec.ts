@@ -99,7 +99,6 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         
         const numberOfRemainingTasks = await Redis.llenAsync(Redis.systemTaskKey);
         const executionWasAborted = await TimerService.numberOfTimedTask() !== 0;
-        const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
         const events = await ExecutionService.getExecutionHistory(execution);
         const contextObj = await Redis.hgetAllAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
         
@@ -113,7 +112,6 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         await ensureRedisStateIsConsistent(finishedExecution);
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
-        expect(parallelStateInfoInRedis).toHaveLength(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         if (typeof currentTest.expectedOutput === 'object') {
             expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
@@ -132,8 +130,15 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
 }
 
 const ensureRedisStateIsConsistent = async (req: {executionArn: string}): Promise<void> => {
+    const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
+    expect(parallelStateInfoInRedis).toHaveLength(0);
+
     const key = Redis.getCurrentlyRunningStateKey(req.executionArn);
     expect(await Redis.existsAsync(key)).toBe(false);
+    const taskStatesInRedis = await Redis.keysAsync(`${config.redis_prefix}:tasks:*`);
+    for(const taskKey of taskStatesInRedis) {
+        expect(await Redis.ttlAsync(taskKey)).toBeGreaterThan(0);
+    }
 }
 
 const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityArn: string})[]) => {

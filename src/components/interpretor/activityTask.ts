@@ -4,7 +4,7 @@ import { isJSON } from "@App/utils/objectUtils";
 import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, ensureCauseAndErrorInInputAreValid } from "@App/utils/validationHelper";
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskHeartbeatInput, SendTaskSuccessInput, SendTaskFailureInput } from "aws-sdk/clients/stepfunctions";
 import { ActivityService } from "../activity";
-import { ActivityTaskStatus } from "./interpretor.interfaces";
+import { ActivityTaskStatus, RunningTaskState } from "./interpretor.interfaces";
 import * as Event from '../events';
 import { isExecutionStillRunning } from "./stateProcessing";
 import * as TaskDAL from './states/task/taskDAL';
@@ -16,11 +16,8 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
     }
     //todo timeout
 
-    let task = await TaskDAL.popActivityTask(req.activityArn);
-    while (task && !await isExecutionStillRunning(task.executionArn)) {
-        await TaskDAL.deleteActivityTask(task.token);
-        task = await TaskDAL.popActivityTask(req.activityArn)
-    }
+    const task = await popActivityTask(req.activityArn);
+
     if (task) {
         await TaskDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
         await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})
@@ -29,6 +26,19 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
         input: task === null ? null : JSON.stringify(task.effectiveInput),
         taskToken: task === null ? null : task.token
     }
+}
+
+const popActivityTask = async (activityArn: string): Promise<RunningTaskState> => {
+    let task = await TaskDAL.popActivityTask(activityArn);
+
+    let executionWasAborted = task && !await isExecutionStillRunning(task.executionArn)
+    while (executionWasAborted) {
+        await TaskDAL.deleteActivityTask({executionArn: task.executionArn, taskToken: task.token});
+        task = await TaskDAL.popActivityTask(activityArn)
+        executionWasAborted = task && !await isExecutionStillRunning(task.executionArn)
+    }
+
+    return task;
 }
 
 export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<void> => {
