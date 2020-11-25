@@ -18,6 +18,7 @@ import {  processParallelState } from './states/parallel/parallel';
 import { FatalError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
+import { StopExecutionEventInput } from '../events';
 export * from './activityTask';
 
 let interpretor = false;
@@ -127,13 +128,18 @@ const processState = async (task: RunningState): Promise<void> => {
     
 };
 
+const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
+    await InterpretorDAL.deleteRunningStateInfo(req.executionArn);
+    await onExecutionAbortedEvent(req);
+}
+
 const registerEvents = (): void => {
     Event.sendTaskFailureEvent.on(processTaskFailed);
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
     Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
     Event.executionStartedEvent.on(onExecutionStartedEvent);
-    Event.stopExecutionEvent.on(onExecutionAbortedEvent);
+    Event.stopExecutionEvent.on(onStopExecution);
     Event.on(Event.CustomEvents.ActivityTaskRetry, processTaskState);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
@@ -146,7 +152,7 @@ const unregisterEvents = (): void => {
     Event.activityStartedEvent.removeListener(processActivityTaskStarted)
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
     Event.executionStartedEvent.removeListener(onExecutionStartedEvent);
-    Event.stopExecutionEvent.removeListener(onExecutionAbortedEvent);
+    Event.stopExecutionEvent.removeListener(onStopExecution);
     Event.removeListener(Event.CustomEvents.ActivityTaskRetry, processTaskState)
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);

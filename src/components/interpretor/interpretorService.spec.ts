@@ -110,9 +110,10 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             expect(executionAfterTaskTimedOut).toStrictEqual(finishedExecution);
             expect(eventsAfterTaskTimedOut).toStrictEqual(events);
         }
+        await ensureRedisStateIsConsistent(finishedExecution);
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
-        // expect(parallelStateInfoInRedis).toHaveLength(0);
+        expect(parallelStateInfoInRedis).toHaveLength(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
         if (typeof currentTest.expectedOutput === 'object') {
             expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
@@ -128,6 +129,11 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
             expect(events).toHaveLength(currentTest.expectedNumberOfEvents);
         }
     });
+}
+
+const ensureRedisStateIsConsistent = async (req: {executionArn: string}): Promise<void> => {
+    const key = Redis.getCurrentlyRunningStateKey(req.executionArn);
+    expect(await Redis.existsAsync(key)).toBe(false);
 }
 
 const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityArn: string})[]) => {

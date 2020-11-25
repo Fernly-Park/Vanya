@@ -71,6 +71,7 @@ export const updateExecutionStatus = async (db: DbOrTransaction, req: UpdateExec
     await Redis.setAsync(Redis.getExecutionStatusKey(req.executionArn), req.newStatus);
     await Redis.delAsync(key);
     await Redis.delAsync(Redis.getExecutionEventCurrentIdKey(req.executionArn));
+    await Redis.delAsync(Redis.getCurrentlyRunningStateKey(req.executionArn));
 }
 
 

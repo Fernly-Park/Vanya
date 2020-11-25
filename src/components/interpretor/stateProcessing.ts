@@ -80,6 +80,6 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
 export const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
     const {task} = req
     if (task.parallelInfo) {
-        await ParallelDAL.deleteRunningParallelStateInfo(task.parallelInfo.parentKey);
+        await ParallelDAL.deleteRunningParallelStateInfo({executionArn: task.executionArn, parallelStateKey: task.parallelInfo.parentKey});
     }
 }

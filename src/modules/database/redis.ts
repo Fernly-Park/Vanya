@@ -63,6 +63,14 @@ export let zremAsync: (key: string, member: string) => Promise<number>;
 export let hmsetAsync: (key: string, arg: {[key: string]: string | number}) => Promise<void>;
 export let jsonNumIncrByAsync: (key: string, path: string, number: number) => Promise<number>
 export let keysAsync: (pattern: string) => Promise<string[]>
+export let saddAsync: (key: string, member: string) => Promise<void>;
+export let sremAsync: (key: string, member: string) => Promise<void>;
+export let smembersAsync: (key: string) => Promise<string[]>;
+
+let existsAsyncWithNumber: (key: string) => Promise<number>;
+export const existsAsync = async (key: string): Promise<boolean> => {
+    return await existsAsyncWithNumber(key) === 1;
+}
 
 export const quitAsync = async (): Promise<void> => {
     if (connectionPool) {
@@ -111,6 +119,10 @@ export const startRedis = () => {
     hmsetAsync = pooledFunctionFactory(client.hmset)
     hgetAllAsync = pooledFunctionFactory(client.hgetall);
     keysAsync = pooledFunctionFactory(client.keys);
+    saddAsync = pooledFunctionFactory(client.sadd);
+    sremAsync = pooledFunctionFactory(client.srem);
+    smembersAsync = pooledFunctionFactory(client.smembers);
+    existsAsyncWithNumber = pooledFunctionFactory(client.exists);
 
     watchAsync = async (keyToWatch: string, callback: (watcher: redis.RedisClient) => Promise<string[]>) => {
         const watcher = await connectionPool.acquire();
@@ -182,4 +194,8 @@ export const getActivityTaskInProgressKey = (token: string): string => {
 
 export const getParallelStateInfoKey = (parallelKey: string): string => {
     return `${config.redis_prefix}:parallel:${parallelKey}`
+}
+
+export const getCurrentlyRunningStateKey = (executionArn: string): string => {
+    return `${config.redis_prefix}:${executionArn}:currentlyRunningStates`
 }
