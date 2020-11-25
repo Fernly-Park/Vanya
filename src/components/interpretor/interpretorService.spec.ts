@@ -122,6 +122,8 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         expect(finishedExecution.input).toStrictEqual(currentTest.input)
         if (currentTest.events) {
             expectEventsToBeCorrect(currentTest.events, events, currentTest.eventsExpectedDuration)
+        } else if (currentTest.parallelEvents) {
+            expectParallelEventsToBeCorrect(currentTest.parallelEvents, events);
         }
         if (currentTest.expectedNumberOfEvents !== undefined) {
             expect(events).toHaveLength(currentTest.expectedNumberOfEvents);
@@ -196,7 +198,7 @@ const createActivities = async (activities: ActivitiyToCreateForTests[], userId:
 }
 
 const expectEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
-    expect(expected).toHaveLength(received.length)
+    expect(received).toHaveLength(expected.length)
     for (let i = 0; i < expected.length; i++) {
         expect(received[i].timestamp).toMatch(ISO8601_REGEX);
         const expectedDuration = expectedDurations?.find(x => x.eventId === received[i].id);
@@ -213,6 +215,21 @@ const expectEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEven
         delete received[i].timestamp;
     }
     expect(received).toStrictEqual(expected);
+}
+
+const expectParallelEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEvent[]) => {
+    expect(received).toHaveLength(expected.length);
+
+    for(let i = 0; i < received.length; i++) {
+        expect(expected[i].timestamp).toMatch(ISO8601_REGEX); delete expected[i].timestamp;
+        expect(received[i].timestamp).toMatch(ISO8601_REGEX); delete received[i].timestamp;
+        expect(expected[i].id).toBeGreaterThanOrEqual(0); delete expected[i].id;
+        expect(received[i].id).toBeGreaterThanOrEqual(0); delete received[i].id;
+        expect(expected[i].previousEventId).toBeGreaterThanOrEqual(0); delete expected[i].previousEventId;
+        expect(received[i].previousEventId).toBeGreaterThanOrEqual(0); delete received[i].previousEventId;
+    }
+
+    expect(received).toStrictEqual(expect.arrayContaining(expected))
 }
 
 const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {

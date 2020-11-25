@@ -145,6 +145,7 @@ export type TestStateMachineTestCase = {
     expectedNumberOfEvents?: number,
     eventsExpectedDuration?: EventDurationExpectedForTests[],
     events?: HistoryEvent[],
+    parallelEvents?: HistoryEvent[]
 }
 export type TestStateMachine = {
     definition: IStateMachineDefinition,

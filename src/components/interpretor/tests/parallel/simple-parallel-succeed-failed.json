@@ -480,7 +480,7 @@
             }
           ]
           
-      }
+        }
     ],
     "definition": {
       "Comment": "Simple parallel state machine",
