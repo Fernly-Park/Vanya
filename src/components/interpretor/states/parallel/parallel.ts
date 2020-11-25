@@ -43,14 +43,15 @@ export const processParallelState = async (req: {task: RunningState, state: Para
 
 export const handleFinishedBranche = async (req: {brancheIndex: number, output: StateOutput, parallelStateKey: string, previousEventId: number}): Promise<void> => {
     Logger.logDebug(`finished branches number '${req.brancheIndex}' of parallel state key '${req.parallelStateKey}'`)
+    const executionWasAborted = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey) == null;
+    if (executionWasAborted) {
+        return;
+    }
+
     const numberOfBrancheLeft = await ParallelDAL.updateRunningParallelStateInfo({brancheNumber: req.brancheIndex, 
         output: JSON.stringify(req.output), parallelStateKey: req.parallelStateKey});
     if (numberOfBrancheLeft === 0) {
         const task = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey);
-        const wasParallelStateAborted = task == null;
-        if (wasParallelStateAborted) {
-            return;
-        }
         await ParallelDAL.deleteRunningParallelStateInfo({executionArn: task.executionArn, parallelStateKey: req.parallelStateKey});
         const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;
         const effectiveOutput = await filterOutput(task.rawInput, task.output, state, task);
@@ -60,11 +61,11 @@ export const handleFinishedBranche = async (req: {brancheIndex: number, output: 
 }
 
 export const handleFailedBranche = async (req: {cause?: string, error?: string, parallelStateKey: string, previousEventId: number}): Promise<void> => {
-    const task = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey);
-    const wasParallelStateAborted = task == null;
-    if (wasParallelStateAborted) {
+    const executionWasAborted = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey) == null;
+    if (executionWasAborted) {
         return;
     }
+    const task = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey);
     await ParallelDAL.deleteRunningParallelStateInfo({executionArn: task.executionArn, parallelStateKey: req.parallelStateKey});
     task.previousEventId = await onParallelStateFailed({executionArn: task.executionArn, previousEventId: req.previousEventId})
     const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;

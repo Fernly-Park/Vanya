@@ -164,6 +164,15 @@
              "executionAbortedEventDetails": {}
             }
           ]
+        },
+        {
+          "input": {"input":1},
+          "expectedStateMachineStatus": "ABORTED",
+          "expectedOutput": null,
+          "describe": "should abort if a stopExecution is sent after the pass state 1",
+          "stopExecution" : {
+            "afterStateName": "Pass State 1"
+          }
         }
     ],
     "definition": {
