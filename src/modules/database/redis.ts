@@ -203,3 +203,7 @@ export const getParallelStateInfoKey = (parallelKey: string): string => {
 export const getCurrentlyRunningStateKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:currentlyRunningStates`
 }
+
+export const getRunningStateInsideParallelKey = (parentKey: string): string => {
+    return `${config.redis_prefix}:parallel:${parentKey}:currentlyRunningStates`
+}

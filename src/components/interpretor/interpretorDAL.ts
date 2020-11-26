@@ -24,18 +24,30 @@ export const getExecutionStatus = async (executionArn: string): Promise<Executio
 export const deleteRunningStateInfo = async (executionArn: string): Promise<void> => {
     const key = Redis.getCurrentlyRunningStateKey(executionArn);
     const keysToDelete = await Redis.smembersAsync(key);
-    for (const keyToDelete of keysToDelete) {
+    await deleteKeys(keysToDelete);
+    await Redis.delAsync(key);
+}
+
+const deleteKeys = async (keys: string[]): Promise<void> => {
+    for (const keyToDelete of keys) {
         if (keyToDelete.startsWith(`${config.redis_prefix}:tasks`)) {
             await Redis.expireAsync(keyToDelete, config.taskTokenTimeoutSeconds);
+        } else if (keyToDelete.startsWith(`${config.redis_prefix}:parallel`)) {
+            const keysToDelete = await Redis.smembersAsync(`${keyToDelete}:currentlyRunningStates`);
+            await deleteKeys(keysToDelete);
+            await Redis.delAsync(`${keyToDelete}:currentlyRunningStates`);
+            await Redis.delAsync(keyToDelete);
         } else {
             await Redis.delAsync(keyToDelete);
         }
     }
-    await Redis.delAsync(key);
 }
 
 export const addToCurrentlyRunningState = async (state: RunningState, stateType: StateType): Promise<void> => {
-    const key = Redis.getCurrentlyRunningStateKey(state.executionArn);
+    const key = state.parallelInfo != null 
+        ? Redis.getRunningStateInsideParallelKey(state.parallelInfo.parentKey)
+        : Redis.getCurrentlyRunningStateKey(state.executionArn)
+
     await Redis.saddAsync(key, getRedisKeyOfState(state.token, stateType));
 }
 
@@ -55,6 +67,9 @@ const getRedisKeyOfState = (token: string, stateType: StateType): string => {
 }
 
 export const removeFromCurrentlyRunningState = async (state: RunningState, stateType: StateType): Promise<void> => {
-    const key = Redis.getCurrentlyRunningStateKey(state.executionArn);
+    const key = state.parallelInfo != null 
+        ? Redis.getRunningStateInsideParallelKey(state.parallelInfo.parentKey)
+        : Redis.getCurrentlyRunningStateKey(state.executionArn)
+
     await Redis.sremAsync(key, getRedisKeyOfState(state.token, stateType));
 }

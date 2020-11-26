@@ -140,8 +140,15 @@ export const addToCurrentlyRunningState = async (task: RunningState, stateType: 
     } 
 }
 
+export const removeFromCurrentlyRunningState = async (task: RunningState, stateType: StateType): Promise<void> => {
+    if (isDelayedState(stateType)) {
+        await InterpretorDAL.removeFromCurrentlyRunningState(task, stateType);
+    } 
+}
+
 const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     await InterpretorDAL.deleteRunningStateInfo(req.executionArn);
+    
     await onExecutionAbortedEvent(req);
 }
 

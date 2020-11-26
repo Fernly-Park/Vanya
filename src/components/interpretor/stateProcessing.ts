@@ -2,7 +2,7 @@ import { ExecutionService } from "@App/components/execution";
 import { StateMachineStateValue, PassState, TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { Logger } from "@App/modules";
 import { AWSConstant } from "@App/utils/constants";
-import { InterpretorDAL } from ".";
+import { InterpretorDAL, InterpretorService } from ".";
 import * as ParallelDAL from './states/parallel/parallelDAL'
 import { ExecutionStatus } from "../execution/execution.interfaces";
 import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent } from "./historyEvent";
@@ -39,6 +39,8 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
     if (!await isExecutionStillRunning(req.executionArn)) {
         return;
     }
+
+    await InterpretorService.removeFromCurrentlyRunningState(req, req.state.Type)
     req.previousEventId = await onStateExitedEvent({...req, stateType: req.state.Type});
     if (req.nextStateName) {
         return await execute({executionArn: req.executionArn, stateName: req.nextStateName, 
@@ -65,6 +67,7 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
     }
 
     if (!wasTheErrorHandled) {
+        await InterpretorService.removeFromCurrentlyRunningState(req.task, req.state.Type)
         if (req.task.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
             return await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
                 previousEventId: req.task.previousEventId})
