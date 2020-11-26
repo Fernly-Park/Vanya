@@ -9,7 +9,7 @@ export interface RunningState {
     previousStateName?: string,
     previousEventId: number,
     retry?: RetryInformation[],
-    
+    token?: string,
     parallelInfo?: {
         parentKey: string,
         currentBranche: number
@@ -22,7 +22,6 @@ export interface RetryInformation {
 }
 
 export type RunningTaskState = RunningState & {
-    token: string,
     output?: Record<string, unknown>,
     status: ActivityTaskStatus,
     effectiveInput: StateInput,

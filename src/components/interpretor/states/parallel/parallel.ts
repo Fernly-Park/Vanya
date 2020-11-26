@@ -2,7 +2,6 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { ParallelState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningState, StateOutput } from "@App/components/interpretor/interpretor.interfaces";
 import { Logger } from "@App/modules";
-import { v4 as uuid } from 'uuid';
 import { InterpretorService } from "../..";
 import * as ParallelDAL from './parallelDAL'
 import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted } from "../../historyEvent";
@@ -13,12 +12,10 @@ export const processParallelState = async (req: {task: RunningState, state: Para
     task.previousEventId = await onParallelTaskStarted(task)
 
     const effectiveInput = await filterInput(task, state);
-
-    const parallelStateKey = uuid();
-    Logger.logDebug(`setting parallel state info  of state '${task.stateName}' of execution '${task.executionArn}' with key '${parallelStateKey}'`)
+    Logger.logDebug(`setting parallel state info  of state '${task.stateName}' of execution '${task.executionArn}' with key '${task.token}'`)
     await ParallelDAL.setParallelRunningStateInfo({
         executionArn: task.executionArn, 
-        parallelStateKey, 
+        parallelStateKey: task.token, 
         parallelStateInfo: {...task, numberOfBranchesLeft: state.Branches.length,  output: new Array(state.Branches.length).fill(null)}
     });
 
@@ -33,7 +30,7 @@ export const processParallelState = async (req: {task: RunningState, state: Para
             stateName: branche.StartAt,
             previousStateName: task.previousStateName,
             parallelInfo: {
-                parentKey: parallelStateKey,
+                parentKey: task.token,
                 currentBranche: i
             } 
         });

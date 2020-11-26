@@ -78,11 +78,12 @@ const processState = async (task: RunningState): Promise<void> => {
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
     Logger.logDebug(`processing state '${task.stateName}' from '${task.executionArn}' of type '${state.Type}'`);
 
-    const taskToken = state.Type === StateType.Task ? uuid() : undefined;
+    const stateToken = isDelayedState(state.Type) ? uuid() : undefined;
+    task.token = task.token ?? stateToken
     await ExecutionService.updateContextObject({executionArn: task.executionArn, enteredState: {
         EnteredTime: new Date().toISOString(),
         Name: task.stateName,
-    }, taskToken, previousState: task.previousStateName});
+    }, taskToken: stateToken, previousState: task.previousStateName});
 
     let effectiveOutput: StateOutput;
     task.previousEventId = await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, 
@@ -95,7 +96,7 @@ const processState = async (task: RunningState): Promise<void> => {
                 next = (state as PassState).Next
                 break;
             case StateType.Task:
-                return await processTaskState({task, state: state as TaskState, token: taskToken});
+                return await processTaskState({task, state: state as TaskState, token: stateToken});
             case StateType.Wait:
                 return await processWaitTask(task, state as WaitState); 
             case StateType.Succeed:
@@ -125,9 +126,11 @@ const processState = async (task: RunningState): Promise<void> => {
             state
         })  
     }
-    
 };
 
+const isDelayedState = (stateType: StateType): boolean => {
+    return stateType === StateType.Task || stateType === StateType.Parallel || stateType === StateType.Wait || stateType === StateType.Map
+};
 const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     await InterpretorDAL.deleteRunningStateInfo(req.executionArn);
     await onExecutionAbortedEvent(req);
