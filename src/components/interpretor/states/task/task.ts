@@ -12,6 +12,7 @@ import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent
 import { Logger } from "@App/modules";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from "../../stateProcessing";
 import * as TaskDAL from './taskDAL';
+import { InterpretorService } from "../..";
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
     const {task, state, token} = req;

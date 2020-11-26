@@ -12,23 +12,11 @@ export const addActivityTask = async (activityArn: string, task: RunningTaskStat
 const addTaskStateInfo = async (task: RunningTaskState): Promise<void> => {
     const key = Redis.getRunningTaskStateKey(task.token);
     await Redis.setAsync(key, JSON.stringify(task));
-    await addToCurrentlyRunningState({executionArn: task.executionArn, redisKeyToAdd: key});
-}
-
-const addToCurrentlyRunningState = async (req: {executionArn: string, redisKeyToAdd: string}): Promise<void> => {
-    const key = Redis.getCurrentlyRunningStateKey(req.executionArn);
-    await Redis.saddAsync(key, req.redisKeyToAdd);
 }
 
 export const deleteActivityTask = async (req: {executionArn: string, taskToken: string}): Promise<void> => {
     const key = Redis.getRunningTaskStateKey(req.taskToken);
     await Redis.delAsync(key);
-    await removeFromCurrentlyRunningState({executionArn: req.executionArn, redisKeyToRemove: key});
-}
-
-const removeFromCurrentlyRunningState = async (req: {executionArn: string, redisKeyToRemove: string}): Promise<void> => {
-    const key = Redis.getCurrentlyRunningStateKey(req.executionArn);
-    await Redis.sremAsync(key, req.redisKeyToRemove);
 }
 
 const addTaskToActivityQueue = async (activityArn: string, input: RunningTaskState): Promise<void> => {

@@ -89,6 +89,7 @@ const processState = async (task: RunningState): Promise<void> => {
     task.previousEventId = await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, 
         stateType: state.Type, input: task.rawInput, previousEventId: task.previousEventId})
     try {
+        await addToCurrentlyRunningState(task, state.Type);
         Logger.logDebug(`Input processed for state '${task.stateName}' from '${task.executionArn}'. stringified raw input : '${JSON.stringify(task.rawInput)}'`)
         switch (state.Type) {
             case StateType.Pass: 
@@ -129,8 +130,16 @@ const processState = async (task: RunningState): Promise<void> => {
 };
 
 const isDelayedState = (stateType: StateType): boolean => {
-    return stateType === StateType.Task || stateType === StateType.Parallel || stateType === StateType.Wait || stateType === StateType.Map
+    return stateType === StateType.Task || stateType === StateType.Parallel 
+    //|| stateType === StateType.Wait || stateType === StateType.Map
 };
+
+export const addToCurrentlyRunningState = async (task: RunningState, stateType: StateType): Promise<void> => {
+    if (isDelayedState(stateType)) {
+        await InterpretorDAL.addToCurrentlyRunningState(task, stateType);
+    } 
+}
+
 const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     await InterpretorDAL.deleteRunningStateInfo(req.executionArn);
     await onExecutionAbortedEvent(req);
