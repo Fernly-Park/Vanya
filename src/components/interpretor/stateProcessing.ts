@@ -67,15 +67,20 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
     }
 
     if (!wasTheErrorHandled) {
-        await InterpretorService.removeFromCurrentlyRunningState(req.task, req.state.Type)
+
         if (req.task.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
-            return await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
+
+            await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
                 previousEventId: req.task.previousEventId})
+
+            await InterpretorService.removeFromCurrentlyRunningState(req.task, req.state.Type)
         } else {
+            await InterpretorService.removeFromCurrentlyRunningState(req.task, req.state.Type)
+
             Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
             await cleanFailedState(req);
             await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
-            return await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
+            await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
         }
     }
 }

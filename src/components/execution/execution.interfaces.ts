@@ -77,6 +77,7 @@ export enum HistoryEventType {
     ActivityStarted = 'ActivityStarted',
     ActivitySucceeded = 'ActivitySucceeded',
     ActivityTimedOut = 'ActivityTimedOut',
+    TaskStateAborted = 'TaskStateAborted',
     ExecutionFailed = 'ExecutionFailed',
     ExecutionAborted = 'ExecutionAborted',
     ActivityFailed = 'ActivityFailed',

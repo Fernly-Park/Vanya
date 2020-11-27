@@ -35,10 +35,11 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
     await Redis.watchAsync(key, (watcher) => {
         return new Promise((resolve, reject) => {
             watcher.get(key, (err, activityTaskStringified) => {
-                if (err) return reject (err);
+                if (err) return reject (err)
+            
                 const activityTask = JSON.parse(activityTaskStringified) as RunningTaskState;
                 if (activityTask.status === ActivityTaskStatus.TimedOut) {
-                    return reject (err);
+                    return resolve();
                 }
                 activityTask.status = newStatus;
                 activityTask.previousEventId = previousEventId == null ? activityTask.previousEventId : previousEventId;

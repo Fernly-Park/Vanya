@@ -6,7 +6,7 @@ import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent }
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait';
-import { processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task/task';
+import { abortTaskState, processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task/task';
 import * as Event from '../events';
 import { ExecutionService } from '../execution';
 import { StateMachineService } from '../stateMachines';
@@ -148,7 +148,10 @@ export const removeFromCurrentlyRunningState = async (task: RunningState, stateT
 
 const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     await InterpretorDAL.deleteRunningStateInfo(req.executionArn);
-    
+    const runningStates = await InterpretorDAL.getCurrentlyRunningState(req.executionArn);
+    for (const taskToken of runningStates.taskTokens) {
+        await abortTaskState(taskToken);
+    }
     await onExecutionAbortedEvent(req);
 }
 

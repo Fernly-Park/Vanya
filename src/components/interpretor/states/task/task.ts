@@ -8,11 +8,14 @@ import { TimerService } from "@App/components/timer";
 import { AWSConstant } from "@App/utils/constants";
 import { SendTaskFailureEventInput } from "@App/components/events";
 import { StateMachineService } from "@App/components/stateMachines";
-import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../../historyEvent";
+import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent, onTaskStateAborted } from "../../historyEvent";
 import { Logger } from "@App/modules";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from "../../stateProcessing";
 import * as TaskDAL from './taskDAL';
-import { InterpretorService } from "../..";
+import { getDateIn } from "@App/utils/date";
+import validator from "validator";
+import { ValidationExceptionError } from "@App/errors/AWSErrors";
+import { sleep } from "@Tests/testHelper";
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
     const {task, state, token} = req;
@@ -53,15 +56,13 @@ export const processActivityTaskStarted = async (input: {task: RunningTaskState,
     activityTask.previousEventId = await onActivityStartedEvent(input)
     await TaskDAL.modifyActivityTaskStatus(activityTask.token, activityTask.status, activityTask.previousEventId);
     if (timeoutSeconds != null) {
-        const time = new Date();
-        time.setSeconds(time.getSeconds() + timeoutSeconds);
+        const time = getDateIn(timeoutSeconds * 1000);
         Logger.logDebug(`adding timeout timer for task '${activityTask.token}'`)
         await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.TaskTimeout}})
     }
 
     if (heartbeatSeconds != null) {
-        const time = new Date();
-        time.setSeconds(time.getSeconds() + heartbeatSeconds);
+        const time = getDateIn(heartbeatSeconds * 1000)
         Logger.logDebug(`adding heartbeat timer for task '${activityTask.token}'`)
         await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
     }
@@ -107,6 +108,7 @@ export const processTaskTimeout = async (activityTaskToken: string): Promise<voi
     Logger.logDebug(`task '${activityTask.token}' timeout`)
 
     await cleanTaskStateEndedHelper(activityTask);
+
     activityTask.previousEventId = await onActivityTimeoutEvent({executionArn: activityTask.executionArn, previousEventId: activityTask.previousEventId})
     await endStateFailed({task: activityTask,
         error: AWSConstant.error.STATE_TIMEOUT,
@@ -132,10 +134,10 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
     });
 };
 
-const cleanTaskStateEndedHelper = async (activityTask: RunningTaskState) => {
-    await TaskDAL.modifyActivityTaskStatus(activityTask.token, ActivityTaskStatus.TimedOut, activityTask.previousEventId);
-    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: activityTask.token})
-    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: activityTask.token})
+const cleanTaskStateEndedHelper = async (req: {token?: string}) => {
+    await TaskDAL.modifyActivityTaskStatus(req.token, ActivityTaskStatus.TimedOut);
+    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: req.token})
+    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: req.token})
 }
 
 export const processTaskHeartbeat = async (activityTask: RunningTaskState): Promise<void> => {
@@ -160,4 +162,12 @@ const ensureTaskIsNotTimedOut = async (activityTask: RunningTaskState): Promise<
     }
 }
 
+export const abortTaskState = async (taskToken: string): Promise<void> => {
+    if (!validator.isUUID(taskToken)) {
+        throw new ValidationExceptionError(`task token '${taskToken}' is not a valid uuid`)
+    }
+    Logger.logDebug(`aborting state '${taskToken}'`);
+
+    await cleanTaskStateEndedHelper({token: taskToken});
+}
 

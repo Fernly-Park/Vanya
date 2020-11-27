@@ -4,8 +4,9 @@ import { RunningState, StateOutput } from "@App/components/interpretor/interpret
 import { Logger } from "@App/modules";
 import { InterpretorService } from "../..";
 import * as ParallelDAL from './parallelDAL'
-import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted } from "../../historyEvent";
+import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted, onTaskStateAborted } from "../../historyEvent";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
+import { abortTaskState } from "../task/task";
 
 export const processParallelState = async (req: {task: RunningState, state: ParallelState}): Promise<void> => {
     const {task, state} = req;
@@ -63,11 +64,24 @@ export const handleFailedBranche = async (req: {cause?: string, error?: string, 
         return;
     }
     const task = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey);
+
+    await abortRunningStates({...task, parallelStateToken: req.parallelStateKey});
+
     await ParallelDAL.deleteRunningParallelStateInfo({executionArn: task.executionArn, parallelStateKey: req.parallelStateKey});
     task.previousEventId = await onParallelStateFailed({executionArn: task.executionArn, previousEventId: req.previousEventId})
     const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;
     await endStateFailed({task, cause: req.cause, error: req.error, state})
 }
+
+const abortRunningStates = async (req: {parallelStateToken: string, previousEventId: number, executionArn: string}): Promise<void> => {
+    const runningStateToken = await ParallelDAL.getRunningStateInsideParallel(req.parallelStateToken);
+
+    for (const taskToken of runningStateToken.tasks) {
+        await abortTaskState(taskToken);
+        await onTaskStateAborted(req)
+    }
+};
+
 export const isParallelStateStillRunning = async (parallelStateKey: string): Promise<boolean> => {
     const task = await ParallelDAL.getRunningParallelStateInfo(parallelStateKey)
     return !!task;

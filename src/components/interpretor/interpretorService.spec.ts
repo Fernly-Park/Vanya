@@ -148,7 +148,7 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
         return;
     }
     for(const activity of activities) {
-        activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000) : false
+        activity.waitBeforeGetActivityTaskSeconds ? await TestHelper.sleep(activity.waitBeforeGetActivityTaskSeconds * 1000 * config.waitScale) : false
         const res = await InterpretorService.getActivityTask({activityArn: activity.activityArn, workerName: activity.workerName});
         if (activity.shouldReceiveATask != null) {
             const receivedATask = res.taskToken != null;
@@ -162,11 +162,11 @@ const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityA
                     Logger.logError(err ?? 'error while sending heartbeat')
                     return clearInterval(interval);
                 })
-            }, activity.heartbeatIntervalSeconds * 1000)
+            }, activity.heartbeatIntervalSeconds * 1000 * config.waitScale)
             : undefined;
             expect(JSON.parse(res.input)).toStrictEqual(activity.expectedInput);
             if (activity.workDurationSeconds) {
-                await TestHelper.sleep(activity.workDurationSeconds * 1000)
+                await TestHelper.sleep(activity.workDurationSeconds * 1000 * config.waitScale)
             }
             try {
                 interval ? clearInterval(interval) : false

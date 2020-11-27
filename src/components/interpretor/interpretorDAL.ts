@@ -73,3 +73,30 @@ export const removeFromCurrentlyRunningState = async (state: RunningState, state
 
     await Redis.sremAsync(key, getRedisKeyOfState(state.token, stateType));
 }
+
+export const getCurrentlyRunningState = async (executionArn: string): Promise<{taskTokens: string[], parallelTokens: string[]}>  => {
+    const key = Redis.getCurrentlyRunningStateKey(executionArn);
+    return await getKeys(await Redis.smembersAsync(key))
+}
+
+
+export const getKeys = async (keys: string[]): Promise<{taskTokens: string[], parallelTokens: string[]}> => {
+    const toReturn = {
+        taskTokens: [] as string[],
+        parallelTokens: [] as string[]
+    };
+
+    for (const keyToDelete of keys) {
+        if (keyToDelete.startsWith(`${config.redis_prefix}:tasks`)) {
+            toReturn.taskTokens.push(keyToDelete.split(':')[3]); // todo incorrect
+        } else if (keyToDelete.startsWith(`${config.redis_prefix}:parallel`)) {
+            toReturn.parallelTokens.push(keyToDelete.split(':')[3])
+            const keysToDelete = await Redis.smembersAsync(`${keyToDelete}:currentlyRunningStates`);
+            const toMerge = await getKeys(keysToDelete);
+            toReturn.taskTokens = toReturn.taskTokens.concat(toMerge.taskTokens)
+            toReturn.parallelTokens = toReturn.parallelTokens.concat(toMerge.parallelTokens)
+        } 
+    }
+
+    return toReturn;
+}

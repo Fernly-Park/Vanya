@@ -78,6 +78,13 @@ export const onActivitySucceededEvent = async (req: RunningTaskState): Promise<n
     }})
 }
 
+export const onTaskStateAborted = async (req: {executionArn: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        previousEventId: req.previousEventId,
+        type: HistoryEventType.TaskStateAborted
+    }})
+};
+
 export const onStateExitedEvent = async (req: {executionArn: string, stateName: string, output: unknown, stateType: StateType, previousEventId: number}): Promise<number> => {
     return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
         type: `${req.stateType}StateExited` as HistoryEventType,
