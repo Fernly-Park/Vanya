@@ -1,6 +1,6 @@
 {
-  "name": "placeholder",
-  "version": "1.0.0",
+  "name": "vanya",
+  "version": "0.0.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "jest": {
     "testEnvironment": "node"
   },
-  "author": "",
+  "author": "FernlyPark@gmail.com",
   "license": "ISC",
   "devDependencies": {
     "@types/cookie-parser": "^1.4.2",
