@@ -1,5 +1,5 @@
 /* eslint-disable no-fallthrough */
-import { RunningState } from "./interpretor.interfaces";
+import { RunningState, RunningWaitState } from "./interpretor.interfaces";
 import * as Redis from '@App/modules/database/redis';
 import config from "@App/config";
 
@@ -58,7 +58,7 @@ const getRedisKeyOfState = (token: string, stateType: StateType): string => {
         case StateType.Parallel:
             return Redis.getParallelStateInfoKey(token)
         case StateType.Wait:
-            // todo
+            return Redis.getWaitStateKey(token);
         case StateType.Map:
             // todo
         default:
@@ -80,10 +80,11 @@ export const getCurrentlyRunningState = async (executionArn: string): Promise<{t
 }
 
 
-export const getKeys = async (keys: string[]): Promise<{taskTokens: string[], parallelTokens: string[]}> => {
+export const getKeys = async (keys: string[]): Promise<{taskTokens: string[], parallelTokens: string[], waitTokens: string[]}> => {
     const toReturn = {
         taskTokens: [] as string[],
-        parallelTokens: [] as string[]
+        parallelTokens: [] as string[],
+        waitTokens: [] as string[]
     };
 
     for (const keyToDelete of keys) {
@@ -95,8 +96,15 @@ export const getKeys = async (keys: string[]): Promise<{taskTokens: string[], pa
             const toMerge = await getKeys(keysToDelete);
             toReturn.taskTokens = toReturn.taskTokens.concat(toMerge.taskTokens)
             toReturn.parallelTokens = toReturn.parallelTokens.concat(toMerge.parallelTokens)
-        } 
+        } else if (keyToDelete.startsWith(`${config.redis_prefix}:wait:`)){
+            toReturn.waitTokens.push(keyToDelete.split(':')[3])
+        }
     }
 
     return toReturn;
+}
+
+export const getWaitStateInfo = async (token: string): Promise<RunningWaitState> => {
+    const key = Redis.getWaitStateKey(token);
+    return await JSON.parse(await Redis.getAsync(key)) as RunningWaitState;
 }

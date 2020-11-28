@@ -200,6 +200,10 @@ export const getParallelStateInfoKey = (parallelKey: string): string => {
     return `${config.redis_prefix}:parallel:${parallelKey}`
 }
 
+export const getWaitStateKey = (token: string): string => {
+    return `${config.redis_prefix}:wait:${token}`
+};
+
 export const getCurrentlyRunningStateKey = (executionArn: string): string => {
     return `${config.redis_prefix}:${executionArn}:currentlyRunningStates`
 }

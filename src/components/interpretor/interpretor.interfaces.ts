@@ -29,6 +29,10 @@ export type RunningTaskState = RunningState & {
     timeoutSeconds?: number
 }
 
+export type RunningWaitState = RunningState & {
+    waitUntil: Date
+};
+
 export type RunningParallelState = RunningState & {
     numberOfBranchesLeft: number
     output: StateOutput[]

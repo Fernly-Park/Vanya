@@ -3,13 +3,15 @@ import { RunningState } from "@App/components/interpretor/interpretor.interfaces
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
-import { retrieveField } from "../path/path";
-import * as Event from '../../events';
+import { retrieveField } from "../../path/path";
+import * as Event from '../../../events';
 import { AWSConstant } from "@App/utils/constants";
 import { StateMachineService } from "@App/components/stateMachines";
 import { Logger } from "@App/modules";
 import { getDateIn } from "@App/utils/date";
-import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../stateProcessing";
+import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
+import * as WaitDAL from './waitDAL';
+import { InterpretorDAL } from "../..";
 
 export const processWaitTask = async (task: RunningState, state: WaitState): Promise<void> => {
     const effectiveInput = await filterInput(task, state);
@@ -32,12 +34,18 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
         time = new Date(timestamp);
     }
 
+    await WaitDAL.addWaitStateInfo({...task, waitUntil: time});
     Logger.logDebug(`Waiting state '${task.stateName}' of '${task.executionArn}' started. waiting until '${time.toISOString()}'`)
-    await TimerService.addTimedTask({until: time, timedTask: {task, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
+    await TimerService.addTimedTask({until: time, timedTask: {task: task.token, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
 }
 
 
-export const processWaitingStateDone = async (task: RunningState): Promise<void> => {
+export const processWaitingStateDone = async (token: string): Promise<void> => {
+    const task = await InterpretorDAL.getWaitStateInfo(token);
+    const executionWasAborted = task == null;
+    if (executionWasAborted) {
+        return;
+    }
     Logger.logDebug(`Waiting for state '${task.stateName}' of '${task.executionArn}' finished, resuming state machine processing`)
 
     const waitingState = (await StateMachineService.retrieveStateFromStateMachine(task)) as WaitState;

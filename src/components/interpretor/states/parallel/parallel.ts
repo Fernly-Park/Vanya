@@ -1,10 +1,10 @@
 import { StateMachineService } from "@App/components/stateMachines";
-import { ParallelState } from "@App/components/stateMachines/stateMachine.interfaces";
+import { ParallelState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningState, StateOutput } from "@App/components/interpretor/interpretor.interfaces";
 import { Logger } from "@App/modules";
-import { InterpretorService } from "../..";
+import { InterpretorDAL, InterpretorService } from "../..";
 import * as ParallelDAL from './parallelDAL'
-import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted, onTaskStateAborted } from "../../historyEvent";
+import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted, onTaskStateAborted, onWaitStateAborted } from "../../historyEvent";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
 import { abortTaskState } from "../task/task";
 
@@ -65,7 +65,7 @@ export const handleFailedBranche = async (req: {cause?: string, error?: string, 
     }
     const task = await ParallelDAL.getRunningParallelStateInfo(req.parallelStateKey);
 
-    await abortRunningStates({...task, parallelStateToken: req.parallelStateKey});
+    await abortRunningStates({...task, parallelStateToken: req.parallelStateKey, previousEventId: req.previousEventId});
 
     await ParallelDAL.deleteRunningParallelStateInfo({executionArn: task.executionArn, parallelStateKey: req.parallelStateKey});
     task.previousEventId = await onParallelStateFailed({executionArn: task.executionArn, previousEventId: req.previousEventId})
@@ -79,6 +79,12 @@ const abortRunningStates = async (req: {parallelStateToken: string, previousEven
     for (const taskToken of runningStateToken.tasks) {
         await abortTaskState(taskToken);
         await onTaskStateAborted(req)
+    }
+    
+    for (const waitToken of runningStateToken.wait) {
+        const waitInfo = await InterpretorDAL.getWaitStateInfo(waitToken);
+        await InterpretorService.removeFromCurrentlyRunningState(waitInfo, StateType.Wait);
+        await onWaitStateAborted(req);
     }
 };
 

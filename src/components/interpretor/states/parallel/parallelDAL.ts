@@ -46,6 +46,8 @@ export const getRunningStateInsideParallel = async (parallelStateKey: string) =>
             toReturn.tasks.push(key.split(':')[3])
         } else if (key.startsWith(`${config.redis_prefix}:parallel`)) {
             toReturn.parallel.push(key.split(':')[3])
+        } else if (key.startsWith(`${config.redis_prefix}:wait:`)) {
+            toReturn.wait.push(key.split(':')[3])
         }
         // todo
     } 

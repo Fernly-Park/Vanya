@@ -5,7 +5,7 @@ import { ChoiceState, FailState, ParallelState, PassState, StateType, TaskState,
 import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
-import { processWaitingStateDone, processWaitTask } from './states/wait';
+import { processWaitingStateDone, processWaitTask } from './states/wait/wait';
 import { abortTaskState, processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task/task';
 import * as Event from '../events';
 import { ExecutionService } from '../execution';
@@ -130,8 +130,7 @@ const processState = async (task: RunningState): Promise<void> => {
 };
 
 const isDelayedState = (stateType: StateType): boolean => {
-    return stateType === StateType.Task || stateType === StateType.Parallel 
-    //|| stateType === StateType.Wait || stateType === StateType.Map
+    return stateType === StateType.Task || stateType === StateType.Parallel || stateType === StateType.Wait || stateType === StateType.Map
 };
 
 export const addToCurrentlyRunningState = async (task: RunningState, stateType: StateType): Promise<void> => {
@@ -152,6 +151,7 @@ const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     for (const taskToken of runningStates.taskTokens) {
         await abortTaskState(taskToken);
     }
+    
     await onExecutionAbortedEvent(req);
 }
 
