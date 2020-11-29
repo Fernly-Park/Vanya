@@ -168,46 +168,12 @@ export const onConnectionError = (callback: () => void ): void => {
 export const systemTaskKey = `${config.redis_prefix}:systemTasks`;
 export const timerKey = `${config.redis_prefix}:timedTasks`;
 
-export const getContextObjectKey = (executionArn: string): string => {
-    return `${config.redis_prefix}:${executionArn}:contextObject`
-}
-
-export const getStateMachineStatesKey = (stateMachineArn: string): string => {
-    return `${config.redis_prefix}:${stateMachineArn}:states`
-}
-
-export const getExecutionEventKey = (executionArn: string): string => {
-    return `${config.redis_prefix}:${executionArn}:events`
-}
-
-export const getExecutionStatusKey = (executionArn: string): string => {
-    return `${config.redis_prefix}:${executionArn}:status` 
-}
-
-export const getExecutionEventCurrentIdKey = (executionArn: string): string => {
-    return `${config.redis_prefix}:${executionArn}:currentEventId`;
-}
-
-export const getActivityTaskKey = (activityArn: string): string => {
-    return `${config.redis_prefix}:${activityArn}:tasks`;
-}
-
-export const getRunningTaskStateKey = (token: string): string => {
-    return `${config.redis_prefix}:tasks:${token}`;
-}
-
-export const getParallelStateInfoKey = (parallelKey: string): string => {
-    return `${config.redis_prefix}:parallel:${parallelKey}`
-}
-
-export const getWaitStateKey = (token: string): string => {
-    return `${config.redis_prefix}:wait:${token}`
-};
-
-export const getCurrentlyRunningStateKey = (executionArn: string): string => {
-    return `${config.redis_prefix}:${executionArn}:currentlyRunningStates`
-}
-
-export const getRunningStateInsideParallelKey = (parentKey: string): string => {
-    return `${config.redis_prefix}:parallel:${parentKey}:currentlyRunningStates`
+export const contextObjectKey = {
+    get: (executionArn: string): string => {
+        return `${config.redis_prefix}:${executionArn}:contextObject`
+    },
+    is: (key: string): boolean => {
+        const parts = key.split(':');
+        return parts[parts.length-1] === 'contextObject';
+    }
 }

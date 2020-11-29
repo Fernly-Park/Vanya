@@ -1,7 +1,8 @@
 import db, { DbOrTransaction } from '@App/modules/database/db';
-import { ExecutionTable, ExecutionStatus, IExecution, ContextObject, ExecutionEventTable } from './execution.interfaces';
+import { ExecutionTable, ExecutionStatus, IExecution, ExecutionEventTable } from './execution.interfaces';
 import * as DALFactory from '@App/components/DALFactory';
 import * as Redis from '@App/modules/database/redis';
+import * as RedisKey from '@App/modules/database/redisKeys'
 import { HistoryEvent } from 'aws-sdk/clients/stepfunctions';
 
 type InsertExecutionReq = {
@@ -22,7 +23,7 @@ const modifyExecutionInputType = (functionToEnhance: (...d: any) => Promise<IExe
 }
 
 const insertExecutionB = async (db: DbOrTransaction, execution: InsertExecutionReq): Promise<IExecution> => {
-    const key = Redis.getExecutionStatusKey(execution.executionArn);
+    const key = RedisKey.executionStatusKey.get(execution.executionArn);
     await Redis.setAsync(key, ExecutionStatus.running);
     return (await db(ExecutionTable.tableName).insert({
         [ExecutionTable.executionArnColumn]: execution.executionArn,
@@ -42,7 +43,7 @@ type UpdateExecutionReq = {
 }
 
 export const updateExecutionStatus = async (db: DbOrTransaction, req: UpdateExecutionReq): Promise<void> => {
-    const key = Redis.getExecutionEventKey(req.executionArn);
+    const key = RedisKey.executionEventKey.get(req.executionArn);
     const stringifiedEvents = await Redis.lrangeAsync(key, 0, -1);
 
     const events: (HistoryEvent & {executionArn: string, event: string})[] = [];
@@ -68,10 +69,10 @@ export const updateExecutionStatus = async (db: DbOrTransaction, req: UpdateExec
             [ExecutionTable.outputColumn]: typeof req.output === 'string' ? req.output : JSON.stringify(req.output)
         });
     });
-    await Redis.setAsync(Redis.getExecutionStatusKey(req.executionArn), req.newStatus);
+    await Redis.setAsync(RedisKey.executionStatusKey.get(req.executionArn), req.newStatus);
     await Redis.delAsync(key);
-    await Redis.delAsync(Redis.getExecutionEventCurrentIdKey(req.executionArn));
-    await Redis.delAsync(Redis.getCurrentlyRunningStateKey(req.executionArn));
+    await Redis.delAsync(RedisKey.executionCurrentIdKey.get(req.executionArn));
+    await Redis.delAsync(RedisKey.currentlyRunningStateKey.get(req.executionArn));
 }
 
 
@@ -83,8 +84,8 @@ export const countExecutions = DALFactory.countResourceFactory(ExecutionTable.ta
 
 
 export const addExecutionEvent = async (req: {executionArn: string, event: Partial<HistoryEvent>}): Promise<number> => {
-    const key = Redis.getExecutionEventKey(req.executionArn);
-    req.event.id = (await Redis.incrAsync(Redis.getExecutionEventCurrentIdKey(req.executionArn)));
+    const key = RedisKey.executionEventKey.get(req.executionArn);
+    req.event.id = (await Redis.incrAsync(RedisKey.executionCurrentIdKey.get(req.executionArn)));
     await Redis.rpushAsync(key, JSON.stringify(req.event));
     return req.event.id
 }
@@ -97,7 +98,7 @@ export const getExecutionEvent = async (req: {executionArn: string, limit: numbe
     return await db.transaction(async (trx) => {
         const execution = await selectExecutionByArn(trx, req.executionArn);
         if (execution.status === ExecutionStatus.running) {
-            const key = Redis.getExecutionEventKey(req.executionArn);
+            const key = RedisKey.executionEventKey.get(req.executionArn);
             const stringifiedEvents = await Redis.lrangeAsync(key, req.offset, req.limit);
             for(const currentStrigifiedEvent of stringifiedEvents) {
                 toReturn.push(JSON.parse(currentStrigifiedEvent));

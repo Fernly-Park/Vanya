@@ -4,6 +4,7 @@ import { StateMachineTable, IStateMachine, StateMachineVersionTable, StateMachin
 import { CreateStateMachineInput } from "aws-sdk/clients/stepfunctions";
 import * as DALFactory from '@App/components/DALFactory';
 import * as Redis from '@App/modules/database/redis';
+import * as RedisKey from '@App/modules/database/redisKeys'
 
 export const createStateMachine = async (db: DbOrTransaction, arn: string, req: CreateStateMachineInput, states: StateMachineStates): Promise<void> => {
     Logger.logDebug(`Insterting state machine '${arn}'`);
@@ -22,14 +23,14 @@ export const createStateMachine = async (db: DbOrTransaction, arn: string, req: 
             [StateMachineVersionTable.stateMachineArnColumn]: arn,
         });
     });
-    const redisKey = Redis.getStateMachineStatesKey(arn);
+    const redisKey = RedisKey.stateMachineStateKey.get(arn);
     for(const [key, val] of Object.entries(states)) {
         await Redis.hsetAsync(redisKey, key, JSON.stringify(val));
     }
 }
 
 export const deleteStateMachine = async (db: DbOrTransaction, arn: string): Promise<boolean> => {
-    await Redis.delAsync(Redis.getStateMachineStatesKey(arn));
+    await Redis.delAsync(RedisKey.stateMachineStateKey.get(arn));
     return await db.transaction(async trx => {
         await DALFactory.deleteResourceFactory(StateMachineVersionTable.tableName, StateMachineVersionTable.stateMachineArnColumn)(trx, arn);
         return await DALFactory.deleteResourceFactory(StateMachineTable.tableName, StateMachineTable.arnColumn)(trx, arn);
@@ -65,6 +66,6 @@ export const updateStateMachine = async (db: DbOrTransaction, req: UpdateStateMa
 } 
 
 export const retrieveState = async (req: {stateMachineArn: string, stateName: string}): Promise<StateMachineStateValue> => {
-    const redisKey = Redis.getStateMachineStatesKey(req.stateMachineArn);
+    const redisKey = RedisKey.stateMachineStateKey.get(req.stateMachineArn);
     return JSON.parse(await Redis.hgetAsync(redisKey, req.stateName)) as StateMachineStateValue;
 }

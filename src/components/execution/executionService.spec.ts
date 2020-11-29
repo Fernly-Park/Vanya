@@ -11,6 +11,7 @@ import { executionStartedEvent } from '../events';
 import * as Event from '../events';
 import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
 import { ContextObjectService } from '../contextObject';
+import * as RedisKey from '@App/modules/database/redisKeys'
 
 generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
@@ -311,7 +312,7 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             await ExecutionService.addEvent({executionArn: execution.executionArn, event: {
                 type: HistoryEventType.ExecutionStarted,
             }});
-            const key = Redis.getExecutionEventKey(execution.executionArn);
+            const key = RedisKey.executionEventKey.get(execution.executionArn);
             const eventsFromRedisBefore = await Redis.lrangeAsync(key, 0, -1);
             await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});
             const eventsFromRedisAfter = await Redis.lrangeAsync(key, 0, -1);
@@ -328,7 +329,7 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
                 type: HistoryEventType.ExecutionStarted,
             }});
 
-            const getCurrentEventId = async () => await Redis.getAsync(Redis.getExecutionEventCurrentIdKey(execution.executionArn));
+            const getCurrentEventId = async () => await Redis.getAsync(RedisKey.executionCurrentIdKey.get(execution.executionArn));
 
             const beforeEndingExecution = await getCurrentEventId();
             await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});

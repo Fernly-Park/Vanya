@@ -96,8 +96,8 @@ export const stopExecution = async (req: StopExecutionInput): Promise<StopExecut
 export const endExecution = async (req: {executionArn: string, output?: unknown, status: ExecutionStatus}): Promise<void> => {
     ArnHelper.ensureIsValidExecutionArn(req?.executionArn);
     // todo check
-    await ExecutionDAL.updateExecutionStatus(db, {executionArn: req.executionArn, newStatus: req.status, output: req.output});
     await ContextObjectService.deleteContextObject(req.executionArn)
+    await ExecutionDAL.updateExecutionStatus(db, {executionArn: req.executionArn, newStatus: req.status, output: req.output});
 };
 
 type CustomHistoryEvent = Partial<HistoryEvent> & {type: HistoryEventType}

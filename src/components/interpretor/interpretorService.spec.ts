@@ -22,6 +22,7 @@ import { clearInterval, setInterval } from 'timers';
 import config from '@App/config';
 import { Logger } from '@App/modules';
 import { InterpretorService } from '.';
+import * as RedisKey from '@App/modules/database/redisKeys'
 
 jest.setTimeout(10000)
 
@@ -100,7 +101,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         const numberOfRemainingTasks = await Redis.llenAsync(Redis.systemTaskKey);
         const executionWasAborted = await TimerService.numberOfTimedTask() !== 0;
         const events = await ExecutionService.getExecutionHistory(execution);
-        const contextObj = await Redis.hgetAllAsync(Redis.getContextObjectKey(finishedExecution.executionArn));
+        const contextObj = await Redis.hgetAllAsync(RedisKey.contextObjectKey.get(finishedExecution.executionArn));
         
         if (executionWasAborted) {
             while (await TimerService.numberOfTimedTask() !== 0);
@@ -135,7 +136,7 @@ const ensureRedisStateIsConsistent = async (req: {executionArn: string}): Promis
     const parallelStateInfoInRedis = await Redis.keysAsync(`${config.redis_prefix}:parallel:*`);
     expect(parallelStateInfoInRedis).toHaveLength(0);
 
-    const key = Redis.getCurrentlyRunningStateKey(req.executionArn);
+    const key = RedisKey.currentlyRunningStateKey.get(req.executionArn);
     expect(await Redis.existsAsync(key)).toBe(false);
     const taskStatesInRedis = await Redis.keysAsync(`${config.redis_prefix}:tasks:*`);
     for(const taskKey of taskStatesInRedis) {
