@@ -11,18 +11,19 @@ import { execute } from "./interpretorService";
 import { applyPath, applyPayloadTemplate, applyResultPath } from "./path/path";
 import { handleCatch, handleRetry } from "./states/catchAndRetry";
 import { handleFailedBranche, handleFinishedBranche } from "./states/parallel/parallel";
+import { ContextObjectService } from "../contextObject";
 
 export const filterInput = async (task: RunningState, state: StateMachineStateValue): Promise<StateInput> => {
     const asPassState = state as PassState;
     let toReturn = applyPath(task.rawInput, asPassState.InputPath);
-    const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
+    const contextObject = await ContextObjectService.describeContextObject(task);
     toReturn = await applyPayloadTemplate(contextObject, toReturn, asPassState.Parameters)
     return toReturn;
 }
 
 export const filterOutput = async (rawInput: StateInput, output: StateOutput, state: StateMachineStateValue, task: RunningState): Promise<StateOutput> => {
     const asTaskState = state as TaskState;
-    const contextObject = await ExecutionService.retrieveExecutionContextObject(task);
+    const contextObject = await ContextObjectService.describeContextObject(task);
     let toReturn = applyPayloadTemplate(contextObject, output, asTaskState.ResultSelector)
     toReturn = applyResultPath(rawInput, toReturn, asTaskState.ResultPath);
     toReturn = applyPath(toReturn, asTaskState.OutputPath);

@@ -5,14 +5,14 @@ import * as ExecutionDAL from './executionDAL';
 import { InvalidExecutionInputError, ExecutionAlreadyExistsError, ExecutionDoesNotExistError } from "@App/errors/AWSErrors";
 import db from "@App/modules/database/db";
 import { v4 as uuid } from 'uuid';
-import { ExecutionStatus, IExecution, ContextObject, ContextObjectEnteredState, HistoryEventType } from "./execution.interfaces";
+import { ExecutionStatus, IExecution, HistoryEventType } from "./execution.interfaces";
 import { areObjectsEquals } from "@App/utils/objectUtils";
 import { StateMachineService } from "../stateMachines";
 import { UserService } from "../user";
 import { executionStartedEvent } from "../events";
-import { Logger } from "@App/modules";
 import { InterpretorService } from "../interpretor";
 import * as Event from '../events';
+import { ContextObjectService } from "../contextObject";
 
 export const startExecution = async (userId: string, req: StartExecutionInput): Promise<StartExecutionOutput> => {
     ensureStartExecutionInputIsValid(req);
@@ -43,20 +43,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
         stateMachineArn: stateMachine.arn
     });
 
-    await ExecutionDAL.setContextObject(executionArn, {
-        Execution: {
-            Id: executionArn,
-            Input: result.input,
-            StartTime: result.startDate,
-            Name: executionName,
-            RoleArn: 'todo'
-        }, 
-        StateMachine : {
-            Id: stateMachine.arn,
-            Name: stateMachine.name
-        },
-    });
-
+    await ContextObjectService.createContextObject({execution: result, stateMachine});
     await InterpretorService.execute({ stateName: firstStateName, rawInput: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
     await executionStartedEvent.emit(result)
 
@@ -101,7 +88,7 @@ export const stopExecution = async (req: StopExecutionInput): Promise<StopExecut
 
     await Event.stopExecutionEvent.emit(req);
     await ExecutionDAL.updateExecutionStatus(db, {executionArn, newStatus: ExecutionStatus.aborted})
-    await ExecutionDAL.deleteContextObject(req.executionArn)
+    await ContextObjectService.deleteContextObject(req.executionArn)
 
     return {stopDate: (await describeExecution(req)).stopDate}
 };
@@ -110,27 +97,8 @@ export const endExecution = async (req: {executionArn: string, output?: unknown,
     ArnHelper.ensureIsValidExecutionArn(req?.executionArn);
     // todo check
     await ExecutionDAL.updateExecutionStatus(db, {executionArn: req.executionArn, newStatus: req.status, output: req.output});
-    await ExecutionDAL.deleteContextObject(req.executionArn)
+    await ContextObjectService.deleteContextObject(req.executionArn)
 };
-
-export const retrieveExecutionContextObject = async (req: {executionArn: string, stateName: string}): Promise<ContextObject> => {
-    ArnHelper.ensureIsValidExecutionArn(req.executionArn);
-
-    return await ExecutionDAL.getContextObject(req.executionArn, req.stateName);
-}
-
-export const updateContextObject = async (req: {executionArn: string, enteredState: ContextObjectEnteredState, taskToken?: string, previousState?: string}): Promise<void> => {
-    Logger.logDebug(`Updating context object for execution '${req.executionArn}' and state '${req.enteredState.Name}'`)
-    // todo check
-    if (req.previousState) {
-        await ExecutionDAL.deleteContextObject(req.executionArn, req.previousState);
-    }
-
-    await ExecutionDAL.updateContextObject({executionArn: req.executionArn, update: req.enteredState, 
-        token: req.taskToken, stateName: req.enteredState.Name, });
-
-}
-
 
 type CustomHistoryEvent = Partial<HistoryEvent> & {type: HistoryEventType}
 export const addEvent = async (req: {executionArn: string, event: CustomHistoryEvent}): Promise<number> => {

@@ -10,6 +10,7 @@ import { ExecutionService } from '.';
 import { executionStartedEvent } from '../events';
 import * as Event from '../events';
 import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
+import { ContextObjectService } from '../contextObject';
 
 generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
@@ -99,7 +100,7 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             const executionName = 'name';
             const input = '{}';
             const {execution: execution, stateMachine} = await createSMAndStartExecutionHelper({executionName, input});
-            const contextObject = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn, stateName:'HelloWorld'});
+            const contextObject = await ContextObjectService.describeContextObject({executionArn: execution.executionArn, stateName:'HelloWorld'});
 
             expect(contextObject.Execution.Id).toBe(execution.executionArn);
             expect(contextObject.Execution.Input).toStrictEqual(JSON.parse(input));
@@ -295,9 +296,9 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
             const {execution} = await createSMAndStartExecutionHelper();
 
-            const beforeEndingExecution = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn, stateName: 'HelloWorld'});
+            const beforeEndingExecution = await ContextObjectService.describeContextObject({executionArn: execution.executionArn, stateName: 'HelloWorld'});
             await ExecutionService.endExecution({status: ExecutionStatus.succeeded, executionArn: execution.executionArn});
-            const afterEndingExecution = await ExecutionService.retrieveExecutionContextObject({...execution, stateName: 'HelloWorld'});
+            const afterEndingExecution = await ContextObjectService.describeContextObject({...execution, stateName: 'HelloWorld'});
 
             expect(beforeEndingExecution).toBeDefined();
             expect(afterEndingExecution).toBeNull();
@@ -337,17 +338,4 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             expect(afterEndingExecution).toBeNull();
         });
     });
-
-    describe('update context object', () => {
-        it('should work event if the new state name has spaces', async () => {
-            expect.assertions(1);
-
-            const {execution} = await createSMAndStartExecutionHelper();
-
-            expect(async () => await ExecutionService.updateContextObject({executionArn: execution.executionArn, enteredState: {EnteredTime: new Date(), Name: 'hello world'}}))
-                .not.toThrow()
-
-            const contextObject = await ExecutionService.retrieveExecutionContextObject({executionArn: execution.executionArn, stateName: 'hello world'});
-        })
-    })
 }})

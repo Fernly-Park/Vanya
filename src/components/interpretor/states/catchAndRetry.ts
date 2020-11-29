@@ -7,8 +7,8 @@ import * as Event from '../../events';
 import { Logger } from "@App/modules";
 import * as DateUtil from '@App/utils/date';
 import { v4 as uuid } from 'uuid';
-import { ExecutionService } from "../../execution";
 import { endStateSuccess } from "../stateProcessing";
+import { ContextObjectService } from "@App/components/contextObject";
 
 export const handleCatch = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
     const asTaskState = req.state as TaskState
@@ -87,7 +87,7 @@ const retryError = async (req: {runningRetryInfo: RetryInformation, retrier: Ret
 
 
         const taskToken = uuid();
-        await ExecutionService.updateContextObject({executionArn: task.executionArn, enteredState: {
+        await ContextObjectService.updateContextObject({executionArn: task.executionArn, enteredState: {
             EnteredTime: new Date().toISOString(),
             Name: task.stateName,
         }, taskToken, previousState: task.stateName});

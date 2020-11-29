@@ -8,7 +8,6 @@ import { processPassTask } from './states/pass';
 import { processWaitingStateDone, processWaitTask } from './states/wait/wait';
 import { abortTaskState, processActivityTaskStarted, processTaskFailed, processTaskHeartbeat, processTaskState, processTaskStateDone, processTaskTimeout } from './states/task/task';
 import * as Event from '../events';
-import { ExecutionService } from '../execution';
 import { StateMachineService } from '../stateMachines';
 import { TimerService } from '../timer';
 import { AWSConstant } from '@App/utils/constants';
@@ -19,6 +18,7 @@ import { FatalError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
 import { StopExecutionEventInput } from '../events';
+import { ContextObjectService } from '../contextObject';
 export * from './activityTask';
 
 let interpretor = false;
@@ -80,7 +80,7 @@ const processState = async (task: RunningState): Promise<void> => {
 
     const stateToken = isDelayedState(state.Type) ? uuid() : undefined;
     task.token = task.token ?? stateToken
-    await ExecutionService.updateContextObject({executionArn: task.executionArn, enteredState: {
+    await ContextObjectService.updateContextObject({executionArn: task.executionArn, enteredState: {
         EnteredTime: new Date().toISOString(),
         Name: task.stateName,
     }, taskToken: stateToken, previousState: task.previousStateName});
