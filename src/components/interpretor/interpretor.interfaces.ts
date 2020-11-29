@@ -1,9 +1,12 @@
+import { StateType } from "../stateMachines/stateMachine.interfaces";
+
 export type StateInput = unknown;
 export type StateOutput = unknown;
 
 export interface RunningState {
     stateName: string,
     rawInput: StateInput,
+    stateType?: StateType,
     executionArn: string,
     stateMachineArn: string,
     previousStateName?: string,

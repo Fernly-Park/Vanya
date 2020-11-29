@@ -45,12 +45,12 @@ const deleteKeys = async (keys: string[]): Promise<void> => {
     }
 }
 
-export const addToCurrentlyRunningState = async (state: RunningState, stateType: StateType): Promise<void> => {
+export const addToCurrentlyRunningState = async (state: RunningState): Promise<void> => {
     const key = state.parallelInfo != null 
         ? RedisKey.runningStateInsideParallelKey.get(state.parallelInfo.parentKey)
         : RedisKey.currentlyRunningStateKey.get(state.executionArn)
 
-    await Redis.saddAsync(key, getRedisKeyOfState(state.token, stateType));
+    await Redis.saddAsync(key, getRedisKeyOfState(state.token, state.stateType));
 }
 
 const getRedisKeyOfState = (token: string, stateType: StateType): string => {
@@ -68,12 +68,12 @@ const getRedisKeyOfState = (token: string, stateType: StateType): string => {
     }
 }
 
-export const removeFromCurrentlyRunningState = async (state: RunningState, stateType: StateType): Promise<void> => {
+export const removeFromCurrentlyRunningState = async (state: RunningState): Promise<void> => {
     const key = state.parallelInfo != null 
         ? RedisKey.runningStateInsideParallelKey.get(state.parallelInfo.parentKey)
         : RedisKey.currentlyRunningStateKey.get(state.executionArn)
 
-    await Redis.sremAsync(key, getRedisKeyOfState(state.token, stateType));
+    await Redis.sremAsync(key, getRedisKeyOfState(state.token, state.stateType));
 }
 
 export const getCurrentlyRunningState = async (executionArn: string): Promise<{taskTokens: string[], parallelTokens: string[]}>  => {

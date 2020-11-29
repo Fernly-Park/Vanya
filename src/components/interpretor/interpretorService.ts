@@ -77,6 +77,7 @@ const processState = async (task: RunningState): Promise<void> => {
     let next: string;
     const state = await StateMachineService.retrieveStateFromStateMachine(task);
     Logger.logDebug(`processing state '${task.stateName}' from '${task.executionArn}' of type '${state.Type}'`);
+    task.stateType = state.Type;
 
     const stateToken = isDelayedState(state.Type) ? uuid() : undefined;
     task.token = task.token ?? stateToken
@@ -89,7 +90,7 @@ const processState = async (task: RunningState): Promise<void> => {
     task.previousEventId = await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, 
         stateType: state.Type, input: task.rawInput, previousEventId: task.previousEventId})
     try {
-        await addToCurrentlyRunningState(task, state.Type);
+        await addToCurrentlyRunningState(task);
         Logger.logDebug(`Input processed for state '${task.stateName}' from '${task.executionArn}'. stringified raw input : '${JSON.stringify(task.rawInput)}'`)
         switch (state.Type) {
             case StateType.Pass: 
@@ -133,15 +134,15 @@ const isDelayedState = (stateType: StateType): boolean => {
     return stateType === StateType.Task || stateType === StateType.Parallel || stateType === StateType.Wait || stateType === StateType.Map
 };
 
-export const addToCurrentlyRunningState = async (task: RunningState, stateType: StateType): Promise<void> => {
-    if (isDelayedState(stateType)) {
-        await InterpretorDAL.addToCurrentlyRunningState(task, stateType);
+export const addToCurrentlyRunningState = async (state: RunningState): Promise<void> => {
+    if (isDelayedState(state.stateType)) {
+        await InterpretorDAL.addToCurrentlyRunningState(state);
     } 
 }
 
-export const removeFromCurrentlyRunningState = async (task: RunningState, stateType: StateType): Promise<void> => {
-    if (isDelayedState(stateType)) {
-        await InterpretorDAL.removeFromCurrentlyRunningState(task, stateType);
+export const removeFromCurrentlyRunningState = async (state: RunningState): Promise<void> => {
+    if (isDelayedState(state.stateType)) {
+        await InterpretorDAL.removeFromCurrentlyRunningState(state);
     } 
 }
 
