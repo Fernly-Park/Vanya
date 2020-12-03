@@ -49,6 +49,7 @@ export const processWaitingStateDone = async (token: string): Promise<void> => {
 
     const waitingState = (await StateMachineService.retrieveStateFromStateMachine(task)) as WaitState;
     const effectiveInput = await filterInput(task, waitingState);
+    await InterpretorService.deleteStateInfo(task.token, task.stateType)
     try {
         const output = await filterOutput(task.rawInput, effectiveInput, waitingState, task);
         await endStateSuccess({...task, output, nextStateName: waitingState.Next, state: waitingState});
@@ -59,5 +60,5 @@ export const processWaitingStateDone = async (token: string): Promise<void> => {
             error: AWSConstant.error.STATE_RUNTIME,
             state: waitingState
         });
-    }   
+    } 
 }

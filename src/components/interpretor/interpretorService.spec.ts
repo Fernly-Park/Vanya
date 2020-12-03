@@ -142,6 +142,9 @@ const ensureRedisStateIsConsistent = async (req: {executionArn: string}): Promis
     for(const taskKey of taskStatesInRedis) {
         expect(await Redis.ttlAsync(taskKey)).toBeGreaterThan(0);
     }
+    const waitStatesInRedis = await Redis.keysAsync(`${config.redis_prefix}:wait:*`);
+    expect(waitStatesInRedis).toHaveLength(0);
+
 }
 
 const manageWorkers = async (activities: (ActivitiyToCreateForTests & {activityArn: string})[]) => {
