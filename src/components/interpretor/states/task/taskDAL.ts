@@ -4,32 +4,11 @@ import config from "@App/config";
 import { ActivityTaskStatus, RunningTaskState } from '../../interpretor.interfaces';
 import * as RedisKey from '@App/modules/database/redisKeys'
 
-export const addActivityTask = async (activityArn: string, task: RunningTaskState): Promise<void> => {
-    await addTaskStateInfo(task);
-    await addTaskToActivityQueue(activityArn, task);
-}
-
-
-const addTaskStateInfo = async (task: RunningTaskState): Promise<void> => {
-    const key = RedisKey.runningTaskStateKey.get(task.token);
-    await Redis.setAsync(key, JSON.stringify(task));
-}
-
-export const deleteActivityTask = async (req: {executionArn: string, taskToken: string}): Promise<void> => {
-    const key = RedisKey.runningTaskStateKey.get(req.taskToken);
-    await Redis.delAsync(key);
-}
-
-const addTaskToActivityQueue = async (activityArn: string, input: RunningTaskState): Promise<void> => {
+export const addTaskToActivityQueue = async (activityArn: string, taskInfo: RunningTaskState): Promise<void> => {
     const key = RedisKey.activityTaskKey.get(activityArn);
-    await Redis.rpushAsync(key, JSON.stringify(input));
+    await Redis.rpushAsync(key, JSON.stringify(taskInfo));
 }
 
-export const retrieveActivityTaskInProgress = async (token: string): Promise<RunningTaskState> => {
-    const key = RedisKey.runningTaskStateKey.get(token);
-    const toReturn = await Redis.getAsync(key);
-    return toReturn ? JSON.parse(toReturn) as RunningTaskState : null;
-}
 
 export const modifyActivityTaskStatus = async (token: string, newStatus: ActivityTaskStatus, previousEventId?: number): Promise<void> => {
     const key = RedisKey.runningTaskStateKey.get(token);
@@ -56,9 +35,7 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
             });
         });
     });
-    if (newStatus === ActivityTaskStatus.TimedOut) {
-        await Redis.expireAsync(key, config.taskTokenTimeoutSeconds)
-    }
+
 }
 
 

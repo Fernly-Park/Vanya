@@ -275,4 +275,4 @@ const generateStateMachinesTests = (req?: {stateMachineName?: string, executionN
     }});
 }
 
-generateStateMachinesTests({});
+generateStateMachinesTests();

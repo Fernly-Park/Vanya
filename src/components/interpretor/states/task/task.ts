@@ -1,4 +1,4 @@
-import { TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
+import { StateType, TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningState } from "@App/components/interpretor/interpretor.interfaces";
 import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
@@ -8,14 +8,15 @@ import { TimerService } from "@App/components/timer";
 import { AWSConstant } from "@App/utils/constants";
 import { SendTaskFailureEventInput } from "@App/components/events";
 import { StateMachineService } from "@App/components/stateMachines";
-import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent, onTaskStateAborted } from "../../historyEvent";
+import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../../historyEvent";
 import { Logger } from "@App/modules";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from "../../stateProcessing";
 import * as TaskDAL from './taskDAL';
 import { getDateIn } from "@App/utils/date";
 import validator from "validator";
 import { ValidationExceptionError } from "@App/errors/AWSErrors";
-import { sleep } from "@Tests/testHelper";
+import { InterpretorService } from "../..";
+import config from "@App/config";
 
 export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
     const {task, state, token} = req;
@@ -33,7 +34,8 @@ export const processTaskState = async (req: {task: RunningState, state: TaskStat
         input: effectiveInput, timeoutSeconds: timeoutSeconds, previousEventId: task.previousEventId})
     const activityTask: RunningTaskState = {...task, token, status: ActivityTaskStatus.Waiting, effectiveInput, heartbeatSeconds, timeoutSeconds}
     Logger.logDebug(`adding task state '${task.stateName}' from '${task.executionArn}' with token '${token}' to the queues.`);
-    await TaskDAL.addActivityTask(resource, activityTask);
+    await InterpretorService.saveStateInfo(activityTask);
+    await TaskDAL.addTaskToActivityQueue(resource, activityTask);
 }
 
 
@@ -99,8 +101,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
 }
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
-    
-    const activityTask = await TaskDAL.retrieveActivityTaskInProgress(activityTaskToken);
+    const activityTask = await InterpretorService.getStateInfo(activityTaskToken, StateType.Task);
     if (activityTask == null) {
         return;
     }
@@ -136,6 +137,8 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
 
 const cleanTaskStateEndedHelper = async (req: {token?: string}) => {
     await TaskDAL.modifyActivityTaskStatus(req.token, ActivityTaskStatus.TimedOut);
+    await InterpretorService.deleteStateInfo(req.token, StateType.Task, config.taskTokenTimeoutSeconds)
+
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: req.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: req.token})
 }
