@@ -1,5 +1,5 @@
 /* eslint-disable no-fallthrough */
-import { RunningState, RunningWaitState } from "./interpretor.interfaces";
+import { RunningState } from "./interpretor.interfaces";
 import * as Redis from '@App/modules/database/redis';
 import config from "@App/config";
 import * as RedisKey from '@App/modules/database/redisKeys'

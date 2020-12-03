@@ -10,7 +10,7 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { Logger } from "@App/modules";
 import { getDateIn } from "@App/utils/date";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
-import { InterpretorDAL, InterpretorService } from "../..";
+import { InterpretorService } from "../..";
 
 export const processWaitTask = async (task: RunningState, state: WaitState): Promise<void> => {
     const effectiveInput = await filterInput(task, state);

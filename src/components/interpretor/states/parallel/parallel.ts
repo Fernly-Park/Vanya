@@ -2,7 +2,7 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { ParallelState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningState, StateOutput } from "@App/components/interpretor/interpretor.interfaces";
 import { Logger } from "@App/modules";
-import { InterpretorDAL, InterpretorService } from "../..";
+import { InterpretorService } from "../..";
 import * as ParallelDAL from './parallelDAL'
 import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted, onTaskStateAborted, onWaitStateAborted } from "../../historyEvent";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
