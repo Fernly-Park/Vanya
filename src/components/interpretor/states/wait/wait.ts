@@ -1,4 +1,4 @@
-import { WaitState } from "@App/components/stateMachines/stateMachine.interfaces";
+import { StateType, WaitState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningState } from "@App/components/interpretor/interpretor.interfaces";
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
@@ -40,7 +40,8 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
 
 
 export const processWaitingStateDone = async (token: string): Promise<void> => {
-    const task = await InterpretorDAL.getWaitStateInfo(token);
+    
+    const task = await InterpretorService.getStateInfo(token, StateType.Wait);
     const executionWasAborted = task == null;
     if (executionWasAborted) {
         return;

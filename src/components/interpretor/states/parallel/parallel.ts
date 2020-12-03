@@ -82,7 +82,7 @@ const abortRunningStates = async (req: {parallelStateToken: string, previousEven
     }
     
     for (const waitToken of runningStateToken.wait) {
-        const waitInfo = await InterpretorDAL.getWaitStateInfo(waitToken);
+        const waitInfo = await InterpretorService.getStateInfo(waitToken, StateType.Wait);
         await InterpretorService.removeFromCurrentlyRunningState(waitInfo);
         await onWaitStateAborted(req);
     }

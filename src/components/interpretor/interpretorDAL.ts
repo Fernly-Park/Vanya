@@ -31,7 +31,7 @@ export const deleteRunningStateInfo = async (executionArn: string): Promise<void
 
 export const saveStateInfo = async (state: RunningState): Promise<void> => {
     const key = getRedisKeyOfState(state.token, state.stateType);
-    await Redis.setAsync(key, JSON.stringify(state));
+    await Redis.jsonsetAsync(key, '.', JSON.stringify(state));
  }
   
  export const deleteStateInfo = async (token: string, stateType: StateType, expireIn?: number): Promise<void> => {
@@ -45,7 +45,7 @@ export const saveStateInfo = async (state: RunningState): Promise<void> => {
   
  export const getStateInfo = async (token: string, stateType: StateType): Promise<RunningState> => {
     const key = getRedisKeyOfState(token, stateType);
-    const toReturn = await Redis.getAsync(key);
+    const toReturn = await Redis.jsongetAsync(key);
     return toReturn ? JSON.parse(toReturn) as RunningState : null;
  }
 
@@ -132,9 +132,4 @@ export const getKeys = async (keys: string[]): Promise<{taskTokens: string[], pa
     }
 
     return toReturn;
-}
-
-export const getWaitStateInfo = async (token: string): Promise<RunningWaitState> => {
-    const key = RedisKey.waitStateKey.get(token);
-    return await JSON.parse(await Redis.getAsync(key)) as RunningWaitState;
 }

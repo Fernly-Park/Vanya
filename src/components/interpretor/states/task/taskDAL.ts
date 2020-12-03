@@ -12,30 +12,11 @@ export const addTaskToActivityQueue = async (activityArn: string, taskInfo: Runn
 
 export const modifyActivityTaskStatus = async (token: string, newStatus: ActivityTaskStatus, previousEventId?: number): Promise<void> => {
     const key = RedisKey.runningTaskStateKey.get(token);
-    await Redis.watchAsync(key, (watcher) => {
-        return new Promise((resolve, reject) => {
-            watcher.get(key, (err, activityTaskStringified) => {
-                if (err) return reject (err)
-            
-                const activityTask = JSON.parse(activityTaskStringified) as RunningTaskState;
-                if (activityTask.status === ActivityTaskStatus.TimedOut) {
-                    return resolve();
-                }
-                activityTask.status = newStatus;
-                activityTask.previousEventId = previousEventId == null ? activityTask.previousEventId : previousEventId;
-                watcher.multi()
-                .set(key, JSON.stringify(activityTask))
-                .exec((err, results) => {
-                    if (err || results === null) {
-                        reject('Concurrency error : the activity task status is already Timeout');
-                    } else {
-                        resolve(results)
-                    }
-                })
-            });
-        });
-    });
+    await Redis.jsonsetAsync(key, '.status', JSON.stringify(newStatus));
 
+    if (previousEventId != null) {
+        await Redis.jsonsetAsync(key, '.previousEventId', JSON.stringify(previousEventId))
+    }
 }
 
 
