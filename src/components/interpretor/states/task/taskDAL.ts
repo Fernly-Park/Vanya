@@ -19,7 +19,6 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
     }
 }
 
-
 export const popActivityTask = async (activityArn: string): Promise<RunningTaskState> => {
     const key = RedisKey.activityTaskKey.get(activityArn);
     const result = await Redis.blpopAsync(key, config.activityTaskDefaultTimeout);
