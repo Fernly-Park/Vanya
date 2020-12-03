@@ -10,8 +10,7 @@ import { StateMachineService } from "@App/components/stateMachines";
 import { Logger } from "@App/modules";
 import { getDateIn } from "@App/utils/date";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
-import * as WaitDAL from './waitDAL';
-import { InterpretorDAL } from "../..";
+import { InterpretorDAL, InterpretorService } from "../..";
 
 export const processWaitTask = async (task: RunningState, state: WaitState): Promise<void> => {
     const effectiveInput = await filterInput(task, state);
@@ -34,7 +33,7 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
         time = new Date(timestamp);
     }
 
-    await WaitDAL.addWaitStateInfo({...task, waitUntil: time});
+    await InterpretorService.saveStateInfo(task);
     Logger.logDebug(`Waiting state '${task.stateName}' of '${task.executionArn}' started. waiting until '${time.toISOString()}'`)
     await TimerService.addTimedTask({until: time, timedTask: {task: task.token, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
 }

@@ -28,6 +28,28 @@ export const deleteRunningStateInfo = async (executionArn: string): Promise<void
     await Redis.delAsync(key);
 }
 
+
+export const saveStateInfo = async (state: RunningState): Promise<void> => {
+    const key = getRedisKeyOfState(state.token, state.stateType);
+    await Redis.setAsync(key, JSON.stringify(state));
+ }
+  
+ export const deleteStateInfo = async (token: string, stateType: StateType, expireIn?: number): Promise<void> => {
+    const key = getRedisKeyOfState(token, stateType);
+    if (expireIn == null) {
+        await Redis.delAsync(key);
+    } else {
+        await Redis.expireAsync(key, expireIn);
+    }
+ }
+  
+ export const getStateInfo = async (token: string, stateType: StateType): Promise<RunningState> => {
+    const key = getRedisKeyOfState(token, stateType);
+    const toReturn = await Redis.getAsync(key);
+    return toReturn ? JSON.parse(toReturn) as RunningState : null;
+ }
+
+ 
 const deleteKeys = async (keys: string[]): Promise<void> => {
 
     for (const keyToDelete of keys) {

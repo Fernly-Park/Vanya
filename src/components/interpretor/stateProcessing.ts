@@ -41,7 +41,7 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
         return;
     }
 
-    await InterpretorService.removeFromCurrentlyRunningState(req, req.state.Type)
+    await InterpretorService.removeFromCurrentlyRunningState(req)
     req.previousEventId = await onStateExitedEvent({...req, stateType: req.state.Type});
     if (req.nextStateName) {
         return await execute({executionArn: req.executionArn, stateName: req.nextStateName, 
@@ -74,9 +74,9 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
             await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
                 previousEventId: req.task.previousEventId})
 
-            await InterpretorService.removeFromCurrentlyRunningState(req.task, req.state.Type)
+            await InterpretorService.removeFromCurrentlyRunningState(req.task)
         } else {
-            await InterpretorService.removeFromCurrentlyRunningState(req.task, req.state.Type)
+            await InterpretorService.removeFromCurrentlyRunningState(req.task)
 
             Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
             await cleanFailedState(req);

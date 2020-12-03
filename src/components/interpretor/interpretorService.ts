@@ -15,7 +15,7 @@ import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
 import {  processParallelState } from './states/parallel/parallel';
 import { FatalError } from '@App/errors/customErrors';
-import { InterpretorDAL } from '.';
+import { InterpretorDAL, InterpretorService } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
 import { StopExecutionEventInput } from '../events';
 import { ContextObjectService } from '../contextObject';
@@ -129,6 +129,18 @@ const processState = async (task: RunningState): Promise<void> => {
         })  
     }
 };
+
+export const saveStateInfo = async (state: RunningState): Promise<void> => {
+    return await InterpretorDAL.saveStateInfo(state);
+}
+
+export const getStateInfo = async (token: string, stateType: StateType): Promise<RunningState> => {
+    return await InterpretorDAL.getStateInfo(token, stateType);
+}
+
+export const deleteStateInfo = async (token: string, stateType: StateType, expireIn?: number): Promise<void> => {
+    return await InterpretorDAL.deleteStateInfo(token, stateType, expireIn);
+}
 
 const isDelayedState = (stateType: StateType): boolean => {
     return stateType === StateType.Task || stateType === StateType.Parallel || stateType === StateType.Wait || stateType === StateType.Map
