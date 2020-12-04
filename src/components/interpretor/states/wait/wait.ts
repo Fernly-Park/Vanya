@@ -50,7 +50,7 @@ export const processWaitingStateDone = async (token: string): Promise<void> => {
 
     const waitingState = (await StateMachineService.retrieveStateFromStateMachine(task)) as WaitState;
     const effectiveInput = await filterInput(task, waitingState);
-    await InterpretorService.deleteStateInfo(task.token, task.stateType)
+    await InterpretorService.deleteStateInfo(task)
     try {
         const output = await filterOutput(task.rawInput, effectiveInput, waitingState, task);
         await endStateSuccess({...task, output, nextStateName: waitingState.Next, state: waitingState});

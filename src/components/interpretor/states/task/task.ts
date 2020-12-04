@@ -101,7 +101,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
 }
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
-    const activityTask = await InterpretorService.getStateInfo(activityTaskToken, StateType.Task);
+    const activityTask = await InterpretorService.getStateInfo(activityTaskToken, StateType.Task) as RunningTaskState;
     if (activityTask == null) {
         return;
     }
@@ -135,12 +135,12 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
     });
 };
 
-const cleanTaskStateEndedHelper = async (req: {token?: string}) => {
-    await TaskDAL.modifyActivityTaskStatus(req.token, ActivityTaskStatus.TimedOut);
-    await InterpretorService.deleteStateInfo(req.token, StateType.Task, config.taskTokenTimeoutSeconds)
+const cleanTaskStateEndedHelper = async (taskState: RunningTaskState) => {
+    await TaskDAL.modifyActivityTaskStatus(taskState.token, ActivityTaskStatus.TimedOut);
+    await InterpretorService.deleteStateInfo(taskState, config.taskTokenTimeoutSeconds)
 
-    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: req.token})
-    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: req.token})
+    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: taskState.token})
+    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: taskState.token})
 }
 
 export const processTaskHeartbeat = async (activityTask: RunningTaskState): Promise<void> => {
@@ -170,7 +170,7 @@ export const abortTaskState = async (taskToken: string): Promise<void> => {
         throw new ValidationExceptionError(`task token '${taskToken}' is not a valid uuid`)
     }
     Logger.logDebug(`aborting state '${taskToken}'`);
-
-    await cleanTaskStateEndedHelper({token: taskToken});
+    const task = await InterpretorService.getStateInfo(taskToken, StateType.Task) as RunningTaskState;
+    await cleanTaskStateEndedHelper(task);
 }
 

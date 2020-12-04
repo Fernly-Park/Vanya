@@ -40,7 +40,6 @@ export const endStateSuccess = async (req: RunningState & {nextStateName: string
         return;
     }
 
-    await InterpretorService.removeFromCurrentlyRunningState(req)
     req.previousEventId = await onStateExitedEvent({...req, stateType: req.state.Type});
     if (req.nextStateName) {
         return await execute({executionArn: req.executionArn, stateName: req.nextStateName, 
@@ -71,12 +70,9 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
         if (req.task.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
 
             await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
-                previousEventId: req.task.previousEventId})
+                previousEventId: req.task.previousEventId, failedState: req.task})
 
-            await InterpretorService.removeFromCurrentlyRunningState(req.task)
         } else {
-            await InterpretorService.removeFromCurrentlyRunningState(req.task)
-
             Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
             await cleanFailedState(req);
             await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
@@ -85,9 +81,12 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
     }
 }
 
-export const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
+const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
     const {task} = req
     if (task.parallelInfo) {
-        await InterpretorService.deleteStateInfo(task.parallelInfo.parentKey, StateType.Parallel);
+        const parallelStateInfo = await InterpretorService.getStateInfo(task.parallelInfo.parentKey, StateType.Parallel);
+        await InterpretorService.deleteStateInfo(parallelStateInfo);
     }
 }
+
+

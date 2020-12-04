@@ -35,7 +35,7 @@ const popActivityTask = async (activityArn: string): Promise<RunningTaskState> =
 
     let executionWasAborted = task && !await isExecutionStillRunning(task.executionArn)
     while (executionWasAborted) {
-        await InterpretorService.deleteStateInfo(task.token, StateType.Task);
+        await InterpretorService.deleteStateInfo(task);
         task = await TaskDAL.popActivityTask(activityArn)
         executionWasAborted = task && !await isExecutionStillRunning(task.executionArn)
     }

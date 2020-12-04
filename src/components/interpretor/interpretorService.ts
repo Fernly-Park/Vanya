@@ -15,7 +15,7 @@ import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
 import {  processParallelState } from './states/parallel/parallel';
 import { FatalError } from '@App/errors/customErrors';
-import { InterpretorDAL, InterpretorService } from '.';
+import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
 import { StopExecutionEventInput } from '../events';
 import { ContextObjectService } from '../contextObject';
@@ -90,7 +90,6 @@ const processState = async (task: RunningState): Promise<void> => {
     task.previousEventId = await onStateEnteredEvent({executionArn: task.executionArn, stateName: task.stateName, 
         stateType: state.Type, input: task.rawInput, previousEventId: task.previousEventId})
     try {
-        await addToCurrentlyRunningState(task);
         Logger.logDebug(`Input processed for state '${task.stateName}' from '${task.executionArn}'. stringified raw input : '${JSON.stringify(task.rawInput)}'`)
         switch (state.Type) {
             case StateType.Pass: 
@@ -138,25 +137,13 @@ export const getStateInfo = async (token: string, stateType: StateType): Promise
     return await InterpretorDAL.getStateInfo(token, stateType);
 }
 
-export const deleteStateInfo = async (token: string, stateType: StateType, expireIn?: number): Promise<void> => {
-    return await InterpretorDAL.deleteStateInfo(token, stateType, expireIn);
+export const deleteStateInfo = async (state: RunningState, expireIn?: number): Promise<void> => {
+    return await InterpretorDAL.deleteStateInfo(state, expireIn);
 }
 
-const isDelayedState = (stateType: StateType): boolean => {
+export const isDelayedState = (stateType: StateType): boolean => {
     return stateType === StateType.Task || stateType === StateType.Parallel || stateType === StateType.Wait || stateType === StateType.Map
 };
-
-export const addToCurrentlyRunningState = async (state: RunningState): Promise<void> => {
-    if (isDelayedState(state.stateType)) {
-        await InterpretorDAL.addToCurrentlyRunningState(state);
-    } 
-}
-
-export const removeFromCurrentlyRunningState = async (state: RunningState): Promise<void> => {
-    if (isDelayedState(state.stateType)) {
-        await InterpretorDAL.removeFromCurrentlyRunningState(state);
-    } 
-}
 
 const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     await InterpretorDAL.deleteRunningStateInfo(req.executionArn);

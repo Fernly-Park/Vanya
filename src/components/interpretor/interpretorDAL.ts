@@ -32,15 +32,17 @@ export const deleteRunningStateInfo = async (executionArn: string): Promise<void
 export const saveStateInfo = async (state: RunningState): Promise<void> => {
     const key = getRedisKeyOfState(state.token, state.stateType);
     await Redis.jsonsetAsync(key, '.', JSON.stringify(state));
+    await addToCurrentlyRunningState(state);
  }
   
- export const deleteStateInfo = async (token: string, stateType: StateType, expireIn?: number): Promise<void> => {
-    const key = getRedisKeyOfState(token, stateType);
+ export const deleteStateInfo = async (state: RunningState, expireIn?: number): Promise<void> => {
+    const key = getRedisKeyOfState(state.token, state.stateType);
     if (expireIn == null) {
         await Redis.delAsync(key);
     } else {
         await Redis.expireAsync(key, expireIn);
     }
+    await removeFromCurrentlyRunningState(state);
  }
   
  export const getStateInfo = async (token: string, stateType: StateType): Promise<RunningState> => {
@@ -67,7 +69,7 @@ const deleteKeys = async (keys: string[]): Promise<void> => {
     }
 }
 
-export const addToCurrentlyRunningState = async (state: RunningState): Promise<void> => {
+const addToCurrentlyRunningState = async (state: RunningState): Promise<void> => {
     const key = state.parallelInfo != null 
         ? RedisKey.runningStateInsideParallelKey.get(state.parallelInfo.parentKey)
         : RedisKey.currentlyRunningStateKey.get(state.executionArn)
@@ -86,11 +88,11 @@ const getRedisKeyOfState = (token: string, stateType: StateType): string => {
         case StateType.Map:
             // todo
         default:
-            throw new Error('Only task, parallel, wait and map state needs to be added to the running state')
+            throw new Error(`'${stateType}' type cannot be added in running state (from '${token}')`)
     }
 }
 
-export const removeFromCurrentlyRunningState = async (state: RunningState): Promise<void> => {
+const removeFromCurrentlyRunningState = async (state: RunningState): Promise<void> => {
     const key = state.parallelInfo != null 
         ? RedisKey.runningStateInsideParallelKey.get(state.parallelInfo.parentKey)
         : RedisKey.currentlyRunningStateKey.get(state.executionArn)
