@@ -118,7 +118,7 @@ const processState = async (task: RunningState): Promise<void> => {
                 throw new FatalError(`State type in state '${task.stateName}' of state machine '${task.stateMachineArn}' does not have a correct Type`);
         }
         effectiveOutput = await filterOutput(task.rawInput, rawOutput, state, task);
-        await endStateSuccess({...task, output: effectiveOutput, nextStateName: next, state});
+        await endStateSuccess({stateInfo:task, output: effectiveOutput, nextStateName: next});
     } catch (err) {
         Logger.logError(err ?? '');
         return await endStateFailed({task, 

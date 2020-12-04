@@ -53,7 +53,7 @@ export const handleFinishedBranche = async (req: {brancheIndex: number, output: 
         const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;
         const effectiveOutput = await filterOutput(task.rawInput, task.output, state, task);
         await onParallelStateSucceeded({executionArn: task.executionArn, previousEventId: req.previousEventId})
-        await endStateSuccess({...task, state, nextStateName: state.Next, output: effectiveOutput, previousEventId: req.previousEventId})
+        await endStateSuccess({stateInfo: {...task, previousEventId: req.previousEventId}, nextStateName: state.Next, output: effectiveOutput})
     }
 }
 

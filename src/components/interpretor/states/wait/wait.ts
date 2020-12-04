@@ -53,7 +53,7 @@ export const processWaitingStateDone = async (token: string): Promise<void> => {
     await InterpretorService.deleteStateInfo(task)
     try {
         const output = await filterOutput(task.rawInput, effectiveInput, waitingState, task);
-        await endStateSuccess({...task, output, nextStateName: waitingState.Next, state: waitingState});
+        await endStateSuccess({stateInfo: task, output, nextStateName: waitingState.Next});
     } catch (err) {
         Logger.logError(err ?? 'caca');
         await endStateFailed({task, 

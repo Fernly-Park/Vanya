@@ -34,24 +34,25 @@ export const isExecutionStillRunning = async (executionArn: string): Promise<boo
     return executionStatus === ExecutionStatus.running;
 }
 
-export const endStateSuccess = async (req: RunningState & {nextStateName: string, output: StateOutput, state: StateMachineStateValue}): Promise<void> => {
-    Logger.logDebug(`State '${req.stateName}' of '${req.executionArn}' finished successfully. stringified effective output : '${JSON.stringify(req.output)}'`)
-    if (!await isExecutionStillRunning(req.executionArn)) {
+export const endStateSuccess = async (req: {stateInfo: RunningState, nextStateName: string, output: StateOutput}): Promise<void> => {
+    const {stateInfo, nextStateName, output} = req;
+    Logger.logDebug(`State '${stateInfo.stateName}' of '${stateInfo.executionArn}' finished successfully. stringified effective output : '${JSON.stringify(req.output)}'`)
+    if (!await isExecutionStillRunning(stateInfo.executionArn)) {
         return;
     }
 
-    req.previousEventId = await onStateExitedEvent({...req, stateType: req.state.Type});
-    if (req.nextStateName) {
-        return await execute({executionArn: req.executionArn, stateName: req.nextStateName, 
-            rawInput: req.output, stateMachineArn: req.stateMachineArn, previousStateName: req.stateName, previousEventId: req.previousEventId,
-            parallelInfo: req.parallelInfo})
+    stateInfo.previousEventId = await onStateExitedEvent({...stateInfo, stateType: stateInfo.stateType, output});
+    if (nextStateName) {
+        return await execute({executionArn: stateInfo.executionArn, stateName: nextStateName, 
+            rawInput: req.output, stateMachineArn: stateInfo.stateMachineArn, previousStateName: stateInfo.stateName, previousEventId: stateInfo.previousEventId,
+            parallelInfo: stateInfo.parallelInfo})
     } else {
-        if (req.parallelInfo) {
-            return handleFinishedBranche({output: req.output, brancheIndex: req.parallelInfo.currentBranche, 
-                parallelStateKey: req.parallelInfo.parentKey, previousEventId: req.previousEventId})
+        if (stateInfo.parallelInfo) {
+            return handleFinishedBranche({output: req.output, brancheIndex: stateInfo.parallelInfo.currentBranche, 
+                parallelStateKey: stateInfo.parallelInfo.parentKey, previousEventId: stateInfo.previousEventId})
         }
-        await onExecutionSucceededEvent({result: req.output, executionArn: req.executionArn, previousEventId: req.previousEventId});
-        await ExecutionService.endExecution({executionArn: req.executionArn, output: req.output, status: ExecutionStatus.succeeded});
+        await onExecutionSucceededEvent({result: req.output, executionArn: stateInfo.executionArn, previousEventId: stateInfo.previousEventId});
+        await ExecutionService.endExecution({executionArn: stateInfo.executionArn, output: req.output, status: ExecutionStatus.succeeded});
     }   
 }
 

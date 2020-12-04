@@ -32,7 +32,7 @@ const handleCatcher = async (req: {catcher: Catcher, error?: string, task: Runni
             Error: req.error ?? null,
             Cause: req.cause ?? null,
         }, catcher.ResultPath);
-        await endStateSuccess({...req.task, state: req.state, nextStateName: catcher.Next, output});
+        await endStateSuccess({stateInfo: req.task, nextStateName: catcher.Next, output});
         return true;
     }
     return false;

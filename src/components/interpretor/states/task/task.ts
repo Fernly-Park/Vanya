@@ -97,7 +97,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
         await cleanTaskStateEndedHelper(activityTask);
     }
 
-    await endStateSuccess({...activityTask, output, nextStateName: taskState.Next, state: taskState});
+    await endStateSuccess({stateInfo: activityTask, output, nextStateName: taskState.Next});
 }
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
