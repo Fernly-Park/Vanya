@@ -88,7 +88,7 @@ export const processTaskStateDone = async (activityTask: RunningTaskState): Prom
     try {
         output = await filterOutput(activityTask.rawInput, activityTask.output, taskState, activityTask);
     } catch (err) {
-        return await endStateFailed({task: activityTask, 
+        return await endStateFailed({stateInfo: activityTask, 
             cause: `An error occurred while executing the state '${activityTask.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
             state: taskState
@@ -111,7 +111,7 @@ export const processTaskTimeout = async (activityTaskToken: string): Promise<voi
     await cleanTaskStateEndedHelper(activityTask);
 
     activityTask.previousEventId = await onActivityTimeoutEvent({executionArn: activityTask.executionArn, previousEventId: activityTask.previousEventId})
-    await endStateFailed({task: activityTask,
+    await endStateFailed({stateInfo: activityTask,
         error: AWSConstant.error.STATE_TIMEOUT,
         cause: `An error occurred while executing the state '${activityTask.stateName}'. `,
         state: taskState
@@ -128,7 +128,7 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
     await cleanTaskStateEndedHelper(activityTask);
     Logger.logDebug(`sending event for '${activityTask.token}' failed`)
     activityTask.previousEventId = await onActivityFailedEvent({...input, previousEventId: activityTask.previousEventId});
-    await endStateFailed({task: activityTask, 
+    await endStateFailed({stateInfo: activityTask, 
         cause: input.cause,
         error: input.error,
         state: taskState

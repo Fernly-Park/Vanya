@@ -56,7 +56,7 @@ export const processWaitingStateDone = async (token: string): Promise<void> => {
         await endStateSuccess({stateInfo: task, output, nextStateName: waitingState.Next});
     } catch (err) {
         Logger.logError(err ?? 'caca');
-        await endStateFailed({task, 
+        await endStateFailed({stateInfo: task, 
             cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
             state: waitingState

@@ -56,9 +56,9 @@ export const endStateSuccess = async (req: {stateInfo: RunningState, nextStateNa
     }   
 }
 
-export const endStateFailed = async (req: {task: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
-    Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}' failed, handling error`)
-    if (!await isExecutionStillRunning(req.task.executionArn)) {
+export const endStateFailed = async (req: {stateInfo: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<void> => {
+    Logger.logDebug(`State from '${req.stateInfo.stateName}' from '${req.stateInfo.executionArn}' failed, handling error`)
+    if (!await isExecutionStillRunning(req.stateInfo.executionArn)) {
         return;
     }
     let wasTheErrorHandled = await handleRetry(req);
@@ -68,16 +68,16 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
 
     if (!wasTheErrorHandled) {
 
-        if (req.task.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
+        if (req.stateInfo.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
 
-            await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.task.parallelInfo.parentKey, 
-                previousEventId: req.task.previousEventId, failedState: req.task})
+            await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.stateInfo.parallelInfo.parentKey, 
+                previousEventId: req.stateInfo.previousEventId, failedState: req.stateInfo})
 
         } else {
-            Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
-            await InterpretorDAL.deleteRunningStatesInfo(req.task.executionArn);
-            await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
-            await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
+            Logger.logDebug(`State from '${req.stateInfo.stateName}' from '${req.stateInfo.executionArn}', causing execution to fail`)
+            await InterpretorDAL.deleteRunningStatesInfo(req.stateInfo.executionArn);
+            await onExecutionFailedEvent({...req.stateInfo, cause: req.cause, error: req.error});
+            await ExecutionService.endExecution({executionArn: req.stateInfo.executionArn, status: ExecutionStatus.failed})
         }
     }
 }

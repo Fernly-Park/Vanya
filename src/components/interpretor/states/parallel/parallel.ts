@@ -69,7 +69,7 @@ export const handleFailedBranche = async (req: {cause?: string, error?: string, 
     await InterpretorService.deleteStateInfo(task)
     task.previousEventId = await onParallelStateFailed({executionArn: task.executionArn, previousEventId: req.previousEventId})
     const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;
-    await endStateFailed({task, cause: req.cause, error: req.error, state})
+    await endStateFailed({stateInfo: task, cause: req.cause, error: req.error, state})
 }
 
 const abortRunningStates = async (req: {parallelStateToken: string, previousEventId: number, executionArn: string, failedState: RunningState}): Promise<void> => {

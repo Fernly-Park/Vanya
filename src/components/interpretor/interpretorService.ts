@@ -106,7 +106,7 @@ const processState = async (task: RunningState): Promise<void> => {
                 break;
             case StateType.Fail:
                 const failState = state as FailState
-                return await endStateFailed({task, state, error: failState.Error, cause: failState.Cause})
+                return await endStateFailed({stateInfo: task, state, error: failState.Error, cause: failState.Cause})
             case StateType.Choice:
                 const choiceResult = await processChoiceState({state: state as ChoiceState, task});
                 rawOutput = choiceResult.effectiveInput;
@@ -121,7 +121,7 @@ const processState = async (task: RunningState): Promise<void> => {
         await endStateSuccess({stateInfo:task, output: effectiveOutput, nextStateName: next});
     } catch (err) {
         Logger.logError(err ?? '');
-        return await endStateFailed({task, 
+        return await endStateFailed({stateInfo: task, 
             cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
             state
