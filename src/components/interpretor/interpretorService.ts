@@ -146,7 +146,7 @@ export const isDelayedState = (stateType: StateType): boolean => {
 };
 
 const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
-    await InterpretorDAL.deleteRunningStateInfo(req.executionArn);
+    await InterpretorDAL.deleteRunningStatesInfo(req.executionArn);
     const runningStates = await InterpretorDAL.getCurrentlyRunningState(req.executionArn);
     for (const taskToken of runningStates.taskTokens) {
         await abortTaskState(taskToken);

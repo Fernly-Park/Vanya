@@ -1,8 +1,8 @@
 import { ExecutionService } from "@App/components/execution";
-import { StateMachineStateValue, PassState, TaskState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
+import { StateMachineStateValue, PassState, TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { Logger } from "@App/modules";
 import { AWSConstant } from "@App/utils/constants";
-import { InterpretorDAL, InterpretorService } from ".";
+import { InterpretorDAL } from ".";
 import { ExecutionStatus } from "../execution/execution.interfaces";
 import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent } from "./historyEvent";
 import { RunningState, StateInput, StateOutput } from "./interpretor.interfaces";
@@ -75,18 +75,10 @@ export const endStateFailed = async (req: {task: RunningState, cause?: string, e
 
         } else {
             Logger.logDebug(`State from '${req.task.stateName}' from '${req.task.executionArn}', causing execution to fail`)
-            await cleanFailedState(req);
+            await InterpretorDAL.deleteRunningStatesInfo(req.task.executionArn);
             await onExecutionFailedEvent({...req.task, cause: req.cause, error: req.error});
             await ExecutionService.endExecution({executionArn: req.task.executionArn, status: ExecutionStatus.failed})
         }
-    }
-}
-
-const cleanFailedState = async (req: {task: RunningState}) : Promise<void> => {
-    const {task} = req
-    if (task.parallelInfo) {
-        const parallelStateInfo = await InterpretorService.getStateInfo(task.parallelInfo.parentKey, StateType.Parallel);
-        await InterpretorService.deleteStateInfo(parallelStateInfo);
     }
 }
 

@@ -21,7 +21,7 @@ export const getExecutionStatus = async (executionArn: string): Promise<Executio
     return await Redis.getAsync(key) as ExecutionStatus;
 }
 
-export const deleteRunningStateInfo = async (executionArn: string): Promise<void> => {
+export const deleteRunningStatesInfo = async (executionArn: string): Promise<void> => {
     const key = RedisKey.currentlyRunningStateKey.get(executionArn);
     const keysToDelete = await Redis.smembersAsync(key);
     await deleteKeys(keysToDelete);
