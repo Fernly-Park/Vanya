@@ -493,7 +493,160 @@
              }
             }
           ]
-      }
+        },
+        {
+          "describe": "should fail if the task state send a sendTaskFailure (during the waitState)",
+          "input": {"heartbeat": 2, "timeout": 2, "seconds": 2},
+          "expectedStateMachineStatus": "FAILED",
+          "expectedOutput": null,
+          "activitiesToCreate": [
+              {
+                  "workDurationSeconds": 1,
+                  "name": "tmp",
+                  "expectedInput": {"heartbeat": 2, "timeout": 2, "seconds": 2},
+                  "fail": {}
+              }
+          ],
+          "parallelEvents": [
+            {
+             "timestamp": "2020-12-04T15:08:28.328Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.350Z",
+             "type": "ParallelStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.350Z",
+             "type": "ParallelStateStarted",
+             "id": 3,
+             "previousEventId": 2
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.451Z",
+             "type": "PassStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "Pass State 1",
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.451Z",
+             "type": "PassStateExited",
+             "id": 5,
+             "previousEventId": 4,
+             "stateExitedEventDetails": {
+              "name": "Pass State 1",
+              "output": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.458Z",
+             "type": "TaskStateEntered",
+             "id": 6,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "Task State 2",
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.458Z",
+             "type": "ActivityScheduled",
+             "id": 7,
+             "previousEventId": 6,
+             "activityScheduledEventDetails": {
+              "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}",
+              "timeoutInSeconds": 2,
+              "heartbeatInSeconds": 2
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.469Z",
+             "type": "PassStateEntered",
+             "id": 8,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "Pass State 3",
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.469Z",
+             "type": "PassStateExited",
+             "id": 9,
+             "previousEventId": 8,
+             "stateExitedEventDetails": {
+              "name": "Pass State 3",
+              "output": "\"third\""
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.555Z",
+             "type": "WaitStateEntered",
+             "id": 10,
+             "previousEventId": 5,
+             "stateEnteredEventDetails": {
+              "name": "Wait 1",
+              "input": "{\"heartbeat\":2,\"timeout\":2,\"seconds\":2}"
+             }
+            },
+            {
+             "timestamp": "2020-12-04T15:08:28.571Z",
+             "type": "ActivityStarted",
+             "id": 11,
+             "previousEventId": 7,
+             "activityStartedEventDetails": {}
+            },
+            {
+             "timestamp": "2020-12-04T15:08:29.754Z",
+             "type": "ActivityFailed",
+             "id": 12,
+             "previousEventId": 11,
+             "activityFailedEventDetails": {}
+            },
+            {
+             "timestamp": "2020-12-04T15:08:29.754Z",
+             "type": "WaitStateAborted",
+             "id": 13,
+             "previousEventId": 12
+            },
+            {
+             "timestamp": "2020-12-04T15:08:29.754Z",
+             "type": "TaskStateAborted",
+             "id": 14,
+             "previousEventId": 12
+            },
+            {
+             "timestamp": "2020-12-04T15:08:29.754Z",
+             "type": "ParallelStateFailed",
+             "id": 15,
+             "previousEventId": 12
+            },
+            {
+             "timestamp": "2020-12-04T15:08:29.754Z",
+             "type": "ExecutionFailed",
+             "id": 16,
+             "previousEventId": 15,
+             "executionFailedEventDetails": {}
+            }
+          ]
+        }
     ],
     "definition": {
         "Comment": "Simple parallel state machine",
