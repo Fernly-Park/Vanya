@@ -106,7 +106,7 @@ export const getCurrentlyRunningState = async (executionArn: string): Promise<{t
 }
 
 
-export const getKeys = async (keys: string[]): Promise<{taskTokens: string[], parallelTokens: string[], waitTokens: string[]}> => {
+const getKeys = async (keys: string[]): Promise<{taskTokens: string[], parallelTokens: string[], waitTokens: string[]}> => {
     const toReturn = {
         taskTokens: [] as string[],
         parallelTokens: [] as string[],
