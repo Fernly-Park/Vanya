@@ -40,8 +40,8 @@ const handleCatcher = async (req: {catcher: Catcher, error?: string, stateInfo: 
 
 
 export const handleRetry = async (req: {stateInfo: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
-    const asTaskState = req.state as TaskState
-    const canTheErrorBeRetried = req.error !== AWSConstant.error.STATE_RUNTIME && asTaskState.Retry != null;
+    const stateWithCatch = req.state as TaskState
+    const canTheErrorBeRetried = req.error !== AWSConstant.error.STATE_RUNTIME && stateWithCatch.Retry != null;
     if (canTheErrorBeRetried) {
         req.stateInfo.retry = req.stateInfo.retry ?? initialiseRetryInformationForRunningState(req);
         return await handleRetriers(req)
@@ -50,9 +50,9 @@ export const handleRetry = async (req: {stateInfo: RunningState, cause?: string,
 }
 
 const initialiseRetryInformationForRunningState = (req: {stateInfo: RunningState, state: StateMachineStateValue}) => {
-    const asTaskState = req.state as TaskState
+    const stateWithCatch = req.state as TaskState
     const toReturn = [];
-    for (const retrier of asTaskState.Retry) {
+    for (const retrier of stateWithCatch.Retry) {
         toReturn.push({retryIntervalSeconds: retrier.IntervalSeconds == null ? 1 : retrier.IntervalSeconds, 
             retryLeft: retrier.MaxAttempts == null ? 3 : retrier.MaxAttempts
         });
@@ -61,9 +61,9 @@ const initialiseRetryInformationForRunningState = (req: {stateInfo: RunningState
 }
 
 const handleRetriers = async (req: {stateInfo: RunningState, state: StateMachineStateValue, error?: string,}) => {
-    const asTaskState = req.state as TaskState
-    for (let i = 0; i < asTaskState.Retry.length; i++) {
-        const retrier = asTaskState.Retry[i];
+    const stateWithCatch = req.state as TaskState
+    for (let i = 0; i < stateWithCatch.Retry.length; i++) {
+        const retrier = stateWithCatch.Retry[i];
         const isTheErrorInThisRetrier = retrier.ErrorEquals.find(x => x === req.error || x === AWSConstant.error.STATE_ALL_ERROR) != null;
         if (isTheErrorInThisRetrier) {
             return await retryError({...req, retrier, runningRetryInfo: req.stateInfo.retry[i]})
@@ -73,8 +73,8 @@ const handleRetriers = async (req: {stateInfo: RunningState, state: StateMachine
 }
 
 const retryError = async (req: {runningRetryInfo: RetryInformation, retrier: Retrier, stateInfo: RunningState, state: StateMachineStateValue}) => {
-    const {runningRetryInfo, retrier, stateInfo: task }= req
-    const asTaskState = req.state as TaskState
+    const {runningRetryInfo, retrier, stateInfo}= req
+    const stateWithCatch = req.state as TaskState
     const currentIntervalInSeconds = runningRetryInfo.retryIntervalSeconds;
     const currentRetryLeft = runningRetryInfo.retryLeft--
     const backoffRate = retrier.BackoffRate == null ? 2 : retrier.BackoffRate
@@ -86,14 +86,14 @@ const retryError = async (req: {runningRetryInfo: RetryInformation, retrier: Ret
         const until = DateUtil.getDateIn(Math.trunc(currentIntervalInSeconds)  * 1000);
 
 
-        const taskToken = uuid();
-        await ContextObjectService.updateContextObject({executionArn: task.executionArn, enteredState: {
+        stateInfo.token = uuid();
+        await ContextObjectService.updateContextObject({executionArn: stateInfo.executionArn, enteredState: {
             EnteredTime: new Date().toISOString(),
-            Name: task.stateName,
-        }, taskToken, previousState: task.stateName});
+            Name: stateInfo.stateName,
+        }, taskToken: stateInfo.token, previousState: stateInfo.stateName});
 
-        const timedTask = {task, state: asTaskState, effectiveInput: activityTask.effectiveInput, token: taskToken}
-        await TimerService.addTimedTask({until, timedTask: {task: timedTask, eventNameForCallback: Event.CustomEvents.ActivityTaskRetry}});
+        const timedTask = {task: stateInfo, state: stateWithCatch, effectiveInput: activityTask.effectiveInput, token: stateInfo.token}
+        await TimerService.addTimedTask({until, timedTask: {task: timedTask, eventNameForCallback: Event.CustomEvents.TaskRetry}});
         return true;
     }
     return false;

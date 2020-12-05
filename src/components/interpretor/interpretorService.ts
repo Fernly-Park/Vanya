@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RunningState, StateInput, StateOutput } from './interpretor.interfaces';
-import { ChoiceState, FailState, ParallelState, PassState, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ChoiceState, FailState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
@@ -155,6 +155,11 @@ const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
     await onExecutionAbortedEvent(req);
 }
 
+
+const onTaskRetry = async (req: {task: RunningState, state: StateMachineStateValue, token: string}): Promise<void> => {
+    await processTaskState({...req, state: req.state as TaskState});
+};
+
 const registerEvents = (): void => {
     Event.sendTaskFailureEvent.on(processTaskFailed);
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
@@ -162,7 +167,7 @@ const registerEvents = (): void => {
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
     Event.executionStartedEvent.on(onExecutionStartedEvent);
     Event.stopExecutionEvent.on(onStopExecution);
-    Event.on(Event.CustomEvents.ActivityTaskRetry, processTaskState);
+    Event.on(Event.CustomEvents.TaskRetry, onTaskRetry);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
@@ -175,7 +180,7 @@ const unregisterEvents = (): void => {
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
     Event.executionStartedEvent.removeListener(onExecutionStartedEvent);
     Event.stopExecutionEvent.removeListener(onStopExecution);
-    Event.removeListener(Event.CustomEvents.ActivityTaskRetry, processTaskState)
+    Event.removeListener(Event.CustomEvents.TaskRetry, onTaskRetry)
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);

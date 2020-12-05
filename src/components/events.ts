@@ -25,7 +25,7 @@ export enum CustomEvents {
     ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout',
     SendTaskFailure = 'SendTaskFailure',
     ActivityFailure = 'ActivityFailure',
-    ActivityTaskRetry = 'ActivityTaskRetry'
+    TaskRetry = 'TaskRetry'
 }
 
 export const on = (eventName: string, callback: EventCallback): void => {
