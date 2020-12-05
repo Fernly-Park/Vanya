@@ -1,5 +1,5 @@
 {
-    "describe": "simple state machine with a parallel state and an input path", 
+    "describe": "simple state machine with a parallel state containing a wait state and a task state", 
     "tests": [
         {
             "input": {"heartbeat": 1, "timeout": 2, "seconds": 1},
