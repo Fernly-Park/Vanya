@@ -233,6 +233,10 @@ const expectParallelEventsToBeCorrect = (expected: HistoryEvent[], received: His
         expect(received[i].previousEventId).toBeGreaterThanOrEqual(0); delete received[i].previousEventId;
     }
 
+    for(let i = 0; i < received.length; i++) {
+        expect(expected).toContainEqual(received[i]);
+    }
+
     expect(received).toStrictEqual(expect.arrayContaining(expected))
 }
 
