@@ -92,4 +92,9 @@ export class FatalError extends BaseError {
     }
 }
 
-
+export class ConcurrencyError extends BaseError {
+    constructor(description: string) {
+        super("concurrency Error", description, false);
+        this.stack = `${this.message}\n${new Error().stack}`;
+    }
+}

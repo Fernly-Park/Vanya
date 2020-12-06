@@ -1,6 +1,6 @@
 import { StateType, TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningState } from "@App/components/interpretor/interpretor.interfaces";
-import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
+import { ConcurrencyError, InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
 import { retrieveField } from "../../path/path";
 import { ActivityService } from "@App/components/activity";
@@ -108,7 +108,13 @@ export const processTaskTimeout = async (activityTaskToken: string): Promise<voi
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' timeout`)
 
-    await cleanTaskStateEndedHelper(activityTask);
+    try {
+        await cleanTaskStateEndedHelper(activityTask);
+    } catch (err) {
+        if (err instanceof ConcurrencyError) {
+            return;
+        }
+    }
 
     activityTask.previousEventId = await onActivityTimeoutEvent({executionArn: activityTask.executionArn, previousEventId: activityTask.previousEventId})
     await endStateFailed({stateInfo: activityTask,

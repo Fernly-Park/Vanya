@@ -1,10 +1,28 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import redis from 'redis';
+import redis, { Callback } from 'redis';
 import { promisify } from 'util';
 import config from '@App/config';
 import genericPool from 'generic-pool';
 
+declare module 'redis' {
+    interface Commands<R> {
+        json_set : (key: string, path: string, json: string, callback?: Callback<string>) => R
+        json_get : (key: string, callback?: Callback<string>) => R
+
+    }
+}
+function addReJSONModule(redis: any) {
+    const cmds = ["json.del", "json.get", "json.mget", "json.set", "json.type", "json.numincrby", "json.nummultby", "json.strappend", "json.strlen", "json.arrappend", "json.arrindex", "json.arrinsert", "json.arrlen", "json.arrpop", "json.arrtrim", "json.objkeys", "json.objlen", "json.debug", "json.forget", "json.resp"];
+    
+    cmds.forEach(function(aCmd) {
+      redis.addCommand(aCmd);
+    });
+  }
+
+addReJSONModule(redis);
 export let client: redis.RedisClient;
 let connectionPool: genericPool.Pool<redis.RedisClient>;
 // eslint-disable-next-line @typescript-eslint/ban-types
