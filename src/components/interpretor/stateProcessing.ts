@@ -1,10 +1,10 @@
 import { ExecutionService } from "@App/components/execution";
-import { StateMachineStateValue, PassState, TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
+import { StateMachineStateValue, PassState, TaskState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
 import { Logger } from "@App/modules";
 import { AWSConstant } from "@App/utils/constants";
 import { InterpretorDAL } from ".";
 import { ExecutionStatus } from "../execution/execution.interfaces";
-import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent } from "./historyEvent";
+import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent, onParallelStateFailed } from "./historyEvent";
 import { RunningState, StateInput, StateOutput } from "./interpretor.interfaces";
 import { execute } from "./interpretorService";
 import { applyPath, applyPayloadTemplate, applyResultPath } from "./path/path";
@@ -80,11 +80,15 @@ export const endStateFailed = async (req: {stateInfo: RunningState, cause?: stri
 }
 
 const handleError = async (req: {stateInfo: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
+    const { stateInfo } = req;
     let wasTheErrorHandled = false;
     if (req.error !== AWSConstant.error.STATE_RUNTIME) {
         wasTheErrorHandled = await handleRetry(req);
         if (!wasTheErrorHandled) {
             wasTheErrorHandled = await handleCatch(req)
+            if (stateInfo.stateType === StateType.Parallel) {
+                stateInfo.previousEventId = await onParallelStateFailed({executionArn: stateInfo.executionArn, previousEventId: stateInfo.previousEventId})
+            }
         }
     }
     return wasTheErrorHandled;

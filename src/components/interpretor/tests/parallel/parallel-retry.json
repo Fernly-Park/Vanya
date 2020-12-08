@@ -1,0 +1,374 @@
+{
+    "describe": "simple state machine with a parallel state having a retry strategy", 
+    "tests": [
+        {
+            "describe": "should work and not retry if no error is sent",
+            "input": {"heartbeat": 1, "timeout": 1},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": [{"Output": "hello"}],
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {"heartbeat": 1, "timeout": 1},
+                    "output": {"Output": "hello"}
+                }
+            ],
+            "parallelEvents": [
+              {
+               "timestamp": "2020-12-08T15:34:43.809Z",
+               "type": "ExecutionStarted",
+               "id": 1,
+               "previousEventId": 0,
+               "executionStartedEventDetails": {
+                "input": "{\"heartbeat\":1,\"timeout\":1}",
+                "roleArn": "todo"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:43.844Z",
+               "type": "ParallelStateEntered",
+               "id": 2,
+               "previousEventId": 0,
+               "stateEnteredEventDetails": {
+                "name": "Parallel State",
+                "input": "{\"heartbeat\":1,\"timeout\":1}"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:43.844Z",
+               "type": "ParallelStateStarted",
+               "id": 3,
+               "previousEventId": 2
+              },
+              {
+               "timestamp": "2020-12-08T15:34:43.946Z",
+               "type": "TaskStateEntered",
+               "id": 4,
+               "previousEventId": 3,
+               "stateEnteredEventDetails": {
+                "name": "First Task",
+                "input": "{\"heartbeat\":1,\"timeout\":1}"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:43.946Z",
+               "type": "ActivityScheduled",
+               "id": 5,
+               "previousEventId": 4,
+               "activityScheduledEventDetails": {
+                "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                "input": "{\"heartbeat\":1,\"timeout\":1}",
+                "timeoutInSeconds": 1,
+                "heartbeatInSeconds": 1
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.044Z",
+               "type": "ActivityStarted",
+               "id": 6,
+               "previousEventId": 5,
+               "activityStartedEventDetails": {}
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.218Z",
+               "type": "ActivitySucceeded",
+               "id": 7,
+               "previousEventId": 6,
+               "activitySucceededEventDetails": {
+                "output": "{\"Output\":\"hello\"}"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.218Z",
+               "type": "TaskStateExited",
+               "id": 8,
+               "previousEventId": 7,
+               "stateExitedEventDetails": {
+                "name": "First Task",
+                "output": "{\"Output\":\"hello\"}"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.218Z",
+               "type": "ParallelStateSucceeded",
+               "id": 9,
+               "previousEventId": 8
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.218Z",
+               "type": "ParallelStateExited",
+               "id": 10,
+               "previousEventId": 8,
+               "stateExitedEventDetails": {
+                "name": "Parallel State",
+                "output": "[{\"Output\":\"hello\"}]"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.226Z",
+               "type": "PassStateEntered",
+               "id": 11,
+               "previousEventId": 10,
+               "stateEnteredEventDetails": {
+                "name": "NEXT_STATE",
+                "input": "[{\"Output\":\"hello\"}]"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.226Z",
+               "type": "PassStateExited",
+               "id": 12,
+               "previousEventId": 11,
+               "stateExitedEventDetails": {
+                "name": "NEXT_STATE",
+                "output": "[{\"Output\":\"hello\"}]"
+               }
+              },
+              {
+               "timestamp": "2020-12-08T15:34:44.226Z",
+               "type": "ExecutionSucceeded",
+               "id": 13,
+               "previousEventId": 12,
+               "executionSucceededEventDetails": {
+                "output": "[{\"Output\":\"hello\"}]"
+               }
+              }
+            ]
+        },
+        {
+          "describe": "should succeed if failing due to a random error (thanks to the State.ALL)",
+          "input": {"heartbeat": 1, "timeout": 1},
+          "expectedStateMachineStatus": "SUCCEEDED",
+          "expectedOutput": [{"Output": "hello"}],
+          "activitiesToCreate": [
+              {
+                  "name": "tmp",
+                  "expectedInput": {"heartbeat": 1, "timeout": 1},
+                  "output": {"Output": "hello"},
+                  "fail": [
+                    {
+                        "error": "RandomError"
+                    }
+                  ]
+              }
+          ],
+          "parallelEvents": [
+            {
+             "timestamp": "2020-12-08T15:56:26.637Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"heartbeat\":1,\"timeout\":1}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:26.657Z",
+             "type": "ParallelStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{\"heartbeat\":1,\"timeout\":1}"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:26.657Z",
+             "type": "ParallelStateStarted",
+             "id": 3,
+             "previousEventId": 2
+            },
+            {
+             "timestamp": "2020-12-08T15:56:26.765Z",
+             "type": "TaskStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "First Task",
+              "input": "{\"heartbeat\":1,\"timeout\":1}"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:26.765Z",
+             "type": "ActivityScheduled",
+             "id": 5,
+             "previousEventId": 4,
+             "activityScheduledEventDetails": {
+              "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+              "input": "{\"heartbeat\":1,\"timeout\":1}",
+              "timeoutInSeconds": 1,
+              "heartbeatInSeconds": 1
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:26.832Z",
+             "type": "ActivityStarted",
+             "id": 6,
+             "previousEventId": 5,
+             "activityStartedEventDetails": {}
+            },
+            {
+             "timestamp": "2020-12-08T15:56:27.011Z",
+             "type": "ActivityFailed",
+             "id": 7,
+             "previousEventId": 6,
+             "activityFailedEventDetails": {
+              "error": "RandomError"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:27.011Z",
+             "type": "TaskStateAborted",
+             "id": 8,
+             "previousEventId": 7
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.012Z",
+             "type": "ParallelStateStarted",
+             "id": 9,
+             "previousEventId": 7
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.019Z",
+             "type": "TaskStateEntered",
+             "id": 10,
+             "previousEventId": 9,
+             "stateEnteredEventDetails": {
+              "name": "First Task",
+              "input": "{\"heartbeat\":1,\"timeout\":1}"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.019Z",
+             "type": "ActivityScheduled",
+             "id": 11,
+             "previousEventId": 10,
+             "activityScheduledEventDetails": {
+              "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+              "input": "{\"heartbeat\":1,\"timeout\":1}",
+              "timeoutInSeconds": 1,
+              "heartbeatInSeconds": 1
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.086Z",
+             "type": "ActivityStarted",
+             "id": 12,
+             "previousEventId": 11,
+             "activityStartedEventDetails": {}
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.265Z",
+             "type": "ActivitySucceeded",
+             "id": 13,
+             "previousEventId": 12,
+             "activitySucceededEventDetails": {
+              "output": "{\"Output\":\"hello\"}"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.265Z",
+             "type": "TaskStateExited",
+             "id": 14,
+             "previousEventId": 13,
+             "stateExitedEventDetails": {
+              "name": "First Task",
+              "output": "{\"Output\":\"hello\"}"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.265Z",
+             "type": "ParallelStateSucceeded",
+             "id": 15,
+             "previousEventId": 14
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.265Z",
+             "type": "ParallelStateExited",
+             "id": 16,
+             "previousEventId": 14,
+             "stateExitedEventDetails": {
+              "name": "Parallel State",
+              "output": "[{\"Output\":\"hello\"}]"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.272Z",
+             "type": "PassStateEntered",
+             "id": 17,
+             "previousEventId": 16,
+             "stateEnteredEventDetails": {
+              "name": "NEXT_STATE",
+              "input": "[{\"Output\":\"hello\"}]"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.272Z",
+             "type": "PassStateExited",
+             "id": 18,
+             "previousEventId": 17,
+             "stateExitedEventDetails": {
+              "name": "NEXT_STATE",
+              "output": "[{\"Output\":\"hello\"}]"
+             }
+            },
+            {
+             "timestamp": "2020-12-08T15:56:29.272Z",
+             "type": "ExecutionSucceeded",
+             "id": 19,
+             "previousEventId": 18,
+             "executionSucceededEventDetails": {
+              "output": "[{\"Output\":\"hello\"}]"
+             }
+            }
+          ]
+        }
+    ],
+    "definition": {
+      "Comment": "Simple parallel state machine",
+      "StartAt": "Parallel State",
+      "States": {
+        "Parallel State": {
+          "Type": "Parallel",
+          "Branches": [
+            {
+              "Comment": "A Hello World example of the Amazon States Language using Pass states",
+              "StartAt": "First Task",
+              "States": {
+                "First Task": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "End": true,
+                  "TimeoutSecondsPath": "$.timeout",
+                  "HeartbeatSecondsPath": "$.heartbeat"
+                }
+              }
+            }
+          ],
+          "Next": "NEXT_STATE",
+          "Retry": [
+            {
+              "ErrorEquals": [
+                "ErrorA",
+                "ErrorB"
+              ],
+              "BackoffRate": 1.5,
+              "MaxAttempts": 2
+            },
+            {
+              "ErrorEquals": [
+                "States.ALL"
+              ],
+              "IntervalSeconds": 2
+            }
+          ]
+        },
+        "NEXT_STATE": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }
+}
+
