@@ -124,7 +124,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         if (currentTest.events) {
             expectEventsToBeCorrect(currentTest.events, events, currentTest.eventsExpectedDuration)
         } else if (currentTest.parallelEvents) {
-            expectParallelEventsToBeCorrect(currentTest.parallelEvents, events);
+            expectParallelEventsToBeCorrect(currentTest.parallelEvents, events, currentTest.eventsExpectedDuration);
         }
         if (currentTest.expectedNumberOfEvents !== undefined) {
             expect(events).toHaveLength(currentTest.expectedNumberOfEvents);
@@ -203,17 +203,7 @@ const createActivities = async (activities: ActivitiyToCreateForTests[], userId:
 
 const expectEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
     expect(received).toHaveLength(expected.length)
-    for (let i = 0; i < expected.length; i++) {
-        expect(received[i].timestamp).toMatch(ISO8601_REGEX);
-        const expectedDuration = expectedDurations?.find(x => x.eventId === received[i].id);
-        if (expectedDuration){
-            const previousEventTime = received.find(x => x.id === received[i].previousEventId).timestamp;
-            const currentEventTime = new Date(received[i].timestamp);
-            const previousDate = new Date(previousEventTime);
-            const seconds = (currentEventTime.getTime() - previousDate.getTime()) / 1000;
-            expect(Math.round(seconds * 10) / 10).toBe(expectedDuration.expectedDurationInSeconds * config.waitScale);
-        }
-    }
+    expectEventDurationToBeCorrect(received, expectedDurations);
     for (let i = 0; i < expected.length; i++) {
         delete expected[i].timestamp;
         delete received[i].timestamp;
@@ -221,9 +211,10 @@ const expectEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEven
     expect(received).toStrictEqual(expected);
 }
 
-const expectParallelEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEvent[]) => {
+const expectParallelEventsToBeCorrect = (expected: HistoryEvent[], received: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]) => {
     expect(received).toHaveLength(expected.length);
 
+    expectEventDurationToBeCorrect(received, expectedDurations);
     for(let i = 0; i < received.length; i++) {
         expect(expected[i].timestamp).toMatch(ISO8601_REGEX); delete expected[i].timestamp;
         expect(received[i].timestamp).toMatch(ISO8601_REGEX); delete received[i].timestamp;
@@ -238,6 +229,20 @@ const expectParallelEventsToBeCorrect = (expected: HistoryEvent[], received: His
     }
 
     expect(received).toStrictEqual(expect.arrayContaining(expected))
+}
+
+const expectEventDurationToBeCorrect = (received: HistoryEvent[], expectedDurations?: EventDurationExpectedForTests[]): void => {
+    for(let i = 0; i < received.length; i++) {
+        expect(received[i].timestamp).toMatch(ISO8601_REGEX);
+        const expectedDuration = expectedDurations?.find(x => x.eventId === received[i].id);
+        if (expectedDuration){
+            const previousEventTime = received.find(x => x.id === received[i].previousEventId).timestamp;
+            const currentEventTime = new Date(received[i].timestamp);
+            const previousDate = new Date(previousEventTime);
+            const seconds = (currentEventTime.getTime() - previousDate.getTime()) / 1000;
+            expect(Math.round(seconds * 10) / 10).toBe(expectedDuration.expectedDurationInSeconds * config.waitScale);
+        }
+    }
 }
 
 const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {

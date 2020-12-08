@@ -152,6 +152,12 @@
                   ]
               }
           ],
+          "eventsExpectedDuration": [
+            {
+                "eventId": 9,
+                "expectedDurationInSeconds": 2
+            }
+          ],
           "parallelEvents": [
             {
              "timestamp": "2020-12-08T15:56:26.637Z",

@@ -158,7 +158,6 @@ export type TestStateMachine = {
 export type EventDurationExpectedForTests = {
     eventId: number,
     expectedDurationInSeconds: number
-    
 };
 
 export type ActivitiyToCreateForTests = {
