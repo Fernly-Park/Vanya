@@ -157,7 +157,12 @@ const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
 
 
 const onTaskRetry = async (req: {task: RunningState, state: StateMachineStateValue, token: string}): Promise<void> => {
-    await processTaskState({...req, state: req.state as TaskState});
+    if (req.task.stateType === StateType.Task) {
+        await processTaskState({...req, state: req.state as TaskState});
+    } else if (req.task.stateType === StateType.Parallel) {
+        await processParallelState({...req, state: req.state as ParallelState});
+    }
+    
 };
 
 const registerEvents = (): void => {
