@@ -319,7 +319,7 @@
           ]
         },
         {
-          "describe": "should not go the catch state if the parallel state fails",
+          "describe": "should go the catch state if the parallel state fails",
           "input": {"heartbeat": 1, "timeout": 1},
           "expectedStateMachineStatus": "SUCCEEDED",
           "expectedOutput": {"Error": null, "Cause": "randomCause"},
