@@ -119,6 +119,7 @@ export const stateMachinesForTests = {
         validWaitState: getStateMachineDef('valid', 'valid-wait-state.json'),
         validChoice: getStateMachineDef('valid', 'valid-choice.json'),
         validPassSpaceName: getStateMachineDef('valid', 'pass', 'valid-pass-space-stateName.json'),
+        validParallelParameters: getStateMachineDef('valid', 'valid-parallel-parameters.json')
     }
 }
 
