@@ -61,11 +61,8 @@ export const endStateFailed = async (req: {stateInfo: RunningState, cause?: stri
     if (!await isExecutionStillRunning(req.stateInfo.executionArn)) {
         return;
     }
-    let wasTheErrorHandled = await handleRetry(req);
-    if (!wasTheErrorHandled) {
-        wasTheErrorHandled = await handleCatch(req)
-    }
 
+    const wasTheErrorHandled = await handleError(req);
     if (!wasTheErrorHandled) {
 
         if (req.stateInfo.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
@@ -82,4 +79,13 @@ export const endStateFailed = async (req: {stateInfo: RunningState, cause?: stri
     }
 }
 
-
+const handleError = async (req: {stateInfo: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
+    let wasTheErrorHandled = false;
+    if (req.error !== AWSConstant.error.STATE_RUNTIME) {
+        wasTheErrorHandled = await handleRetry(req);
+        if (!wasTheErrorHandled) {
+            wasTheErrorHandled = await handleCatch(req)
+        }
+    }
+    return wasTheErrorHandled;
+}

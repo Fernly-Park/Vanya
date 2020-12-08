@@ -12,7 +12,7 @@ import { ContextObjectService } from "@App/components/contextObject";
 
 export const handleCatch = async (req: {stateInfo: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
     const stateWithCatch = req.state as TaskState
-    if (req.error !== AWSConstant.error.STATE_RUNTIME && stateWithCatch.Catch != null) {
+    if (stateWithCatch.Catch != null) {
         for (const catcher of stateWithCatch.Catch) {
             const wasTheErrorCatched = await handleCatcher({...req, catcher});
             if (wasTheErrorCatched) {
@@ -41,8 +41,8 @@ const handleCatcher = async (req: {catcher: Catcher, error?: string, stateInfo: 
 
 export const handleRetry = async (req: {stateInfo: RunningState, cause?: string, error?: string, state: StateMachineStateValue}): Promise<boolean> => {
     const stateWithCatch = req.state as TaskState
-    const canTheErrorBeRetried = req.error !== AWSConstant.error.STATE_RUNTIME && stateWithCatch.Retry != null;
-    if (canTheErrorBeRetried) {
+    
+    if (stateWithCatch.Retry != null) {
         req.stateInfo.retry = req.stateInfo.retry ?? initialiseRetryInformationForRunningState(req);
         return await handleRetriers(req)
     }
