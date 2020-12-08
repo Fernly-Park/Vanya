@@ -82,7 +82,7 @@ const retryError = async (req: {runningRetryInfo: RetryInformation, retrier: Ret
     if (currentRetryLeft > 0) {
         runningRetryInfo.retryIntervalSeconds *= backoffRate;
         const activityTask = req.stateInfo as RunningTaskState;
-        Logger.logDebug(`Retrying task '${activityTask.token}' in '${currentIntervalInSeconds}' seconds`)
+        Logger.logDebug(`Retrying task '${activityTask.stateName}' with token '${activityTask.token}' in '${currentIntervalInSeconds}' seconds`)
         const until = DateUtil.getDateIn(Math.trunc(currentIntervalInSeconds)  * 1000);
 
 
