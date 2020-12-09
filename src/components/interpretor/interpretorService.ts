@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RunningState, StateInput, StateOutput } from './interpretor.interfaces';
-import { ChoiceState, FailState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ChoiceState, FailState, ParallelState, PassState, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
@@ -97,7 +97,7 @@ const processState = async (task: RunningState): Promise<void> => {
                 next = (state as PassState).Next
                 break;
             case StateType.Task:
-                return await processTaskState({task, state: state as TaskState, token: stateToken});
+                return await processTaskState({task, state: state as TaskState});
             case StateType.Wait:
                 return await processWaitTask(task, state as WaitState); 
             case StateType.Succeed:
@@ -159,7 +159,7 @@ const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
 const onStateRetry = async (req: onStateRetryInput): Promise<void> => {
     const {stateInfo} = req
     if (stateInfo.stateType === StateType.Task) {
-        await processTaskState({task: stateInfo, state: req.state as TaskState, token: req.token});
+        await processTaskState({task: stateInfo, state: req.state as TaskState});
     } else if (stateInfo.stateType === StateType.Parallel) {
         await processParallelState({task: stateInfo, state: req.state as ParallelState});
     }
@@ -172,10 +172,11 @@ const registerEvents = (): void => {
     Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
     Event.on(Event.CustomEvents.TaskRetry, onStateRetry);
+
+
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
-
     Event.executionStartedEvent.on(onExecutionStartedEvent);
     Event.stopExecutionEvent.on(onStopExecution);
 }

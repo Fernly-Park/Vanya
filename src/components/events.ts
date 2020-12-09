@@ -8,7 +8,7 @@ import { StateMachineStateValue } from './stateMachines/stateMachine.interfaces'
 export type ActivityTaskHeartbeatInput = {stateInfo: RunningTaskState};
 export type SendTaskFailureEventInput = {stateInfo: RunningTaskState, cause?: string, error?: string};
 export type StopExecutionEventInput = StopExecutionInput;
-export type onStateRetryInput = {stateInfo: RunningState, state: StateMachineStateValue, token: string}
+export type onStateRetryInput = {stateInfo: RunningState, state: StateMachineStateValue}
 
 type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};

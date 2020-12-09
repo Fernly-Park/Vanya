@@ -93,7 +93,7 @@ const retryError = async (req: {runningRetryInfo: RetryInformation, retrier: Ret
         }, taskToken: stateInfo.token, previousState: stateInfo.stateName});
 
         
-        const toRetry: Event.onStateRetryInput = {stateInfo, state: stateWithCatch, token: stateInfo.token}
+        const toRetry: Event.onStateRetryInput = {stateInfo, state: stateWithCatch}
         await TimerService.addTimedTask({until, timedTask: {task: toRetry, eventNameForCallback: Event.CustomEvents.TaskRetry}});
         return true;
     }

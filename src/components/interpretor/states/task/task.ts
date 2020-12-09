@@ -18,8 +18,8 @@ import { ValidationExceptionError } from "@App/errors/AWSErrors";
 import { InterpretorService } from "../..";
 import config from "@App/config";
 
-export const processTaskState = async (req: {task: RunningState, state: TaskState, token: string}): Promise<void> => {
-    const {task, state, token} = req;
+export const processTaskState = async (req: {task: RunningState, state: TaskState}): Promise<void> => {
+    const {task, state} = req;
     const effectiveInput = await filterInput(task, state);
     const resource = req.state.Resource;
     const activity = await ActivityService.getActivity(resource);
@@ -32,8 +32,8 @@ export const processTaskState = async (req: {task: RunningState, state: TaskStat
 
     task.previousEventId = await onActivityScheduledEvent({executionArn: task.executionArn, resource, heartbeatSeconds: heartbeatSeconds, 
         input: effectiveInput, timeoutSeconds: timeoutSeconds, previousEventId: task.previousEventId})
-    const activityTask: RunningTaskState = {...task, token, status: ActivityTaskStatus.Waiting, effectiveInput, heartbeatSeconds, timeoutSeconds}
-    Logger.logDebug(`adding task state '${task.stateName}' from '${task.executionArn}' with token '${token}' to the queues.`);
+    const activityTask: RunningTaskState = {...task, token: task.token, status: ActivityTaskStatus.Waiting, effectiveInput, heartbeatSeconds, timeoutSeconds}
+    Logger.logDebug(`adding task state '${task.stateName}' from '${task.executionArn}' with token '${task.token}' to the queues.`);
     await InterpretorService.saveStateInfo(activityTask);
     await TaskDAL.addTaskToActivityQueue(resource, activityTask);
 }
