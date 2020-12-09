@@ -58,10 +58,10 @@ export const onActivityScheduledEvent = async (req: {executionArn: string, heart
     }});
 }
 
-export const onActivityStartedEvent = async (req: {task: RunningTaskState, workerName?: string}): Promise<number> => {
-    return await ExecutionService.addEvent({executionArn: req.task.executionArn, event: {
+export const onActivityStartedEvent = async (req: {stateInfo: RunningTaskState, workerName?: string}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.stateInfo.executionArn, event: {
         type: HistoryEventType.ActivityStarted,
-        previousEventId: req.task.previousEventId,
+        previousEventId: req.stateInfo.previousEventId,
         activityStartedEventDetails: {
             workerName: req.workerName
         }
@@ -134,8 +134,8 @@ export const onExecutionSucceededEvent = async (req: {executionArn: string, resu
     }});
 }
 
-export const onActivityFailedEvent = async (req: {activityTask: RunningTaskState, cause?: string, error?: string, previousEventId: number}): Promise<number> => {
-    return await ExecutionService.addEvent({executionArn: req.activityTask.executionArn, event: {
+export const onActivityFailedEvent = async (req: {stateInfo: RunningTaskState, cause?: string, error?: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.stateInfo.executionArn, event: {
         type: HistoryEventType.ActivityFailed,
         previousEventId: req.previousEventId,
         activityFailedEventDetails: {

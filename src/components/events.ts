@@ -2,12 +2,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
 import { HistoryEventType, IExecution } from './execution/execution.interfaces';
-import { RunningTaskState } from './interpretor/interpretor.interfaces';
+import { RunningState, RunningTaskState } from './interpretor/interpretor.interfaces';
+import { StateMachineStateValue } from './stateMachines/stateMachine.interfaces';
 
-export type ProcessTaskDoneInput = RunningTaskState;
-export type ActivityTaskHeartbeatInput = RunningTaskState;
-export type SendTaskFailureEventInput = {activityTask: RunningTaskState, cause?: string, error?: string};
+export type ActivityTaskHeartbeatInput = {stateInfo: RunningTaskState};
+export type SendTaskFailureEventInput = {stateInfo: RunningTaskState, cause?: string, error?: string};
 export type StopExecutionEventInput = StopExecutionInput;
+export type onStateRetryInput = {stateInfo: RunningState, state: StateMachineStateValue, token: string}
 
 type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};
@@ -74,9 +75,8 @@ const factoryCustomEvent = <T>(eventName: string) => {
 }
 
 export const executionStartedEvent = factoryCustomEvent<IExecution>(CustomEvents.ExecutionStarted);
-export const workerOutputReceivedEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.WorkerOutputReceived);
-export const activityTaskSucceededEvent = factoryCustomEvent<RunningTaskState>(CustomEvents.ActivityTaskSucceeded)
-export const activityStartedEvent = factoryCustomEvent<{task: RunningTaskState, workerName?: string}>(HistoryEventType.ActivityStarted);
+export const workerOutputReceivedEvent = factoryCustomEvent<{stateInfo: RunningTaskState}>(CustomEvents.WorkerOutputReceived);
+export const activityStartedEvent = factoryCustomEvent<{stateInfo: RunningTaskState, workerName?: string}>(HistoryEventType.ActivityStarted);
 export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.ActivityTaskHeartbeat);
 export const sendTaskFailureEvent = factoryCustomEvent<SendTaskFailureEventInput>(CustomEvents.SendTaskFailure);
 export const stopExecutionEvent = factoryCustomEvent<StopExecutionEventInput>(CustomEvents.ExecutionStopped);

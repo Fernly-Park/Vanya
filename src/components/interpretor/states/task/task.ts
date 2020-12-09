@@ -6,7 +6,7 @@ import { retrieveField } from "../../path/path";
 import { ActivityService } from "@App/components/activity";
 import { TimerService } from "@App/components/timer";
 import { AWSConstant } from "@App/utils/constants";
-import { SendTaskFailureEventInput } from "@App/components/events";
+import { ActivityTaskHeartbeatInput, SendTaskFailureEventInput } from "@App/components/events";
 import { StateMachineService } from "@App/components/stateMachines";
 import { onActivityFailedEvent, onActivityScheduledEvent, onActivityStartedEvent, onActivitySucceededEvent, onActivityTimeoutEvent } from "../../historyEvent";
 import { Logger } from "@App/modules";
@@ -51,8 +51,8 @@ const getSecondsFromFieldOrPath = (field: number, path: string, input: StateInpu
     return field
 }
 
-export const processActivityTaskStarted = async (input: {task: RunningTaskState, workerName?: string}): Promise<void> => {
-    const activityTask = input.task;
+export const processActivityTaskStarted = async (input: {stateInfo: RunningTaskState, workerName?: string}): Promise<void> => {
+    const activityTask = input.stateInfo;
     const { heartbeatSeconds, timeoutSeconds } = activityTask;
     Logger.logDebug(`Activity task '${activityTask.token}' started`)
     activityTask.previousEventId = await onActivityStartedEvent(input)
@@ -70,34 +70,35 @@ export const processActivityTaskStarted = async (input: {task: RunningTaskState,
     }
 }
 
-export const processTaskStateDone = async (activityTask: RunningTaskState): Promise<void> => {
-    if (activityTask.status === ActivityTaskStatus.TimedOut) {
-        throw new TaskTimedOutError(activityTask.token);
+export const processTaskStateDone = async (input: {stateInfo: RunningTaskState}): Promise<void> => {
+    const {stateInfo} = input;
+    if (stateInfo.status === ActivityTaskStatus.TimedOut) {
+        throw new TaskTimedOutError(stateInfo.token);
     }
 
-    if (!await isExecutionStillRunning(activityTask.executionArn)) {
-        await cleanTaskStateEndedHelper(activityTask);
-        throw new TaskTimedOutError(activityTask.token);
+    if (!await isExecutionStillRunning(stateInfo.executionArn)) {
+        await cleanTaskStateEndedHelper(stateInfo);
+        throw new TaskTimedOutError(stateInfo.token);
     }
 
-    const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
+    const taskState = (await StateMachineService.retrieveStateFromStateMachine(stateInfo)) as TaskState;
     let output: StateOutput;
-    activityTask.previousEventId = await onActivitySucceededEvent(activityTask);
-    Logger.logDebug(`task '${activityTask.token}' done`)
+    stateInfo.previousEventId = await onActivitySucceededEvent(stateInfo);
+    Logger.logDebug(`task '${stateInfo.token}' done`)
 
     try {
-        output = await filterOutput(activityTask.rawInput, activityTask.output, taskState, activityTask);
+        output = await filterOutput(stateInfo.rawInput, stateInfo.output, taskState, stateInfo);
     } catch (err) {
-        return await endStateFailed({stateInfo: activityTask, 
-            cause: `An error occurred while executing the state '${activityTask.stateName}'. ${(err as Error)?.message ?? ''}`,
+        return await endStateFailed({stateInfo: stateInfo, 
+            cause: `An error occurred while executing the state '${stateInfo.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
             state: taskState
         })
     } finally {
-        await cleanTaskStateEndedHelper(activityTask);
+        await cleanTaskStateEndedHelper(stateInfo);
     }
 
-    await endStateSuccess({stateInfo: activityTask, output, nextStateName: taskState.Next});
+    await endStateSuccess({stateInfo: stateInfo, output, nextStateName: taskState.Next});
 }
 
 export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
@@ -125,7 +126,7 @@ export const processTaskTimeout = async (activityTaskToken: string): Promise<voi
 }
 
 export const processTaskFailed = async (input: SendTaskFailureEventInput): Promise<void> => {
-    const {activityTask} = input;
+    const {stateInfo: activityTask} = input;
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' failed`)
 
@@ -149,16 +150,17 @@ const cleanTaskStateEndedHelper = async (taskState: RunningTaskState) => {
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: taskState.token})
 }
 
-export const processTaskHeartbeat = async (activityTask: RunningTaskState): Promise<void> => {
-    await ensureTaskIsNotTimedOut(activityTask);
-    if (activityTask.heartbeatSeconds == null) {
+export const processTaskHeartbeat = async (req: ActivityTaskHeartbeatInput): Promise<void> => {
+    const {stateInfo} = req
+    await ensureTaskIsNotTimedOut(stateInfo);
+    if (stateInfo.heartbeatSeconds == null) {
         return;
     }
-    Logger.logDebug(`heartbeat for task '${activityTask.token}' sent`)
+    Logger.logDebug(`heartbeat for task '${stateInfo.token}' sent`)
 
     const time = new Date();
-    time.setSeconds(time.getSeconds() + activityTask.heartbeatSeconds);
-    await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
+    time.setSeconds(time.getSeconds() + stateInfo.heartbeatSeconds);
+    await TimerService.addTimedTask({until: time, timedTask: {task: stateInfo.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
 }
 
 const ensureTaskIsNotTimedOut = async (activityTask: RunningTaskState): Promise<void> => {

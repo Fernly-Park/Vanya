@@ -22,7 +22,7 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
 
     if (task) {
         await TaskDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
-        await Event.activityStartedEvent.emit({task: task, workerName: req.workerName})
+        await Event.activityStartedEvent.emit({stateInfo: task, workerName: req.workerName})
     }
     return {
         input: task === null ? null : JSON.stringify(task.effectiveInput),
@@ -51,7 +51,7 @@ export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<vo
         throw new TaskDoesNotExistError(req.taskToken);
     }
     // todo timeout
-    await Event.activityTaskHeartbeat.emit(activityTask);
+    await Event.activityTaskHeartbeat.emit({stateInfo: activityTask});
 }
 
 export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {
@@ -62,7 +62,7 @@ export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> 
     }
     // todo timeout
     
-    await Event.workerOutputReceivedEvent.emit({...activityTask, output: JSON.parse(req.output)})
+    await Event.workerOutputReceivedEvent.emit({stateInfo: {...activityTask, output: JSON.parse(req.output)}})
 }
 
 const ensureSendTaskSuccessInputIsValid = (req: SendTaskSuccessInput) => {
@@ -88,7 +88,7 @@ export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> 
         Logger.logWarning(`Task failure sent for '${req.taskToken}'`)
         throw new TaskDoesNotExistError(req.taskToken);
     }
-    await Event.sendTaskFailureEvent.emit({activityTask, cause: req.cause, error: req.error})
+    await Event.sendTaskFailureEvent.emit({stateInfo: activityTask, cause: req.cause, error: req.error})
 }
 
 const ensureSendTaskFailureInputIsValid = (req: SendTaskFailureInput): void => {

@@ -17,7 +17,7 @@ import {  processParallelState } from './states/parallel/parallel';
 import { FatalError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
-import { StopExecutionEventInput } from '../events';
+import { onStateRetryInput, StopExecutionEventInput } from '../events';
 import { ContextObjectService } from '../contextObject';
 export * from './activityTask';
 
@@ -156,11 +156,12 @@ const onStopExecution = async (req: StopExecutionEventInput): Promise<void> => {
 }
 
 
-const onTaskRetry = async (req: {task: RunningState, state: StateMachineStateValue, token: string}): Promise<void> => {
-    if (req.task.stateType === StateType.Task) {
-        await processTaskState({...req, state: req.state as TaskState});
-    } else if (req.task.stateType === StateType.Parallel) {
-        await processParallelState({...req, state: req.state as ParallelState});
+const onStateRetry = async (req: onStateRetryInput): Promise<void> => {
+    const {stateInfo} = req
+    if (stateInfo.stateType === StateType.Task) {
+        await processTaskState({task: stateInfo, state: req.state as TaskState, token: req.token});
+    } else if (stateInfo.stateType === StateType.Parallel) {
+        await processParallelState({task: stateInfo, state: req.state as ParallelState});
     }
     
 };
@@ -170,12 +171,13 @@ const registerEvents = (): void => {
     Event.workerOutputReceivedEvent.on(processTaskStateDone);
     Event.activityStartedEvent.on(processActivityTaskStarted)
     Event.activityTaskHeartbeat.on(processTaskHeartbeat);
-    Event.executionStartedEvent.on(onExecutionStartedEvent);
-    Event.stopExecutionEvent.on(onStopExecution);
-    Event.on(Event.CustomEvents.TaskRetry, onTaskRetry);
+    Event.on(Event.CustomEvents.TaskRetry, onStateRetry);
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
+
+    Event.executionStartedEvent.on(onExecutionStartedEvent);
+    Event.stopExecutionEvent.on(onStopExecution);
 }
 
 const unregisterEvents = (): void => {
@@ -185,7 +187,7 @@ const unregisterEvents = (): void => {
     Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
     Event.executionStartedEvent.removeListener(onExecutionStartedEvent);
     Event.stopExecutionEvent.removeListener(onStopExecution);
-    Event.removeListener(Event.CustomEvents.TaskRetry, onTaskRetry)
+    Event.removeListener(Event.CustomEvents.TaskRetry, onStateRetry)
     Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);
     Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
