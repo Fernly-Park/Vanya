@@ -206,7 +206,7 @@
             "input": {"timeout": 0},
             "expectedStateMachineStatus": "FAILED",
             "expectedOutput": null,
-            "describe": "should immediatly fail if the input key has a value of 0",
+            "describe": "should immediatly fail if the timeout in the input has a value of 0",
             "activitiesToCreate": [
                 {
                     "name": "tmp",
