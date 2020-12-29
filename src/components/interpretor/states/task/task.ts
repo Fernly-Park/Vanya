@@ -60,13 +60,13 @@ export const processActivityTaskStarted = async (input: {stateInfo: RunningTaskS
     if (timeoutSeconds != null) {
         const time = getDateIn(timeoutSeconds * 1000);
         Logger.logDebug(`adding timeout timer for task '${activityTask.token}'`)
-        await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.TaskTimeout}})
+        await TimerService.addTimedTask({until: time, timedTask: {task: {token: activityTask.token}, eventNameForCallback: Event.CustomEvents.TaskTimeout}})
     }
 
     if (heartbeatSeconds != null) {
         const time = getDateIn(heartbeatSeconds * 1000)
         Logger.logDebug(`adding heartbeat timer for task '${activityTask.token}'`)
-        await TimerService.addTimedTask({until: time, timedTask: {task: activityTask.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
+        await TimerService.addTimedTask({until: time, timedTask: {task: {token: activityTask.token}, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
     }
 }
 
@@ -100,14 +100,17 @@ export const processTaskStateDone = async (input: {stateInfo: RunningTaskState})
     await endStateSuccess({stateInfo: stateInfo, output, nextStateName: taskState.Next});
 }
 
-export const processTaskTimeout = async (activityTaskToken: string): Promise<void> => {
-    const activityTask = await InterpretorService.getStateInfo(activityTaskToken, StateType.Task) as RunningTaskState;
+export const processTaskTimeout = async (input: {token: string}): Promise<void> => {
+    if (input?.token == null) {
+        throw new Error('Input of processTasktimeout is null or undefined');
+    }
+    
+    const activityTask = await InterpretorService.getStateInfo(input.token, StateType.Task) as RunningTaskState;
     if (activityTask == null) {
         return;
     }
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' timeout`)
-
     if (!await cleanTaskStateEndedHelper(activityTask)) return;
 
 
@@ -147,8 +150,8 @@ const cleanTaskStateEndedHelper = async (taskState: RunningTaskState) => {
     }
     await InterpretorService.deleteStateInfo(taskState, config.taskTokenTimeoutSeconds)
 
-    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: taskState.token})
-    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: taskState.token})
+    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: {token: taskState.token}})
+    await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: {token: taskState.token}})
 
     return true;
 }
@@ -163,7 +166,7 @@ export const processTaskHeartbeat = async (req: ActivityTaskHeartbeatInput): Pro
 
     const time = new Date();
     time.setSeconds(time.getSeconds() + stateInfo.heartbeatSeconds);
-    await TimerService.addTimedTask({until: time, timedTask: {task: stateInfo.token, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
+    await TimerService.addTimedTask({until: time, timedTask: {task: {token: stateInfo.token}, eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout}})
 }
 
 const ensureTaskIsNotTimedOut = async (activityTask: RunningTaskState): Promise<void> => {

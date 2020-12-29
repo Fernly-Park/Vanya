@@ -14,10 +14,10 @@ import { AWSConstant } from '@App/utils/constants';
 import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
 import {  processParallelState } from './states/parallel/parallel';
-import { FatalError } from '@App/errors/customErrors';
+import { FatalError, TaskTimedOutError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
-import { onStateRetryInput, StopExecutionEventInput } from '../events';
+import { InterpretorEventInput, onStateRetryInput, StopExecutionEventInput } from '../events';
 import { ContextObjectService } from '../contextObject';
 export * from './activityTask';
 
@@ -167,29 +167,47 @@ const onStateRetry = async (req: onStateRetryInput): Promise<void> => {
 };
 
 const registerEvents = (): void => {
-    Event.sendTaskFailureEvent.on(processTaskFailed);
-    Event.workerOutputReceivedEvent.on(processTaskStateDone);
-    Event.activityStartedEvent.on(processActivityTaskStarted)
-    Event.activityTaskHeartbeat.on(processTaskHeartbeat);
-    Event.on(Event.CustomEvents.TaskRetry, onStateRetry);
+
+    const manageErrorInState = (func: (input: InterpretorEventInput) => Promise<void>) => {
+       return async (input: InterpretorEventInput) => {
+           try {
+               await func(input);
+           } catch (err) {
+               if (err instanceof TaskTimedOutError) throw err;
+               Logger.logError(err);
+               const stateInfo = input.stateInfo ?? await getStateInfo(input.token, StateType.Task);
+               const state = await StateMachineService.retrieveStateFromStateMachine(stateInfo);
+               await endStateFailed({stateInfo, state, 
+                cause: `An error occurred while executing the state '${stateInfo.stateName}'.`, 
+                error: AWSConstant.error.STATE_RUNTIME
+               });
+           }
+       } 
+    } 
+    Event.sendTaskFailureEvent.on(manageErrorInState(processTaskFailed));
+    Event.workerOutputReceivedEvent.on(manageErrorInState(processTaskStateDone));
+    Event.activityStartedEvent.on(manageErrorInState(processActivityTaskStarted))
+    Event.activityTaskHeartbeat.on(manageErrorInState(processTaskHeartbeat));
+    Event.on(Event.CustomEvents.TaskRetry, manageErrorInState(onStateRetry));
 
 
-    Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
-    Event.on(Event.CustomEvents.TaskTimeout, processTaskTimeout);
-    Event.on(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
+    Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, manageErrorInState(processTaskTimeout));
+    Event.on(Event.CustomEvents.TaskTimeout, manageErrorInState(processTaskTimeout));
+
+    Event.on(Event.CustomEvents.WaitingStateDone, manageErrorInState(processWaitingStateDone));
     Event.executionStartedEvent.on(onExecutionStartedEvent);
     Event.stopExecutionEvent.on(onStopExecution);
 }
 
 const unregisterEvents = (): void => {
-    Event.sendTaskFailureEvent.removeListener(processTaskFailed);
-    Event.workerOutputReceivedEvent.removeListener(processTaskStateDone);
-    Event.activityStartedEvent.removeListener(processActivityTaskStarted)
-    Event.activityTaskHeartbeat.removeListener(processTaskHeartbeat);
-    Event.executionStartedEvent.removeListener(onExecutionStartedEvent);
-    Event.stopExecutionEvent.removeListener(onStopExecution);
-    Event.removeListener(Event.CustomEvents.TaskRetry, onStateRetry)
-    Event.removeListener(Event.CustomEvents.ActivityTaskHeartbeatTimeout, processTaskTimeout);
-    Event.removeListener(Event.CustomEvents.TaskTimeout, processTaskTimeout);
-    Event.removeListener(Event.CustomEvents.WaitingStateDone, processWaitingStateDone);
+    Event.sendTaskFailureEvent.removeAllListener();
+    Event.workerOutputReceivedEvent.removeAllListener();
+    Event.activityStartedEvent.removeAllListener()
+    Event.activityTaskHeartbeat.removeAllListener();
+    Event.executionStartedEvent.removeAllListener();
+    Event.stopExecutionEvent.removeAllListener();
+    Event.removeListenerForEvent(Event.CustomEvents.TaskRetry)
+    Event.removeListenerForEvent(Event.CustomEvents.ActivityTaskHeartbeatTimeout);
+    Event.removeListenerForEvent(Event.CustomEvents.TaskTimeout);
+    Event.removeListenerForEvent(Event.CustomEvents.WaitingStateDone);
 }

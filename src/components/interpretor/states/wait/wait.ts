@@ -35,12 +35,12 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
 
     await InterpretorService.saveStateInfo(task);
     Logger.logDebug(`Waiting state '${task.stateName}' of '${task.executionArn}' started. waiting until '${time.toISOString()}'`)
-    await TimerService.addTimedTask({until: time, timedTask: {task: task.token, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
+    await TimerService.addTimedTask({until: time, timedTask: {task: {token: task.token}, eventNameForCallback: Event.CustomEvents.WaitingStateDone}})
 }
 
 
-export const processWaitingStateDone = async (token: string): Promise<void> => {
-    
+export const processWaitingStateDone = async (input: {token: string}): Promise<void> => {
+    const {token} = input;
     const task = await InterpretorService.getStateInfo(token, StateType.Wait);
     const executionWasAborted = task == null;
     if (executionWasAborted) {
