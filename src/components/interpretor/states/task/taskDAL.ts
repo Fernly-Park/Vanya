@@ -3,7 +3,7 @@ import * as Redis from '@App/modules/database/redis';
 import config from "@App/config";
 import { ActivityTaskStatus, RunningTaskState } from '../../interpretor.interfaces';
 import * as RedisKey from '@App/modules/database/redisKeys'
-import { ConcurrencyError } from '@App/errors/customErrors';
+import { TaskTimedOutError } from '@App/errors/customErrors';
 
 export const addTaskToActivityQueue = async (activityArn: string, taskInfo: RunningTaskState): Promise<void> => {
     const key = RedisKey.activityTaskKey.get(activityArn);
@@ -20,14 +20,14 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
                 if (err) return reject (err)
                 const activityTask = JSON.parse(activityTaskStringified) as RunningTaskState;
                 if (activityTask.status === ActivityTaskStatus.TimedOut) {
-                    return reject(new ConcurrencyError('Concurrency error : the activity task status is already Timeout1'));
+                    return reject(new TaskTimedOutError('Concurrency error : the activity task status is already Timeout1'));
                 }
                 activityTask.status = newStatus;
                 watcher.multi()
                 .json_set(key, '.', JSON.stringify(activityTask))
                 .exec((err: Error, results: string[]) => {
                     if (err || results === null) {
-                        reject(new ConcurrencyError('Concurrency error : the activity task status is already Timeout1'));
+                        reject(new TaskTimedOutError('Concurrency error : the activity task status is already Timeout1'));
                     } else {
                         resolve(results)
                     }

@@ -1,6 +1,6 @@
 import { StateType, TaskState } from "@App/components/stateMachines/stateMachine.interfaces";
 import { RunningTaskState, ActivityTaskStatus, StateInput, StateOutput, RunningState } from "@App/components/interpretor/interpretor.interfaces";
-import { ConcurrencyError, InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
+import { InvalidPathError, TaskResourceDoesNotExistsError, TaskTimedOutError } from "@App/errors/customErrors";
 import * as Event from '@App/components/events';
 import { retrieveField } from "../../path/path";
 import { ActivityService } from "@App/components/activity";
@@ -83,21 +83,20 @@ export const processTaskStateDone = async (input: {stateInfo: RunningTaskState})
 
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(stateInfo)) as TaskState;
     let output: StateOutput;
-    stateInfo.previousEventId = await onActivitySucceededEvent(stateInfo);
     Logger.logDebug(`task '${stateInfo.token}' done`)
 
     try {
+        if (!await cleanTaskStateEndedHelper(stateInfo)) return;
+        stateInfo.previousEventId = await onActivitySucceededEvent(stateInfo);
         output = await filterOutput(stateInfo.rawInput, stateInfo.output, taskState, stateInfo);
+        
     } catch (err) {
         return await endStateFailed({stateInfo: stateInfo, 
             cause: `An error occurred while executing the state '${stateInfo.stateName}'. ${(err as Error)?.message ?? ''}`,
             error: AWSConstant.error.STATE_RUNTIME,
             state: taskState
         })
-    } finally {
-        await cleanTaskStateEndedHelper(stateInfo);
     }
-
     await endStateSuccess({stateInfo: stateInfo, output, nextStateName: taskState.Next});
 }
 
@@ -109,13 +108,8 @@ export const processTaskTimeout = async (activityTaskToken: string): Promise<voi
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' timeout`)
 
-    try {
-        await cleanTaskStateEndedHelper(activityTask);
-    } catch (err) {
-        if (err instanceof ConcurrencyError) {
-            return;
-        }
-    }
+    if (!await cleanTaskStateEndedHelper(activityTask)) return;
+
 
     activityTask.previousEventId = await onActivityTimeoutEvent({executionArn: activityTask.executionArn, previousEventId: activityTask.previousEventId})
     await endStateFailed({stateInfo: activityTask,
@@ -132,7 +126,7 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
 
     await ensureTaskIsNotTimedOut(activityTask);
     
-    await cleanTaskStateEndedHelper(activityTask);
+    if (!await cleanTaskStateEndedHelper(activityTask)) return;
     Logger.logDebug(`sending event for '${activityTask.token}' failed`)
     activityTask.previousEventId = await onActivityFailedEvent({...input, previousEventId: activityTask.previousEventId});
     await endStateFailed({stateInfo: activityTask, 
@@ -143,11 +137,20 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
 };
 
 const cleanTaskStateEndedHelper = async (taskState: RunningTaskState) => {
-    await TaskDAL.modifyActivityTaskStatus(taskState.token, ActivityTaskStatus.TimedOut);
+    try {
+        await TaskDAL.modifyActivityTaskStatus(taskState.token, ActivityTaskStatus.TimedOut);
+    } catch (err) {
+        if (err instanceof TaskTimedOutError) {
+            return false;
+        }
+        throw err
+    }
     await InterpretorService.deleteStateInfo(taskState, config.taskTokenTimeoutSeconds)
 
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.TaskTimeout, task: taskState.token})
     await TimerService.removeTimedTask({eventNameForCallback: Event.CustomEvents.ActivityTaskHeartbeatTimeout, task: taskState.token})
+
+    return true;
 }
 
 export const processTaskHeartbeat = async (req: ActivityTaskHeartbeatInput): Promise<void> => {
@@ -168,7 +171,6 @@ const ensureTaskIsNotTimedOut = async (activityTask: RunningTaskState): Promise<
         throw new TaskTimedOutError(activityTask.token);
     }
     if (!await isExecutionStillRunning(activityTask.executionArn)) {
-        await cleanTaskStateEndedHelper(activityTask);
         throw new TaskTimedOutError(activityTask.token);
     }
 }

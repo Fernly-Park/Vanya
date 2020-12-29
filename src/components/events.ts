@@ -5,10 +5,11 @@ import { HistoryEventType, IExecution } from './execution/execution.interfaces';
 import { RunningState, RunningTaskState } from './interpretor/interpretor.interfaces';
 import { StateMachineStateValue } from './stateMachines/stateMachine.interfaces';
 
-export type ActivityTaskHeartbeatInput = {stateInfo: RunningTaskState};
-export type SendTaskFailureEventInput = {stateInfo: RunningTaskState, cause?: string, error?: string};
+export type InterpretorEventInput = {stateInfo?: RunningState, token?: string}
+export type ActivityTaskHeartbeatInput = InterpretorEventInput & {stateInfo: RunningTaskState};
+export type SendTaskFailureEventInput = InterpretorEventInput & {stateInfo: RunningTaskState, cause?: string, error?: string};
 export type StopExecutionEventInput = StopExecutionInput;
-export type onStateRetryInput = {stateInfo: RunningState, state: StateMachineStateValue}
+export type onStateRetryInput = InterpretorEventInput & { state: StateMachineStateValue}
 
 type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};
@@ -47,6 +48,10 @@ export const removeListener = (eventName: string, listener: EventCallback): void
     }
 }
 
+export const removeListenerForEvent = (eventName: string): void => {
+    events[eventName] = [];
+}
+
 export const emit = async (eventName: string, input?: any): Promise<boolean> => {
     if (!events[eventName] || events[eventName].length === 0) {
         return Promise.resolve(false);
@@ -70,6 +75,9 @@ const factoryCustomEvent = <T>(eventName: string) => {
         },
         removeListener: (listener: (input: T) => Promise<unknown>) => {
             removeListener(eventName, listener);
+        },
+        removeAllListener: () => {
+            events[eventName] = [];
         }
     }
 }
