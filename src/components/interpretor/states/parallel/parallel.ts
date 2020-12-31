@@ -29,7 +29,7 @@ export const processParallelState = async (req: {task: RunningState, state: Para
             stateMachineArn: task.stateMachineArn,
             stateName: branche.StartAt,
             previousStateName: task.previousStateName,
-            parallelInfo: {
+            parentInfo: {
                 parentKey: task.token,
                 currentBranche: i
             } 

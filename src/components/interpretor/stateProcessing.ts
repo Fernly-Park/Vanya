@@ -46,11 +46,11 @@ export const endStateSuccess = async (req: {stateInfo: RunningState, nextStateNa
     if (nextStateName) {
         return await execute({executionArn: stateInfo.executionArn, stateName: nextStateName, 
             rawInput: req.output, stateMachineArn: stateInfo.stateMachineArn, previousStateName: stateInfo.stateName, previousEventId: stateInfo.previousEventId,
-            parallelInfo: stateInfo.parallelInfo})
+            parentInfo: stateInfo.parentInfo})
     } else {
-        if (stateInfo.parallelInfo) {
-            return Event.finishedParallelBranche.emit({output: req.output, brancheIndex: stateInfo.parallelInfo.currentBranche, 
-                token: stateInfo.parallelInfo.parentKey, previousEventId: stateInfo.previousEventId});
+        if (stateInfo.parentInfo) {
+            return Event.finishedParallelBranche.emit({output: req.output, brancheIndex: stateInfo.parentInfo.currentBranche, 
+                token: stateInfo.parentInfo.parentKey, previousEventId: stateInfo.previousEventId});
         }
         await onExecutionSucceededEvent({result: req.output, executionArn: stateInfo.executionArn, previousEventId: stateInfo.previousEventId});
         await ExecutionService.endExecution({executionArn: stateInfo.executionArn, output: req.output, status: ExecutionStatus.succeeded});
@@ -66,9 +66,9 @@ export const endStateFailed = async (req: {stateInfo: RunningState, cause?: stri
     const wasTheErrorHandled = await handleError(req);
     if (!wasTheErrorHandled) {
 
-        if (req.stateInfo.parallelInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
+        if (req.stateInfo.parentInfo && req.error !== AWSConstant.error.STATE_RUNTIME) {
 
-            await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.stateInfo.parallelInfo.parentKey, 
+            await handleFailedBranche({cause: req.cause, error: req.error, parallelStateKey: req.stateInfo.parentInfo.parentKey, 
                 previousEventId: req.stateInfo.previousEventId, failedState: req.stateInfo})
 
         } else {

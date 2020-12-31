@@ -13,7 +13,7 @@ export interface RunningState {
     previousEventId: number,
     retry?: RetryInformation[],
     token?: string,
-    parallelInfo?: {
+    parentInfo?: {
         parentKey: string,
         currentBranche: number
     },
