@@ -124,6 +124,88 @@
          ]
       },
       {
+        "describe": "should work if the 'input' key contains an array, even if it is empty",
+        "input": {"input": []},
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": [],
+        "events": [
+          {
+           "timestamp": "2020-12-31T17:00:54.628Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "{\"input\":[]}",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.665Z",
+           "type": "MapStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":[]}"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.665Z",
+           "type": "MapStateStarted",
+           "id": 3,
+           "previousEventId": 2,
+           "mapStateStartedEventDetails": {
+            "length": 0
+           }
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.665Z",
+           "type": "MapStateSucceeded",
+           "id": 4,
+           "previousEventId": 3
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.665Z",
+           "type": "MapStateExited",
+           "id": 5,
+           "previousEventId": 3,
+           "stateExitedEventDetails": {
+            "name": "MapState",
+            "output": "[]"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.765Z",
+           "type": "PassStateEntered",
+           "id": 6,
+           "previousEventId": 5,
+           "stateEnteredEventDetails": {
+            "name": "NEXT STATE",
+            "input": "[]"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.765Z",
+           "type": "PassStateExited",
+           "id": 7,
+           "previousEventId": 6,
+           "stateExitedEventDetails": {
+            "name": "NEXT STATE",
+            "output": "[]"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T17:00:54.765Z",
+           "type": "ExecutionSucceeded",
+           "id": 8,
+           "previousEventId": 7,
+           "executionSucceededEventDetails": {
+            "output": "[]"
+           }
+          }
+        ]
+      },
+      {
           "describe": "should fail if the 'input' key is not in the input",
           "input": {},
           "expectedStateMachineStatus": "FAILED",

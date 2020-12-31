@@ -27,6 +27,10 @@ export const processMapState = async (input: {stateInfo: RunningState, state: Ma
     const mapStateInfo: RunningParallelMapState = {...stateInfo, numberOfBranchesLeft: items.length, output: new Array(items.length).fill(null) }
     await InterpretorService.saveStateInfo(mapStateInfo)
 
+    if (items.length === 0) {
+        await endMapStateSuccess({token: stateInfo.token, previousEventId: stateInfo.previousEventId});
+    }
+
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         stateInfo.previousEventId = await onMapIterationStarted({...stateInfo, iterationIndex: i, mapStateName: stateInfo.stateName})
@@ -59,11 +63,20 @@ export const handleFinishedIteration = async (input: {brancheIndex: number, outp
         output: JSON.stringify(output), parallelStateKey: token, stateType: StateType.Map});
 
     if (numberOfBrancheLeft === 0) {
-        const stateInfo = await InterpretorService.getStateInfo(token, StateType.Map) as RunningParallelMapState;
-        const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: stateInfo.stateMachineArn, stateName: stateInfo.stateName}) as MapState;
-        stateInfo.previousEventId = await onMapStateSucceeded({...stateInfo, previousEventId});
-        const effectiveOutput = await filterOutput(stateInfo.rawInput, stateInfo.output, state, stateInfo);
-        await endStateSuccess({stateInfo: {...stateInfo, previousEventId}, nextStateName: state.Next, output: effectiveOutput})
-        await InterpretorService.deleteStateInfo(stateInfo);
+        await endMapStateSuccess({token, previousEventId});
     }
+}
+
+const endMapStateSuccess = async (input: {token: string, previousEventId: number}): Promise<void> => {
+    if (input?.token == null) {
+        throw new InvalidParameterError('');
+    }
+    const {token, previousEventId} = input
+
+    const stateInfo = await InterpretorService.getStateInfo(token, StateType.Map) as RunningParallelMapState;
+    const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: stateInfo.stateMachineArn, stateName: stateInfo.stateName}) as MapState;
+    stateInfo.previousEventId = await onMapStateSucceeded({...stateInfo, previousEventId});
+    const effectiveOutput = await filterOutput(stateInfo.rawInput, stateInfo.output, state, stateInfo);
+    await endStateSuccess({stateInfo: {...stateInfo, previousEventId}, nextStateName: state.Next, output: effectiveOutput})
+    await InterpretorService.deleteStateInfo(stateInfo);
 }
