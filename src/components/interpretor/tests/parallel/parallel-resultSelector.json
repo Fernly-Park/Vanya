@@ -1,0 +1,252 @@
+{
+    "describe": "simple state machine with a parallel state and a resultSelector", 
+    "tests": [
+        {
+            "describe": "should succeed if the worker sends a 'numbers' key in the output",
+            "input": {},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": {"constant": "constant","shouldNotChange": "$.numbers","output": [{"numbers": [1,2]}],
+              "result": [1,2], "stateName": "Parallel State"},
+            "activitiesToCreate": [
+                {
+                    "name": "tmp",
+                    "expectedInput": {},
+                    "output": {"numbers": [1,2]}
+                }
+            ],
+            "parallelEvents": [
+                {
+                 "timestamp": "2020-12-09T19:58:43.012Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.049Z",
+                 "type": "ParallelStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Parallel State",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.049Z",
+                 "type": "ParallelStateStarted",
+                 "id": 3,
+                 "previousEventId": 2
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.150Z",
+                 "type": "TaskStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "First Task",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.150Z",
+                 "type": "ActivityScheduled",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "activityScheduledEventDetails": {
+                  "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                  "input": "{}"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.259Z",
+                 "type": "ActivityStarted",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "activityStartedEventDetails": {}
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.470Z",
+                 "type": "ActivitySucceeded",
+                 "id": 7,
+                 "previousEventId": 6,
+                 "activitySucceededEventDetails": {
+                  "output": "{\"numbers\":[1,2]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.470Z",
+                 "type": "TaskStateExited",
+                 "id": 8,
+                 "previousEventId": 7,
+                 "stateExitedEventDetails": {
+                  "name": "First Task",
+                  "output": "{\"numbers\":[1,2]}"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.470Z",
+                 "type": "ParallelStateSucceeded",
+                 "id": 9,
+                 "previousEventId": 8
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.470Z",
+                 "type": "ParallelStateExited",
+                 "id": 10,
+                 "previousEventId": 8,
+                 "stateExitedEventDetails": {
+                  "name": "Parallel State",
+                  "output": "{\"stateName\":\"Parallel State\",\"output\":[{\"numbers\":[1,2]}],\"result\":[1,2],\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\"}"
+                 }
+                },
+                {
+                 "timestamp": "2020-12-09T19:58:43.470Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 11,
+                 "previousEventId": 10,
+                 "executionSucceededEventDetails": {
+                  "output": "{\"stateName\":\"Parallel State\",\"output\":[{\"numbers\":[1,2]}],\"result\":[1,2],\"constant\":\"constant\",\"shouldNotChange\":\"$.numbers\"}"
+                 }
+                }
+            ]
+        },
+        {
+          "describe": "should fail if the worker does not sends a 'numbers' key in the output",
+          "input": {},
+          "expectedStateMachineStatus": "FAILED",
+          "expectedOutput": null,
+          "activitiesToCreate": [
+              {
+                  "name": "tmp",
+                  "expectedInput": {},
+                  "output": {}
+              }
+          ],
+          "parallelEvents": [
+            {
+             "timestamp": "2020-12-09T20:30:10.258Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.282Z",
+             "type": "ParallelStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Parallel State",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.282Z",
+             "type": "ParallelStateStarted",
+             "id": 3,
+             "previousEventId": 2
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.383Z",
+             "type": "TaskStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "First Task",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.383Z",
+             "type": "ActivityScheduled",
+             "id": 5,
+             "previousEventId": 4,
+             "activityScheduledEventDetails": {
+              "resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+              "input": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.468Z",
+             "type": "ActivityStarted",
+             "id": 6,
+             "previousEventId": 5,
+             "activityStartedEventDetails": {}
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.665Z",
+             "type": "ActivitySucceeded",
+             "id": 7,
+             "previousEventId": 6,
+             "activitySucceededEventDetails": {
+              "output": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.665Z",
+             "type": "TaskStateExited",
+             "id": 8,
+             "previousEventId": 7,
+             "stateExitedEventDetails": {
+              "name": "First Task",
+              "output": "{}"
+             }
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.665Z",
+             "type": "ParallelStateSucceeded",
+             "id": 9,
+             "previousEventId": 8
+            },
+            {
+             "timestamp": "2020-12-09T20:30:10.665Z",
+             "type": "ExecutionFailed",
+             "id": 10,
+             "previousEventId": 0,
+             "executionFailedEventDetails": {
+              "error": "States.Runtime",
+              "cause": "An error occurred while executing the state 'Parallel State'. The JSONPath '$[0].numbers' could not be found in the input"
+             }
+            }
+          ]
+        }
+    ],
+    "definition": {
+        "Comment": "Simple parallel state machine",
+        "StartAt": "Parallel State",
+        "States": {
+          "Parallel State": {
+            "Type": "Parallel",
+            "Branches": [
+              {
+                "Comment": "A Hello World example of the Amazon States Language using Pass states",
+                "StartAt": "First Task",
+                "States": {
+                  "First Task": {
+                    "Type": "Task",
+                    "Resource": "arn:aws:states:eu-west:012345678901:activity:tmp",
+                    "End": true
+                  }
+                }
+              }
+            ],
+            "ResultSelector": {
+              "stateName.$": "$$.State.Name",
+              "output.$": "$",
+              "result.$": "$[0].numbers",
+              "constant": "constant",
+              "shouldNotChange": "$.numbers"
+            },
+            "End": true
+          }
+        }
+    }
+}
+
