@@ -9,8 +9,9 @@ import { RunningState, StateInput, StateOutput } from "./interpretor.interfaces"
 import { execute } from "./interpretorService";
 import { applyPath, applyPayloadTemplate, applyResultPath } from "./path/path";
 import { handleCatch, handleRetry } from "./states/catchAndRetry";
-import { handleFailedBranche, handleFinishedBranche } from "./states/parallel/parallel";
+import { handleFailedBranche } from "./states/parallel/parallel";
 import { ContextObjectService } from "../contextObject";
+import * as Event from '@App/components/events';
 
 export const filterInput = async (task: RunningState, state: StateMachineStateValue): Promise<StateInput> => {
     const asPassState = state as PassState;
@@ -48,7 +49,7 @@ export const endStateSuccess = async (req: {stateInfo: RunningState, nextStateNa
             parallelInfo: stateInfo.parallelInfo})
     } else {
         if (stateInfo.parallelInfo) {
-            return handleFinishedBranche({output: req.output, brancheIndex: stateInfo.parallelInfo.currentBranche, 
+            return Event.finishedParallelBranche.emit({output: req.output, brancheIndex: stateInfo.parallelInfo.currentBranche, 
                 token: stateInfo.parallelInfo.parentKey, previousEventId: stateInfo.previousEventId});
         }
         await onExecutionSucceededEvent({result: req.output, executionArn: stateInfo.executionArn, previousEventId: stateInfo.previousEventId});

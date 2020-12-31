@@ -14,7 +14,7 @@ import { AWSConstant } from '@App/utils/constants';
 import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
 import {  handleFinishedBranche, processParallelState } from './states/parallel/parallel';
-import { FatalError, TaskTimedOutError } from '@App/errors/customErrors';
+import { FatalError, InvalidParameterError, TaskTimedOutError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
 import { InterpretorEventInput, onStateRetryInput, StopExecutionEventInput } from '../events';
@@ -170,14 +170,17 @@ const onStateRetry = async (req: onStateRetryInput): Promise<void> => {
     
 };
 
-const manageErrorInState = (func: (input: InterpretorEventInput) => Promise<void>) => {
+const manageErrorInState = (func: (input: InterpretorEventInput) => Promise<void>, stateType?: StateType) => {
     return async (input: InterpretorEventInput) => {
         try {
             await func(input);
         } catch (err) {
             if (err instanceof TaskTimedOutError) throw err;
             Logger.logError(err);
-            const stateInfo = input.stateInfo ?? await getStateInfo(input.token, StateType.Task);
+            const stateInfo = input.stateInfo ?? await getStateInfo(input.token, stateType ?? StateType.Task);
+            if (stateInfo == null) 
+                throw new InvalidParameterError(`The parallel state info of ${input?.stateInfo?.stateName} 
+                    in the execution '${input?.stateInfo?.executionArn}' should be defined`)
             const state = await StateMachineService.retrieveStateFromStateMachine(stateInfo);
             await onStateError({stateInfo, state, error: err});
         }
@@ -190,7 +193,7 @@ const registerEvents = (): void => {
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, manageErrorInState(processTaskTimeout));
     Event.on(Event.CustomEvents.TaskTimeout, manageErrorInState(processTaskTimeout));
     Event.on(Event.CustomEvents.WaitingStateDone, manageErrorInState(processWaitingStateDone));
-    Event.finishedParallelBranche.on(manageErrorInState(handleFinishedBranche));
+    Event.finishedParallelBranche.on(manageErrorInState(handleFinishedBranche, StateType.Parallel));
     Event.executionStartedEvent.on(onExecutionStartedEvent);
 }
 
@@ -206,4 +209,5 @@ const unregisterEvents = (): void => {
     Event.removeListenerForEvent(Event.CustomEvents.ActivityTaskHeartbeatTimeout);
     Event.removeListenerForEvent(Event.CustomEvents.TaskTimeout);
     Event.removeListenerForEvent(Event.CustomEvents.WaitingStateDone);
+    Event.finishedParallelBranche.removeAllListener();
 }
