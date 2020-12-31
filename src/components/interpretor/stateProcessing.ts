@@ -2,14 +2,14 @@ import { ExecutionService } from "@App/components/execution";
 import { StateMachineStateValue, PassState, TaskState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
 import { Logger } from "@App/modules";
 import { AWSConstant } from "@App/utils/constants";
-import { InterpretorDAL } from ".";
+import { InterpretorDAL, InterpretorService } from ".";
 import { ExecutionStatus } from "../execution/execution.interfaces";
-import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent, onParallelStateFailed } from "./historyEvent";
+import { onStateExitedEvent, onExecutionSucceededEvent, onExecutionFailedEvent, onParallelStateFailed, onMapIterationSucceeded } from "./historyEvent";
 import { RunningState, StateInput, StateOutput } from "./interpretor.interfaces";
 import { execute } from "./interpretorService";
 import { applyPath, applyPayloadTemplate, applyResultPath } from "./path/path";
 import { handleCatch, handleRetry } from "./states/catchAndRetry";
-import { handleFailedBranche } from "./states/parallel/parallel";
+import { handleFailedBranche } from "./states/parallelAndMap/parallel";
 import { ContextObjectService } from "../contextObject";
 import * as Event from '@App/components/events';
 
@@ -49,8 +49,13 @@ export const endStateSuccess = async (req: {stateInfo: RunningState, nextStateNa
             parentInfo: stateInfo.parentInfo})
     } else {
         if (stateInfo.parentInfo) {
-            return Event.finishedParallelBranche.emit({output: req.output, brancheIndex: stateInfo.parentInfo.currentBranche, 
-                token: stateInfo.parentInfo.parentKey, previousEventId: stateInfo.previousEventId});
+            const finishedSmOutput = {output: req.output, brancheIndex: stateInfo.parentInfo.currentBranche, 
+                token: stateInfo.parentInfo.parentKey, previousEventId: stateInfo.previousEventId};
+            if (stateInfo.parentInfo.type === StateType.Parallel) {
+                return Event.finishedParallelBranche.emit(finishedSmOutput);
+            } else {
+                return Event.finishedMapIteration.emit(finishedSmOutput);
+            }
         }
         await onExecutionSucceededEvent({result: req.output, executionArn: stateInfo.executionArn, previousEventId: stateInfo.previousEventId});
         await ExecutionService.endExecution({executionArn: stateInfo.executionArn, output: req.output, status: ExecutionStatus.succeeded});

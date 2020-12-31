@@ -12,6 +12,7 @@ export type SendTaskFailureEventInput = InterpretorEventInput & {stateInfo: Runn
 export type StopExecutionEventInput = StopExecutionInput;
 export type onStateRetryInput = InterpretorEventInput & { state: StateMachineStateValue}
 export type HandleFinishedParallelBrancheEventInput = InterpretorEventInput &{brancheIndex: number, output: StateOutput, previousEventId: number};
+export type handleFinishedMapIterationEventInput = InterpretorEventInput & {brancheIndex: number, output: StateOutput, token: string, previousEventId: number};
 
 type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};
@@ -28,6 +29,7 @@ export enum CustomEvents {
     ActivityTaskHeartbeat = 'ActivityTaskHeartbeat',
     ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout',
     FinishedParallelBranche = 'FinishedParallelBranche',
+    FinishedMapIteration = 'FinishedMapIteration',
     SendTaskFailure = 'SendTaskFailure',
     ActivityFailure = 'ActivityFailure',
     TaskRetry = 'TaskRetry'
@@ -89,3 +91,4 @@ const factoryCustomEvent = <T>(eventName: string) => {
 
 export const executionStartedEvent = factoryCustomEvent<IExecution>(CustomEvents.ExecutionStarted);
 export const finishedParallelBranche = factoryCustomEvent<HandleFinishedParallelBrancheEventInput>(CustomEvents.FinishedParallelBranche);
+export const finishedMapIteration = factoryCustomEvent<handleFinishedMapIterationEventInput>(CustomEvents.FinishedMapIteration);

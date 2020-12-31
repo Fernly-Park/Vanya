@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RunningState, RunningTaskState, StateInput, StateOutput } from './interpretor.interfaces';
-import { ChoiceState, FailState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { ChoiceState, FailState, MapState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
@@ -13,12 +13,13 @@ import { TimerService } from '../timer';
 import { AWSConstant } from '@App/utils/constants';
 import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
-import {  handleFinishedBranche, processParallelState } from './states/parallel/parallel';
+import {  handleFinishedBranche, processParallelState } from './states/parallelAndMap/parallel';
 import { FatalError, InvalidParameterError, TaskTimedOutError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
 import { InterpretorEventInput, onStateRetryInput, StopExecutionEventInput } from '../events';
 import { ContextObjectService } from '../contextObject';
+import { handleFinishedIteration, processMapState } from './states/parallelAndMap/map';
 export * from './activityTask';
 
 let interpretor = false;
@@ -114,6 +115,8 @@ const processState = async (task: RunningState): Promise<void> => {
                 break;
             case StateType.Parallel: 
                 return await processParallelState({state: state as ParallelState, task});
+            case StateType.Map:
+                return await processMapState({state: state as MapState, stateInfo: task});
             default:
                 throw new FatalError(`State type in state '${task.stateName}' of state machine '${task.stateMachineArn}' does not have a correct Type`);
         }
@@ -195,6 +198,7 @@ const registerEvents = (): void => {
     Event.on(Event.CustomEvents.WaitingStateDone, manageErrorInState(processWaitingStateDone));
     Event.finishedParallelBranche.on(manageErrorInState(handleFinishedBranche, StateType.Parallel));
     Event.executionStartedEvent.on(onExecutionStartedEvent);
+    Event.finishedMapIteration.on(manageErrorInState(handleFinishedIteration))
 }
 
 export const activityTaskStarted = manageErrorInState(processActivityTaskStarted) as (input: {stateInfo: RunningTaskState, workerName?: string}) => Promise<void>;
@@ -210,4 +214,5 @@ const unregisterEvents = (): void => {
     Event.removeListenerForEvent(Event.CustomEvents.TaskTimeout);
     Event.removeListenerForEvent(Event.CustomEvents.WaitingStateDone);
     Event.finishedParallelBranche.removeAllListener();
+    Event.finishedMapIteration.removeAllListener();
 }

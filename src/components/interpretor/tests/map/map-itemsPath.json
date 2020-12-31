@@ -1,0 +1,381 @@
+{
+    "describe": "state machine with a map state and an itemsPath of '$.input'", 
+    "tests": [
+      {
+        "describe": "should work if the 'input' key contains an array",
+        "input": {"input": [1]},
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": [1],
+        "events": [
+          {
+           "timestamp": "2020-12-31T15:51:49.132Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "{\"input\":[1]}",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.167Z",
+           "type": "MapStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":[1]}"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.167Z",
+           "type": "MapStateStarted",
+           "id": 3,
+           "previousEventId": 2,
+           "mapStateStartedEventDetails": {
+            "length": 1
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.167Z",
+           "type": "MapIterationStarted",
+           "id": 4,
+           "previousEventId": 3,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 0
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.269Z",
+           "type": "PassStateEntered",
+           "id": 5,
+           "previousEventId": 4,
+           "stateEnteredEventDetails": {
+            "name": "Pass State",
+            "input": "1"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.269Z",
+           "type": "PassStateExited",
+           "id": 6,
+           "previousEventId": 5,
+           "stateExitedEventDetails": {
+            "name": "Pass State",
+            "output": "1"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.269Z",
+           "type": "MapIterationSucceeded",
+           "id": 7,
+           "previousEventId": 6,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 0
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.269Z",
+           "type": "MapStateSucceeded",
+           "id": 8,
+           "previousEventId": 7
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.269Z",
+           "type": "MapStateExited",
+           "id": 9,
+           "previousEventId": 7,
+           "stateExitedEventDetails": {
+            "name": "MapState",
+            "output": "[1]"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.277Z",
+           "type": "PassStateEntered",
+           "id": 10,
+           "previousEventId": 9,
+           "stateEnteredEventDetails": {
+            "name": "NEXT STATE",
+            "input": "[1]"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.277Z",
+           "type": "PassStateExited",
+           "id": 11,
+           "previousEventId": 10,
+           "stateExitedEventDetails": {
+            "name": "NEXT STATE",
+            "output": "[1]"
+           }
+          },
+          {
+           "timestamp": "2020-12-31T15:51:49.277Z",
+           "type": "ExecutionSucceeded",
+           "id": 12,
+           "previousEventId": 11,
+           "executionSucceededEventDetails": {
+            "output": "[1]"
+           }
+          }
+         ]
+      },
+      {
+          "describe": "should fail if the 'input' key is not in the input",
+          "input": {},
+          "expectedStateMachineStatus": "FAILED",
+          "expectedOutput": null,
+          "events": [
+            {
+              "timestamp": "2020-12-31T14:44:29.853Z",
+              "type": "ExecutionStarted",
+              "id": 1,
+              "previousEventId": 0,
+              "executionStartedEventDetails": {
+              "input": "{}",
+              "roleArn": "todo"
+              }
+            },
+            {
+              "timestamp": "2020-12-31T14:44:29.883Z",
+              "type": "MapStateEntered",
+              "id": 2,
+              "previousEventId": 0,
+              "stateEnteredEventDetails": {
+              "name": "MapState",
+              "input": "{}"
+              }
+            },
+            {
+              "timestamp": "2020-12-31T14:44:29.883Z",
+              "type": "ExecutionFailed",
+              "id": 3,
+              "previousEventId": 2,
+              "executionFailedEventDetails": {
+              "error": "States.Runtime",
+              "cause": "An error occurred while executing the state 'MapState'. Invalid path '$.input' : No valid results for path: '$.input'"
+              }
+            }
+          ]
+      },
+      {
+        "describe": "should fail if the 'input' key does not point to an array but to a string",
+        "input": {"input": "hello"},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "events": [
+          {
+            "timestamp": "2020-12-31T15:06:50.578Z",
+            "type": "ExecutionStarted",
+            "id": 1,
+            "previousEventId": 0,
+            "executionStartedEventDetails": {
+            "input": "{\"input\":\"hello\"}",
+            "roleArn": "todo"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:06:50.603Z",
+            "type": "MapStateEntered",
+            "id": 2,
+            "previousEventId": 0,
+            "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":\"hello\"}"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:06:50.603Z",
+            "type": "ExecutionFailed",
+            "id": 3,
+            "previousEventId": 2,
+            "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'MapState'. Reference path \"$.input\" must point to array"
+            }
+          }
+        ]
+      },
+      {
+        "describe": "should fail if the 'input' key does not point to an array but to an object",
+        "input": {"input": {"hello": ["world"]}},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "events": [
+          {
+            "timestamp": "2020-12-31T15:14:12.260Z",
+            "type": "ExecutionStarted",
+            "id": 1,
+            "previousEventId": 0,
+            "executionStartedEventDetails": {
+            "input": "{\"input\":{\"hello\":[\"world\"]}}",
+            "roleArn": "todo"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:14:12.306Z",
+            "type": "MapStateEntered",
+            "id": 2,
+            "previousEventId": 0,
+            "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":{\"hello\":[\"world\"]}}"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:14:12.306Z",
+            "type": "ExecutionFailed",
+            "id": 3,
+            "previousEventId": 2,
+            "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'MapState'. Reference path \"$.input\" must point to array"
+            }
+          }
+        ]
+      },
+      {
+        "describe": "should fail if the 'input' key does not point to an array but to a number",
+        "input": {"input": 0},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "events": [
+          {
+            "timestamp": "2020-12-31T15:16:00.663Z",
+            "type": "ExecutionStarted",
+            "id": 1,
+            "previousEventId": 0,
+            "executionStartedEventDetails": {
+            "input": "{\"input\":0}",
+            "roleArn": "todo"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:16:00.686Z",
+            "type": "MapStateEntered",
+            "id": 2,
+            "previousEventId": 0,
+            "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":0}"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:16:00.686Z",
+            "type": "ExecutionFailed",
+            "id": 3,
+            "previousEventId": 2,
+            "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'MapState'. Reference path \"$.input\" must point to array"
+            }
+          }
+        ]
+      },
+      {
+        "describe": "should fail if the 'input' key does not point to an array but to a boolean",
+        "input": {"input": true},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "events": [
+          {
+            "timestamp": "2020-12-31T15:17:20.155Z",
+            "type": "ExecutionStarted",
+            "id": 1,
+            "previousEventId": 0,
+            "executionStartedEventDetails": {
+            "input": "{\"input\":true}",
+            "roleArn": "todo"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:17:20.180Z",
+            "type": "MapStateEntered",
+            "id": 2,
+            "previousEventId": 0,
+            "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":true}"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:17:20.180Z",
+            "type": "ExecutionFailed",
+            "id": 3,
+            "previousEventId": 2,
+            "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'MapState'. Reference path \"$.input\" must point to array"
+            }
+          }
+        ]
+      },
+      {
+        "describe": "should fail if the 'input' key does not point to an array but to a null",
+        "input": {"input": null},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "events": [
+          {
+            "timestamp": "2020-12-31T15:17:58.976Z",
+            "type": "ExecutionStarted",
+            "id": 1,
+            "previousEventId": 0,
+            "executionStartedEventDetails": {
+            "input": "{\"input\":null}",
+            "roleArn": "todo"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:17:59.000Z",
+            "type": "MapStateEntered",
+            "id": 2,
+            "previousEventId": 0,
+            "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "{\"input\":null}"
+            }
+          },
+          {
+            "timestamp": "2020-12-31T15:17:59.000Z",
+            "type": "ExecutionFailed",
+            "id": 3,
+            "previousEventId": 2,
+            "executionFailedEventDetails": {
+            "error": "States.Runtime",
+            "cause": "An error occurred while executing the state 'MapState'. Reference path \"$.input\" must point to array"
+            }
+          }
+        ]
+      }
+    ],
+    "definition": {
+      "Comment": "A Hello World example of the Amazon States Language using Pass states",
+      "StartAt": "MapState",
+      "States": {
+        "MapState": {
+          "Type": "Map",
+          "ItemsPath": "$.input",
+          "MaxConcurrency": 0,
+          "Iterator": {
+            "StartAt": "Pass State",
+            "States": {
+              "Pass State": {
+                "Type": "Pass",
+                "End": true
+              }
+            }
+          },
+          "Next": "NEXT STATE"
+        },
+        "NEXT STATE": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }
+}
+

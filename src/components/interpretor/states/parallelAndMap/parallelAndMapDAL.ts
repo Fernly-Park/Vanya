@@ -2,11 +2,14 @@ import * as Redis from '@App/modules/database/redis';
 import { Logger } from "@App/modules";
 import { DALError } from "@App/errors/customErrors";
 import * as RedisKey from '@App/modules/database/redisKeys'
+import { StateType } from '@App/components/stateMachines/stateMachine.interfaces';
 
 
-export const updateRunningParallelStateInfo = async (req: {parallelStateKey: string, output: string, brancheNumber: number}): Promise<number> => {
+export const updateRunningStateInfo = async (req: {parallelStateKey: string, output: string, brancheNumber: number, stateType: StateType}): Promise<number> => {
     try {
-        const redisKey = RedisKey.parallelStateInfoKey.get(req.parallelStateKey);
+        const redisKey = req.stateType === StateType.Parallel ? 
+             RedisKey.parallelStateInfoKey.get(req.parallelStateKey) : 
+             RedisKey.mapStateKey.get(req.parallelStateKey);
         await Redis.jsonsetAsync(redisKey, `.output[${req.brancheNumber}]`, req.output);
         return +(await Redis.jsonNumIncrByAsync(redisKey, '.numberOfBranchesLeft', -1));
     } catch (err){
@@ -15,7 +18,7 @@ export const updateRunningParallelStateInfo = async (req: {parallelStateKey: str
     }
 }
 
-export const getRunningStateInsideParallel = async (parallelStateToken: string) => {
+export const getRunningStateInside = async (parallelStateToken: string) => {
     const toReturn = {
         tasks: [] as string[],
         parallel: [] as string[],
@@ -37,6 +40,9 @@ export const getRunningStateInsideParallel = async (parallelStateToken: string) 
         } else if (RedisKey.waitStateKey.match(key)) {
             const token = RedisKey.waitStateKey.extractToken(key);
             toReturn.wait.push(token)
+        } else if (RedisKey.mapStateKey.match(key)) {
+            const token = RedisKey.mapStateKey.extractToken(key);
+            toReturn.map.push(token)
         }
         // todo
     } 

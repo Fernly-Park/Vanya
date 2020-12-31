@@ -165,3 +165,50 @@ export const onParallelStateFailed = async (req: {executionArn: string, previous
         previousEventId: req.previousEventId
     }});
 }
+
+export const onMapTaskStarted = async (req: {executionArn: string, previousEventId: number, itemLength: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.MapStateStarted,
+        previousEventId: req.previousEventId,
+        mapStateStartedEventDetails: {
+            length: req.itemLength
+        }
+    }})
+}
+
+export const onMapStateSucceeded = async (req: {executionArn: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.MapStateSucceeded,
+        previousEventId: req.previousEventId
+    }});
+}
+
+export const onMapStateFailed = async (req: {executionArn: string, previousEventId: number}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.MapStateFailed,
+        previousEventId: req.previousEventId
+    }});
+}
+
+export const onMapIterationStarted = async (req: {executionArn: string, previousEventId: number, iterationIndex: number, mapStateName: string}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.MapIterationStarted,
+        previousEventId: req.previousEventId,
+        mapIterationStartedEventDetails: {
+            index: req.iterationIndex,
+            name: req.mapStateName
+        }
+    }});
+}
+
+export const onMapIterationSucceeded = async (req: {executionArn: string, previousEventId: number, iterationIndex: number, mapStateName: string}): Promise<number> => {
+    return await ExecutionService.addEvent({executionArn: req.executionArn, event: {
+        type: HistoryEventType.MapIterationSucceeded,
+        previousEventId: req.previousEventId,
+        mapIterationSucceededEventDetails: {
+            index: req.iterationIndex,
+            name: req.mapStateName
+        }
+    }})
+}
+

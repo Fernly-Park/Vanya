@@ -16,6 +16,7 @@ export interface RunningState {
     parentInfo?: {
         parentKey: string,
         currentBranche: number
+        type: "Map" | "Parallel"
     },
 }
 
@@ -36,10 +37,12 @@ export type RunningWaitState = RunningState & {
     waitUntil: Date
 };
 
-export type RunningParallelState = RunningState & {
+export type RunningParallelMapState = RunningState & {
     numberOfBranchesLeft: number
     output: StateOutput[]
 }
+
+
 
 export enum ActivityTaskStatus {
     Running = 'Running',

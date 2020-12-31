@@ -102,6 +102,19 @@ export const waitStateKey = {
     }
 }
 
+export const mapStateKey = {
+    get: (token: string): string => {
+        return `${config.redis_prefix}:Map:${token}`;
+    },
+    match: (key: string): boolean => {
+        const firstElementAfterPrefix = removePrefixFromKey(key).split(':')[1]
+        return firstElementAfterPrefix === 'Map';
+    },
+    extractToken: (key: string): string => {
+        return key.split(':')[3]
+    }
+}
+
 export const currentlyRunningStateKey = {
     get: (executionArn: string): string => {
         return `${config.redis_prefix}:${executionArn}:currentlyRunningStates`;

@@ -56,5 +56,10 @@ export enum HistoryEventType {
     StateExited = 'StateExited',
     ParallelStateStarted = 'ParallelStateStarted',
     ParallelStateSucceeded = 'ParallelStateSucceeded',
-    ParallelStateFailed = 'ParallelStateFailed'
+    ParallelStateFailed = 'ParallelStateFailed',
+    MapStateStarted = 'MapStateStarted',
+    MapStateSucceeded = 'MapStateSucceeded',
+    MapStateFailed = 'MapStateFailed',
+    MapIterationStarted = 'MapIterationStarted',
+    MapIterationSucceeded = 'MapIterationSucceeded'
 }

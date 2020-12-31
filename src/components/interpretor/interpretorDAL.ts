@@ -86,7 +86,7 @@ const getRedisKeyOfState = (token: string, stateType: StateType): string => {
         case StateType.Wait:
             return RedisKey.waitStateKey.get(token);
         case StateType.Map:
-            // todo
+            return RedisKey.mapStateKey.get(token);
         default:
             throw new Error(`'${stateType}' type cannot be added in running state (from '${token}')`)
     }
