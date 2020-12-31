@@ -15,7 +15,7 @@ export const updateRunningParallelStateInfo = async (req: {parallelStateKey: str
     }
 }
 
-export const getRunningStateInsideParallel = async (parallelStateKey: string) => {
+export const getRunningStateInsideParallel = async (parallelStateToken: string) => {
     const toReturn = {
         tasks: [] as string[],
         parallel: [] as string[],
@@ -23,7 +23,7 @@ export const getRunningStateInsideParallel = async (parallelStateKey: string) =>
         map: [] as string[]
     }
 
-    const parallelKey = RedisKey.runningStateInsideParallelKey.get(parallelStateKey);
+    const parallelKey = RedisKey.runningStateInsideParallelKey.get(parallelStateToken);
 
     for (const key of await Redis.smembersAsync(parallelKey)) {
         if (RedisKey.runningTaskStateKey.match(key)) {
