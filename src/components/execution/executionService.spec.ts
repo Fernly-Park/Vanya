@@ -8,8 +8,6 @@ import { InvalidExecutionInputError, InvalidNameError, InvalidArnError, StateMac
 import { generateServiceTest } from '@Tests/testGenerator';
 import { ExecutionService } from '.';
 import { executionStartedEvent } from '../events';
-import * as Event from '../events';
-import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
 import { ContextObjectService } from '../contextObject';
 import * as RedisKey from '@App/modules/database/redisKeys'
 
@@ -167,20 +165,12 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
 
     describe('stop execution', () => {
         it('should work', async () => {
-            expect.assertions(8);
+            expect.assertions(5);
 
             const cause = 'customCause';
             const error = 'customError';
-            let executionArn = '';
 
-            const expectedEventSent = async (req: StopExecutionInput) => {
-                expect(req.cause).toBe(cause);
-                expect(req.error).toBe(error);
-                return Promise.resolve(expect(req.executionArn).toBe(executionArn))
-            }
-            Event.stopExecutionEvent.on(expectedEventSent);
             const {execution} = await createSMAndStartExecutionHelper({stateMachineDef: TestHelper.stateMachinesForTests.valid.validTask});
-            executionArn = execution.executionArn;
             const {stopDate} = await ExecutionService.stopExecution({...execution, cause, error});
             const abortedExecution = await ExecutionService.describeExecution(execution);
 
@@ -189,7 +179,6 @@ generateServiceTest({describeText: 'execution', tests: (getUser) => {
             expect(abortedExecution.stopDate).toBeInstanceOf(Date);
             expect(stopDate).toStrictEqual(abortedExecution.stopDate)
             expect(abortedExecution.status).toBe(ExecutionStatus.aborted);
-            Event.stopExecutionEvent.removeListener(expectedEventSent);
         });
 
         it('should still work and return the stop date if the execution was already aborted', async () => {

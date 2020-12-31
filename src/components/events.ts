@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { Logger } from '@App/modules';
 import { StopExecutionInput } from 'aws-sdk/clients/stepfunctions';
-import { HistoryEventType, IExecution } from './execution/execution.interfaces';
-import { RunningState, RunningTaskState } from './interpretor/interpretor.interfaces';
+import { IExecution } from './execution/execution.interfaces';
+import { RunningState, RunningTaskState, StateOutput } from './interpretor/interpretor.interfaces';
 import { StateMachineStateValue } from './stateMachines/stateMachine.interfaces';
 
 export type InterpretorEventInput = {stateInfo?: RunningState, token?: string}
@@ -10,6 +11,7 @@ export type ActivityTaskHeartbeatInput = InterpretorEventInput & {stateInfo: Run
 export type SendTaskFailureEventInput = InterpretorEventInput & {stateInfo: RunningTaskState, cause?: string, error?: string};
 export type StopExecutionEventInput = StopExecutionInput;
 export type onStateRetryInput = InterpretorEventInput & { state: StateMachineStateValue}
+export type HandleFinishedParallelBrancheEventInput = InterpretorEventInput &{brancheIndex: number, output: StateOutput, previousEventId: number};
 
 type EventCallback = (...args: any[]) => Promise<unknown>;
 let events: Record<string, EventCallback[]> = {};
@@ -25,6 +27,7 @@ export enum CustomEvents {
     ActivityTaskSucceeded = 'ActivityTaskSucceeded',
     ActivityTaskHeartbeat = 'ActivityTaskHeartbeat',
     ActivityTaskHeartbeatTimeout = 'ActivityTaskHeartbeatTimeout',
+    FinishedParallelBranche = 'FinishedParallelBranche',
     SendTaskFailure = 'SendTaskFailure',
     ActivityFailure = 'ActivityFailure',
     TaskRetry = 'TaskRetry'
@@ -52,13 +55,15 @@ export const removeListenerForEvent = (eventName: string): void => {
     events[eventName] = [];
 }
 
-export const emit = async (eventName: string, input?: any): Promise<boolean> => {
+export const emit = (eventName: string, input?: any): void => {
     if (!events[eventName] || events[eventName].length === 0) {
-        return Promise.resolve(false);
+        return
     }   
 
-    await Promise.all(events[eventName].map(x => x(input)));
-    return true;
+    void Promise.all(events[eventName].map(x => x(input))).then().catch((err) => {
+        Logger.logError(err);
+    });
+    return;
 }
 
 export const removeAllListeners = (): void => {
@@ -70,8 +75,8 @@ const factoryCustomEvent = <T>(eventName: string) => {
         on: (callback: (input: T) => Promise<unknown>) => {
             on(eventName, callback)
         },
-        emit: async (data: T): Promise<void> => {
-            await emit(eventName, data);
+        emit: (data: T): void => {
+            emit(eventName, data);
         },
         removeListener: (listener: (input: T) => Promise<unknown>) => {
             removeListener(eventName, listener);
@@ -83,8 +88,4 @@ const factoryCustomEvent = <T>(eventName: string) => {
 }
 
 export const executionStartedEvent = factoryCustomEvent<IExecution>(CustomEvents.ExecutionStarted);
-export const workerOutputReceivedEvent = factoryCustomEvent<{stateInfo: RunningTaskState}>(CustomEvents.WorkerOutputReceived);
-export const activityStartedEvent = factoryCustomEvent<{stateInfo: RunningTaskState, workerName?: string}>(HistoryEventType.ActivityStarted);
-export const activityTaskHeartbeat = factoryCustomEvent<ActivityTaskHeartbeatInput>(CustomEvents.ActivityTaskHeartbeat);
-export const sendTaskFailureEvent = factoryCustomEvent<SendTaskFailureEventInput>(CustomEvents.SendTaskFailure);
-export const stopExecutionEvent = factoryCustomEvent<StopExecutionEventInput>(CustomEvents.ExecutionStopped);
+export const finishedParallelBranche = factoryCustomEvent<HandleFinishedParallelBrancheEventInput>(CustomEvents.FinishedParallelBranche);

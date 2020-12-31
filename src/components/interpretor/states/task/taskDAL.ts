@@ -19,7 +19,7 @@ export const modifyActivityTaskStatus = async (token: string, newStatus: Activit
             watcher.json_get(key, (err: Error, activityTaskStringified: string) => {
                 if (err) return reject (err)
                 const activityTask = JSON.parse(activityTaskStringified) as RunningTaskState;
-                if (activityTask.status === ActivityTaskStatus.TimedOut) {
+                if (!activityTask || activityTask.status === ActivityTaskStatus.TimedOut) {
                     return reject(new TaskTimedOutError('Concurrency error : the activity task status is already Timeout1'));
                 }
                 activityTask.status = newStatus;

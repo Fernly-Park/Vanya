@@ -45,7 +45,7 @@ export const startExecution = async (userId: string, req: StartExecutionInput): 
 
     await ContextObjectService.createContextObject({execution: result, stateMachine});
     await InterpretorService.execute({ stateName: firstStateName, rawInput: result.input, executionArn, stateMachineArn: stateMachine.arn, previousEventId: 0});
-    await executionStartedEvent.emit(result)
+    executionStartedEvent.emit(result)
 
     return { executionArn, startDate: result.startDate }
 }
@@ -86,7 +86,7 @@ export const stopExecution = async (req: StopExecutionInput): Promise<StopExecut
         return {stopDate: execution.stopDate};
     }
 
-    await Event.stopExecutionEvent.emit(req);
+    await InterpretorService.manageStopExecution(req);
     await ExecutionDAL.updateExecutionStatus(db, {executionArn, newStatus: ExecutionStatus.aborted})
     await ContextObjectService.deleteContextObject(req.executionArn)
 

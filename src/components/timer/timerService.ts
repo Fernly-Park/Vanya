@@ -13,7 +13,7 @@ export const startTimerPoll = async (): Promise<void> => {
         if(timers && timers.length > 0) {
             for(const stringifiedTimer of timers) {
                 const timer = JSON.parse(stringifiedTimer) as TimedTask;
-                void Event.emit(timer.eventNameForCallback, timer.task).then();
+                Event.emit(timer.eventNameForCallback, timer.task);
             }
         } else {
             await sleep(config.timerPollIntervalMs);

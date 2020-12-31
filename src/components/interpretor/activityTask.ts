@@ -5,7 +5,6 @@ import { ensureWorkerNameIsValid, taskOutputMaxLength, taskTokenMaxLength, ensur
 import { GetActivityTaskInput, GetActivityTaskOutput, SendTaskHeartbeatInput, SendTaskSuccessInput, SendTaskFailureInput } from "aws-sdk/clients/stepfunctions";
 import { ActivityService } from "../activity";
 import { ActivityTaskStatus, RunningTaskState } from "./interpretor.interfaces";
-import * as Event from '../events';
 import { isExecutionStillRunning } from "./stateProcessing";
 import * as TaskDAL from './states/task/taskDAL';
 import { InterpretorService } from ".";
@@ -22,7 +21,7 @@ export const getActivityTask = async (req: GetActivityTaskInput): Promise<GetAct
 
     if (task) {
         await TaskDAL.modifyActivityTaskStatus(task.token, ActivityTaskStatus.Running);
-        await Event.activityStartedEvent.emit({stateInfo: task, workerName: req.workerName})
+        await InterpretorService.activityTaskStarted({stateInfo: task, workerName: req.workerName})
     }
     return {
         input: task === null ? null : JSON.stringify(task.effectiveInput),
@@ -50,8 +49,8 @@ export const sendTaskHeartbeat = async (req: SendTaskHeartbeatInput): Promise<vo
     if (!activityTask) {
         throw new TaskDoesNotExistError(req.taskToken);
     }
-    // todo timeout
-    await Event.activityTaskHeartbeat.emit({stateInfo: activityTask});
+
+    await InterpretorService.manageTaskHeartbeat({stateInfo: activityTask});
 }
 
 export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> => {
@@ -60,9 +59,7 @@ export const sendTaskSuccess = async (req: SendTaskSuccessInput): Promise<void> 
     if (!activityTask) {
         throw new TaskDoesNotExistError(req.taskToken);
     }
-    // todo timeout
-    
-    await Event.workerOutputReceivedEvent.emit({stateInfo: {...activityTask, output: JSON.parse(req.output)}})
+    await InterpretorService.manageTaskStateDone({stateInfo: {...activityTask, output: JSON.parse(req.output)}})
 }
 
 const ensureSendTaskSuccessInputIsValid = (req: SendTaskSuccessInput) => {
@@ -88,7 +85,7 @@ export const sendTaskFailure = async (req: SendTaskFailureInput): Promise<void> 
         Logger.logWarning(`Task failure sent for '${req.taskToken}'`)
         throw new TaskDoesNotExistError(req.taskToken);
     }
-    await Event.sendTaskFailureEvent.emit({stateInfo: activityTask, cause: req.cause, error: req.error})
+    await InterpretorService.manageTaskStateFailure({stateInfo: activityTask, cause: req.cause, error: req.error});
 }
 
 const ensureSendTaskFailureInputIsValid = (req: SendTaskFailureInput): void => {

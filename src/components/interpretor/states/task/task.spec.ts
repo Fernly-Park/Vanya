@@ -3,7 +3,6 @@ import { createSMAndStartExecutionHelper, dummyActivityArn, stateMachinesForTest
 import { ActivityDoesNotExistError, InvalidArnError, InvalidNameError, InvalidOutputError, InvalidParameterTypeError, InvalidTokenError, TaskDoesNotExistError, ValidationExceptionError } from '@App/errors/AWSErrors';
 import { generateServiceTest } from '@Tests/testGenerator';
 import config from '@App/config';
-import * as Event from '../../../events';
 import { ActivityService } from '../../../activity';
 import { InterpretorService } from '../..';
 import { taskOutputMaxLength, taskTokenMaxLength } from '@App/utils/validationHelper';
@@ -115,23 +114,6 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
     });
 
     describe('send task success', () => {
-        it('should work', async () => {
-            expect.assertions(1);
-            
-            let wasCalled = false;
-            Event.on(Event.CustomEvents.WorkerOutputReceived, () => {
-                wasCalled = true;
-                return Promise.resolve()
-            })
-            
-            const {activity} = await setupTest()
-            const result = await InterpretorService.getActivityTask(activity);
-            await InterpretorService.sendTaskSuccess({taskToken: result.taskToken, output: '{}'});
-
-            expect(wasCalled).toBe(true);
-            Event.removeAllListeners();
-        });
-
         it('should throw if the token does not exists', async () => {
             expect.assertions(1);
 
@@ -178,28 +160,6 @@ generateServiceTest({options: {startInterpretor: true}, describeText: 'tasks', t
     });
 
     describe('send task failure', () => {
-        it('should work and correctly emit an event with the activityTask', async () => {
-            expect.assertions(3);
-
-            const cause = 'cause';
-            const error = 'error';
-            let wasCalled = false;
-
-            const listener = async (eventInput: Event.SendTaskFailureEventInput) => {
-                wasCalled = true;
-                expect(eventInput.cause).toBe(cause);
-                expect(eventInput.error).toBe(error)
-                return Promise.resolve()
-            }
-            Event.sendTaskFailureEvent.on(listener);
-
-            const {activity} = await setupTest()
-            const result = await InterpretorService.getActivityTask(activity);
-            await InterpretorService.sendTaskFailure({taskToken: result.taskToken, cause, error});
-            expect(wasCalled).toBe(true);
-            Event.sendTaskFailureEvent.removeListener(listener);
-        });
-
         it('should throw if the token does not exists', async () => {
             expect.assertions(1);
 

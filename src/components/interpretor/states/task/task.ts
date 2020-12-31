@@ -126,10 +126,10 @@ export const processTaskFailed = async (input: SendTaskFailureEventInput): Promi
     const {stateInfo: activityTask} = input;
     const taskState = (await StateMachineService.retrieveStateFromStateMachine(activityTask)) as TaskState;
     Logger.logDebug(`task '${activityTask.token}' failed`)
-
     await ensureTaskIsNotTimedOut(activityTask);
     
     if (!await cleanTaskStateEndedHelper(activityTask)) return;
+
     Logger.logDebug(`sending event for '${activityTask.token}' failed`)
     activityTask.previousEventId = await onActivityFailedEvent({...input, previousEventId: activityTask.previousEventId});
     await endStateFailed({stateInfo: activityTask, 

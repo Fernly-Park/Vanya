@@ -1,7 +1,7 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-import { RunningState, StateInput, StateOutput } from './interpretor.interfaces';
-import { ChoiceState, FailState, ParallelState, PassState, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
+import { RunningState, RunningTaskState, StateInput, StateOutput } from './interpretor.interfaces';
+import { ChoiceState, FailState, ParallelState, PassState, StateMachineStateValue, StateType, TaskState, WaitState } from '@App/components/stateMachines/stateMachine.interfaces';
 import { onStateEnteredEvent, onExecutionStartedEvent, onExecutionAbortedEvent } from './historyEvent';
 import { v4 as uuid } from 'uuid';
 import { processPassTask } from './states/pass';
@@ -13,7 +13,7 @@ import { TimerService } from '../timer';
 import { AWSConstant } from '@App/utils/constants';
 import { Logger } from '@App/modules';
 import { processChoiceState } from './states/choice';
-import {  processParallelState } from './states/parallel/parallel';
+import {  handleFinishedBranche, processParallelState } from './states/parallel/parallel';
 import { FatalError, TaskTimedOutError } from '@App/errors/customErrors';
 import { InterpretorDAL } from '.';
 import { endStateFailed, endStateSuccess, filterInput, filterOutput, isExecutionStillRunning } from './stateProcessing';
@@ -120,15 +120,19 @@ const processState = async (task: RunningState): Promise<void> => {
         effectiveOutput = await filterOutput(task.rawInput, rawOutput, state, task);
         await endStateSuccess({stateInfo:task, output: effectiveOutput, nextStateName: next});
     } catch (err) {
-        Logger.logError(err ?? '');
-        return await endStateFailed({stateInfo: task, 
-            cause: `An error occurred while executing the state '${task.stateName}'. ${(err as Error)?.message ?? ''}`,
-            error: AWSConstant.error.STATE_RUNTIME,
-            state
-        })  
+        await onStateError({stateInfo: task, error: err, state});
     }
 };
 
+export const onStateError = async (input: {stateInfo: RunningState, state: StateMachineStateValue, error: Error}): Promise<void> => {
+    const {stateInfo, error, state} = input;
+    Logger.logError(error ?? '');
+    return await endStateFailed({stateInfo, 
+        cause: `An error occurred while executing the state '${stateInfo.stateName}'. ${error?.message ?? ''}`,
+        error: AWSConstant.error.STATE_RUNTIME,
+        state
+    }) ;
+}
 export const saveStateInfo = async (state: RunningState): Promise<void> => {
     return await InterpretorDAL.saveStateInfo(state);
 }
@@ -166,46 +170,38 @@ const onStateRetry = async (req: onStateRetryInput): Promise<void> => {
     
 };
 
+const manageErrorInState = (func: (input: InterpretorEventInput) => Promise<void>) => {
+    return async (input: InterpretorEventInput) => {
+        try {
+            await func(input);
+        } catch (err) {
+            if (err instanceof TaskTimedOutError) throw err;
+            Logger.logError(err);
+            const stateInfo = input.stateInfo ?? await getStateInfo(input.token, StateType.Task);
+            const state = await StateMachineService.retrieveStateFromStateMachine(stateInfo);
+            await onStateError({stateInfo, state, error: err});
+        }
+    } 
+ } 
+
 const registerEvents = (): void => {
 
-    const manageErrorInState = (func: (input: InterpretorEventInput) => Promise<void>) => {
-       return async (input: InterpretorEventInput) => {
-           try {
-               await func(input);
-           } catch (err) {
-               if (err instanceof TaskTimedOutError) throw err;
-               Logger.logError(err);
-               const stateInfo = input.stateInfo ?? await getStateInfo(input.token, StateType.Task);
-               const state = await StateMachineService.retrieveStateFromStateMachine(stateInfo);
-               await endStateFailed({stateInfo, state, 
-                cause: `An error occurred while executing the state '${stateInfo.stateName}'.`, 
-                error: AWSConstant.error.STATE_RUNTIME
-               });
-           }
-       } 
-    } 
-    Event.sendTaskFailureEvent.on(manageErrorInState(processTaskFailed));
-    Event.workerOutputReceivedEvent.on(manageErrorInState(processTaskStateDone));
-    Event.activityStartedEvent.on(manageErrorInState(processActivityTaskStarted))
-    Event.activityTaskHeartbeat.on(manageErrorInState(processTaskHeartbeat));
     Event.on(Event.CustomEvents.TaskRetry, manageErrorInState(onStateRetry));
-
-
     Event.on(Event.CustomEvents.ActivityTaskHeartbeatTimeout, manageErrorInState(processTaskTimeout));
     Event.on(Event.CustomEvents.TaskTimeout, manageErrorInState(processTaskTimeout));
-
     Event.on(Event.CustomEvents.WaitingStateDone, manageErrorInState(processWaitingStateDone));
+    Event.finishedParallelBranche.on(manageErrorInState(handleFinishedBranche));
     Event.executionStartedEvent.on(onExecutionStartedEvent);
-    Event.stopExecutionEvent.on(onStopExecution);
 }
 
+export const activityTaskStarted = manageErrorInState(processActivityTaskStarted) as (input: {stateInfo: RunningTaskState, workerName?: string}) => Promise<void>;
+export const manageTaskHeartbeat = manageErrorInState(processTaskHeartbeat);
+export const manageTaskStateDone = manageErrorInState(processTaskStateDone) as (input: {stateInfo: RunningTaskState}) => Promise<void>;
+export const manageTaskStateFailure = manageErrorInState(processTaskFailed) as (input: Event.SendTaskFailureEventInput) => Promise<void>;
+export const manageStopExecution = onStopExecution;
+
 const unregisterEvents = (): void => {
-    Event.sendTaskFailureEvent.removeAllListener();
-    Event.workerOutputReceivedEvent.removeAllListener();
-    Event.activityStartedEvent.removeAllListener()
-    Event.activityTaskHeartbeat.removeAllListener();
     Event.executionStartedEvent.removeAllListener();
-    Event.stopExecutionEvent.removeAllListener();
     Event.removeListenerForEvent(Event.CustomEvents.TaskRetry)
     Event.removeListenerForEvent(Event.CustomEvents.ActivityTaskHeartbeatTimeout);
     Event.removeListenerForEvent(Event.CustomEvents.TaskTimeout);

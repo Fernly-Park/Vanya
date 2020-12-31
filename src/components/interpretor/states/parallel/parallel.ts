@@ -1,12 +1,13 @@
 import { StateMachineService } from "@App/components/stateMachines";
 import { ParallelState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
-import { RunningParallelState, RunningState, StateOutput } from "@App/components/interpretor/interpretor.interfaces";
+import { RunningParallelState, RunningState } from "@App/components/interpretor/interpretor.interfaces";
 import { Logger } from "@App/modules";
 import { InterpretorService } from "../..";
 import * as ParallelDAL from './parallelDAL'
-import { onParallelStateFailed, onParallelStateSucceeded, onParallelTaskStarted, onTaskStateAborted, onWaitStateAborted } from "../../historyEvent";
+import { onParallelStateSucceeded, onParallelTaskStarted, onTaskStateAborted, onWaitStateAborted } from "../../historyEvent";
 import { endStateFailed, endStateSuccess, filterInput, filterOutput } from "../../stateProcessing";
 import { abortTaskState } from "../task/task";
+import { HandleFinishedParallelBrancheEventInput } from "@App/components/events";
 
 export const processParallelState = async (req: {task: RunningState, state: ParallelState}): Promise<void> => {
     const {task, state} = req;
@@ -37,22 +38,22 @@ export const processParallelState = async (req: {task: RunningState, state: Para
     Logger.logDebug(`Branches added for state '${req.task.stateName}' of execution '${task.executionArn}'`)
 }
 
-export const handleFinishedBranche = async (req: {brancheIndex: number, output: StateOutput, parallelStateKey: string, previousEventId: number}): Promise<void> => {
-    Logger.logDebug(`finished branches number '${req.brancheIndex}' of parallel state key '${req.parallelStateKey}'`)
+export const handleFinishedBranche = async (req: HandleFinishedParallelBrancheEventInput): Promise<void> => {
+    Logger.logDebug(`finished branches number '${req.brancheIndex}' of parallel state key '${req.token}'`)
     
-    const executionWasAborted = await InterpretorService.getStateInfo(req.parallelStateKey, StateType.Parallel) == null;
+    const executionWasAborted = await InterpretorService.getStateInfo(req.token, StateType.Parallel) == null;
     if (executionWasAborted) {
         return;
     }
 
     const numberOfBrancheLeft = await ParallelDAL.updateRunningParallelStateInfo({brancheNumber: req.brancheIndex, 
-        output: JSON.stringify(req.output), parallelStateKey: req.parallelStateKey});
+        output: JSON.stringify(req.output), parallelStateKey: req.token});
     if (numberOfBrancheLeft === 0) {
-        const task = await InterpretorService.getStateInfo(req.parallelStateKey, StateType.Parallel) as RunningParallelState;
+        const task = await InterpretorService.getStateInfo(req.token, StateType.Parallel) as RunningParallelState;
         await InterpretorService.deleteStateInfo(task);
         const state = await StateMachineService.retrieveStateFromStateMachine({stateMachineArn: task.stateMachineArn, stateName: task.stateName}) as ParallelState;
-        const effectiveOutput = await filterOutput(task.rawInput, task.output, state, task);
         await onParallelStateSucceeded({executionArn: task.executionArn, previousEventId: req.previousEventId})
+        const effectiveOutput = await filterOutput(task.rawInput, task.output, state, task);
         await endStateSuccess({stateInfo: {...task, previousEventId: req.previousEventId}, nextStateName: state.Next, output: effectiveOutput})
     }
 }

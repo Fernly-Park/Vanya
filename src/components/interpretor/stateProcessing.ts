@@ -49,7 +49,7 @@ export const endStateSuccess = async (req: {stateInfo: RunningState, nextStateNa
     } else {
         if (stateInfo.parallelInfo) {
             return handleFinishedBranche({output: req.output, brancheIndex: stateInfo.parallelInfo.currentBranche, 
-                parallelStateKey: stateInfo.parallelInfo.parentKey, previousEventId: stateInfo.previousEventId})
+                token: stateInfo.parallelInfo.parentKey, previousEventId: stateInfo.previousEventId});
         }
         await onExecutionSucceededEvent({result: req.output, executionArn: stateInfo.executionArn, previousEventId: stateInfo.previousEventId});
         await ExecutionService.endExecution({executionArn: stateInfo.executionArn, output: req.output, status: ExecutionStatus.succeeded});
