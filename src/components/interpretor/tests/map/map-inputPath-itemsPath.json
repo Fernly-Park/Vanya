@@ -1,0 +1,189 @@
+{
+    "describe": "state machine with a map state and an inputPath of '$.input' and an ItemPaths of 'items'", 
+    "tests": [
+      {
+        "describe": "should work if the 'input' key contains an 'items' key containing an empty array",
+        "input": {"input": {"items": []}},
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": [],
+        "parallelEvents": [
+            {
+             "timestamp": "2020-12-31T19:28:25.935Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"input\":{\"items\":[]}}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:28:25.972Z",
+             "type": "MapStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "MapState",
+              "input": "{\"input\":{\"items\":[]}}"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:28:25.972Z",
+             "type": "MapStateStarted",
+             "id": 3,
+             "previousEventId": 2,
+             "mapStateStartedEventDetails": {
+              "length": 0
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:28:25.972Z",
+             "type": "MapStateSucceeded",
+             "id": 4,
+             "previousEventId": 3
+            },
+            {
+             "timestamp": "2020-12-31T19:28:25.972Z",
+             "type": "MapStateExited",
+             "id": 5,
+             "previousEventId": 3,
+             "stateExitedEventDetails": {
+              "name": "MapState",
+              "output": "[]"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:28:26.073Z",
+             "type": "PassStateEntered",
+             "id": 6,
+             "previousEventId": 5,
+             "stateEnteredEventDetails": {
+              "name": "NEXT STATE",
+              "input": "[]"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:28:26.073Z",
+             "type": "PassStateExited",
+             "id": 7,
+             "previousEventId": 6,
+             "stateExitedEventDetails": {
+              "name": "NEXT STATE",
+              "output": "[]"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:28:26.073Z",
+             "type": "ExecutionSucceeded",
+             "id": 8,
+             "previousEventId": 7,
+             "executionSucceededEventDetails": {
+              "output": "[]"
+             }
+            }
+        ]
+      },
+      {
+        "describe": "should fail if the 'input' key is not present in the input",
+        "input": {"items": []},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "parallelEvents": [
+            {
+             "timestamp": "2020-12-31T19:30:25.042Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"items\":[]}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:30:25.100Z",
+             "type": "MapStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "MapState",
+              "input": "{\"items\":[]}"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:30:25.100Z",
+             "type": "ExecutionFailed",
+             "id": 3,
+             "previousEventId": 2,
+             "executionFailedEventDetails": {
+              "error": "States.Runtime",
+              "cause": "An error occurred while executing the state 'MapState'. Invalid path '$.input' : No valid results for path: '$.input'"
+             }
+            }
+        ]
+      },
+      {
+        "describe": "should fail if the 'input' key is present but there is no 'items' key inside",
+        "input": {"input": []},
+        "expectedStateMachineStatus": "FAILED",
+        "expectedOutput": null,
+        "parallelEvents": [
+            {
+             "timestamp": "2020-12-31T19:32:37.934Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"input\":[]}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:32:37.954Z",
+             "type": "MapStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "MapState",
+              "input": "{\"input\":[]}"
+             }
+            },
+            {
+             "timestamp": "2020-12-31T19:32:37.954Z",
+             "type": "ExecutionFailed",
+             "id": 3,
+             "previousEventId": 0,
+             "executionFailedEventDetails": {
+              "error": "States.Runtime",
+              "cause": "An error occurred while executing the state 'MapState'. Invalid path '$.items' : No valid results for path: '$.items'"
+             }
+            }
+        ]
+      }
+    ],
+    "definition": {
+        "StartAt": "MapState",
+        "States": {
+          "MapState": {
+            "Type": "Map",
+            "InputPath": "$.input",
+            "ItemsPath": "$.items",
+            "MaxConcurrency": 0,
+            "Iterator": {
+              "StartAt": "Pass State",
+              "States": {
+                "Pass State": {
+                  "Type": "Pass",
+                  "End": true
+                }
+              }
+            },
+            "Next": "NEXT STATE"
+          },
+          "NEXT STATE": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+    }
+}
+
