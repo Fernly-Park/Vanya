@@ -1,7 +1,6 @@
 import { StateMachineService } from "@App/components/stateMachines";
 import { MapState, StateType } from "@App/components/stateMachines/stateMachine.interfaces";
 import { InvalidInputError, InvalidParameterError } from "@App/errors/customErrors";
-import { Logger } from "@App/modules";
 import { InterpretorService } from "../..";
 import { onMapIterationStarted, onMapIterationSucceeded, onMapStateSucceeded, onMapTaskStarted } from "../../historyEvent";
 import { RunningParallelMapState, RunningState, StateOutput } from "../../interpretor.interfaces";
