@@ -51,11 +51,11 @@ export const processMapState = async (input: {stateInfo: RunningState, state: Ma
 }
 
 export const handleFinishedIteration = async (input: {brancheIndex: number, output: StateOutput, token: string, previousEventId: number}): Promise<void> => {
-    if (input?.brancheIndex == null || input?.output == null || input?.token == null) {
-        throw new InvalidParameterError(`Input needs a branchNumber and an output and a token`);
+    const {brancheIndex, output, token} = input;
+    if (input?.brancheIndex == null || input?.token == null) {
+        throw new InvalidParameterError(`Input needs a branchNumber '${brancheIndex}' and a token '${token}'`);
     }  
 
-    const {brancheIndex, output, token} = input;
     const stateInfo = await InterpretorService.getStateInfo(token, StateType.Map) as RunningParallelMapState
     const previousEventId = await onMapIterationSucceeded({...stateInfo, previousEventId: input.previousEventId, 
         iterationIndex: brancheIndex, mapStateName: stateInfo.stateName})
