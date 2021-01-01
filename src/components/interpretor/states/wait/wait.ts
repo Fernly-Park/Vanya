@@ -3,7 +3,7 @@ import { RunningState } from "@App/components/interpretor/interpretor.interfaces
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
-import { applyPath, retrieveField } from "../../path/path";
+import { retrieveField } from "../../path/path";
 import * as Event from '../../../events';
 import { AWSConstant } from "@App/utils/constants";
 import { StateMachineService } from "@App/components/stateMachines";
