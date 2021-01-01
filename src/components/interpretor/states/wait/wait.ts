@@ -3,7 +3,7 @@ import { RunningState } from "@App/components/interpretor/interpretor.interfaces
 import { TimerService } from "@App/components/timer";
 import { InvalidPathError } from "@App/errors/customErrors";
 import validator from "validator";
-import { retrieveField } from "../../path/path";
+import { applyPath, retrieveField } from "../../path/path";
 import * as Event from '../../../events';
 import { AWSConstant } from "@App/utils/constants";
 import { StateMachineService } from "@App/components/stateMachines";
@@ -18,7 +18,8 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
     if (state.Seconds) {
         time = getDateIn(state.Seconds * 1000)
     } else if (state.SecondsPath) {
-        const seconds = retrieveField<number>(effectiveInput, state.SecondsPath)
+        const seconds = applyPath(effectiveInput, state.SecondsPath) as number
+        console.log('seconds : ', seconds, 'effective input : ', effectiveInput , 'path : ', state.SecondsPath)
         if (!Number.isInteger(seconds) || seconds < 0) { 
             throw new InvalidPathError(state.SecondsPath);
         }

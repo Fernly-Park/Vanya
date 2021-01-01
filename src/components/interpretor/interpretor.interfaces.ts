@@ -42,8 +42,6 @@ export type RunningParallelMapState = RunningState & {
     output: StateOutput[]
 }
 
-
-
 export enum ActivityTaskStatus {
     Running = 'Running',
     TimedOut = 'TimedOut',

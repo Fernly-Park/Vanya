@@ -114,7 +114,7 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
-        if (typeof currentTest.expectedOutput === 'object') {
+        if (typeof currentTest.expectedOutput === 'object' || typeof currentTest.expectedOutput === 'number') {
             expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
         } else {
             expect(finishedExecution.output).toBe(currentTest.expectedOutput);

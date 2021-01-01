@@ -1,0 +1,88 @@
+{
+    "describe": "simple state machine with a pass state and a wait state with an inputPath of '$.input' and a secondsPath of '$'", 
+    "tests": [
+        {
+            "input": {"input": 0},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": 0,
+            "describe": "should correctly succeed if the input contains an 'input' key with a value of 0",
+            "events":[
+                {
+                 "timestamp": "2021-01-01T14:08:00.613Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":0}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T14:08:00.639Z",
+                 "type": "PassStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Pass",
+                  "input": "{\"input\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T14:08:00.639Z",
+                 "type": "PassStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Pass",
+                  "output": "{\"input\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T14:08:00.739Z",
+                 "type": "WaitStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "Wait",
+                  "input": "{\"input\":0}"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T14:08:00.739Z",
+                 "type": "WaitStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "Wait",
+                  "output": "0"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T14:08:00.739Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "0"
+                 }
+                }
+            ]
+        }
+    ],
+    "definition": {
+        "StartAt": "Pass",
+        "States": {
+          "Pass": {
+            "Type": "Pass",
+            "Next": "Wait"
+          },
+          "Wait": {
+            "Type": "Wait",
+            "InputPath": "$.input",
+            "SecondsPath": "$",
+            "End": true
+          }
+        }
+    }  
+}
+
