@@ -114,11 +114,8 @@ const generateTestCase = (testStateMachine: TestStateMachine, currentTest: TestS
         expect(contextObj).toBeNull();
         expect(numberOfRemainingTasks).toBe(0);
         expect(finishedExecution.status).toBe(currentTest.expectedStateMachineStatus);
-        if (typeof currentTest.expectedOutput === 'object' || typeof currentTest.expectedOutput === 'number') {
-            expect(JSON.parse(finishedExecution.output)).toStrictEqual(currentTest.expectedOutput);
-        } else {
-            expect(finishedExecution.output).toBe(currentTest.expectedOutput);
-        }
+        expect(finishedExecution.output).toStrictEqual(currentTest.expectedOutput);
+
         expect(finishedExecution.stopDate).toBeDefined();
         expect(finishedExecution.input).toStrictEqual(currentTest.input)
         if (currentTest.events) {
@@ -257,7 +254,7 @@ const modifieTimestampInWaitTests = (stateMachineTested: TestStateMachine) => {
         const time = new Date();
         time.setMilliseconds(time.getMilliseconds() + (2 * config.waitScale * 1000));
         test.input = {timestamp: time.toISOString()}
-        test.expectedOutput = JSON.stringify(test.input)
+        test.expectedOutput = test.input
         test.events[0].executionStartedEventDetails.input = JSON.stringify(test.input);
         test.events[1].stateEnteredEventDetails.input = JSON.stringify(test.input);
         test.events[2].stateExitedEventDetails.output = JSON.stringify(test.input);

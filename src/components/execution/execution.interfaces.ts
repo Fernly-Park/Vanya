@@ -20,11 +20,13 @@ export enum ExecutionEventTable {
 }
 
 export type ExecutionInput = Record<string, unknown> | unknown[];
+export type ExecutionOutput = Record<string, unknown> | unknown[];
+
 export interface IExecution {
     executionArn: string,
     input: ExecutionInput,
     name: string,
-    output: string,
+    output: ExecutionOutput,
     startDate: Date,
     stateMachineArn: string,
     status: ExecutionStatus,

@@ -17,6 +17,7 @@ const modifyExecutionInputType = (functionToEnhance: (...d: any) => Promise<IExe
         const execution = await functionToEnhance(...args)
         if (execution) {
             execution.input = JSON.parse(execution.input as unknown as string);
+            execution.output = execution.output ? JSON.parse(execution.output as unknown as string): execution.output
         }
         return execution;    
     }
@@ -66,7 +67,7 @@ export const updateExecutionStatus = async (db: DbOrTransaction, req: UpdateExec
         .update({
             [ExecutionTable.statusColumn]: req.newStatus,
             [ExecutionTable.stopDateColumn]: db.fn.now(),
-            [ExecutionTable.outputColumn]: typeof req.output === 'string' ? req.output : JSON.stringify(req.output)
+            [ExecutionTable.outputColumn]: JSON.stringify(req.output)
         });
     });
     await Redis.setAsync(RedisKey.executionStatusKey.get(req.executionArn), req.newStatus);
