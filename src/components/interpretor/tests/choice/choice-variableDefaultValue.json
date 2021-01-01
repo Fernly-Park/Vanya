@@ -1,0 +1,165 @@
+{
+    "describe": "state machine with a choice state with an inputPath of '$.input' and a BooleanEquals and a variable with a default value of '$'", 
+    "tests": [
+        {
+            "describe": "should succeed if the 'input' key is present and has a value of 'true' (for the first choice)",
+            "input": {"input": true},
+            "expectedStateMachineStatus": "SUCCEEDED",
+            "expectedOutput": true,
+            "events": [
+                {
+                 "timestamp": "2021-01-01T16:33:27.918Z",
+                 "type": "ExecutionStarted",
+                 "id": 1,
+                 "previousEventId": 0,
+                 "executionStartedEventDetails": {
+                  "input": "{\"input\":true}",
+                  "roleArn": "todo"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T16:33:27.956Z",
+                 "type": "ChoiceStateEntered",
+                 "id": 2,
+                 "previousEventId": 0,
+                 "stateEnteredEventDetails": {
+                  "name": "Hello",
+                  "input": "{\"input\":true}"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T16:33:27.956Z",
+                 "type": "ChoiceStateExited",
+                 "id": 3,
+                 "previousEventId": 2,
+                 "stateExitedEventDetails": {
+                  "name": "Hello",
+                  "output": "true"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T16:33:28.057Z",
+                 "type": "PassStateEntered",
+                 "id": 4,
+                 "previousEventId": 3,
+                 "stateEnteredEventDetails": {
+                  "name": "pathForFirst",
+                  "input": "true"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T16:33:28.057Z",
+                 "type": "PassStateExited",
+                 "id": 5,
+                 "previousEventId": 4,
+                 "stateExitedEventDetails": {
+                  "name": "pathForFirst",
+                  "output": "true"
+                 }
+                },
+                {
+                 "timestamp": "2021-01-01T16:33:28.057Z",
+                 "type": "ExecutionSucceeded",
+                 "id": 6,
+                 "previousEventId": 5,
+                 "executionSucceededEventDetails": {
+                  "output": "true"
+                 }
+                }
+            ]
+        },
+        {
+          "describe": "should go to default if the 'input' key is present and has a value of 'false'",
+          "input": {"input": false},
+          "expectedStateMachineStatus": "SUCCEEDED",
+          "expectedOutput": false,
+          "events": [
+            {
+             "timestamp": "2021-01-01T17:03:44.110Z",
+             "type": "ExecutionStarted",
+             "id": 1,
+             "previousEventId": 0,
+             "executionStartedEventDetails": {
+              "input": "{\"input\":false}",
+              "roleArn": "todo"
+             }
+            },
+            {
+             "timestamp": "2021-01-01T17:03:44.135Z",
+             "type": "ChoiceStateEntered",
+             "id": 2,
+             "previousEventId": 0,
+             "stateEnteredEventDetails": {
+              "name": "Hello",
+              "input": "{\"input\":false}"
+             }
+            },
+            {
+             "timestamp": "2021-01-01T17:03:44.135Z",
+             "type": "ChoiceStateExited",
+             "id": 3,
+             "previousEventId": 2,
+             "stateExitedEventDetails": {
+              "name": "Hello",
+              "output": "false"
+             }
+            },
+            {
+             "timestamp": "2021-01-01T17:03:44.239Z",
+             "type": "PassStateEntered",
+             "id": 4,
+             "previousEventId": 3,
+             "stateEnteredEventDetails": {
+              "name": "default",
+              "input": "false"
+             }
+            },
+            {
+             "timestamp": "2021-01-01T17:03:44.239Z",
+             "type": "PassStateExited",
+             "id": 5,
+             "previousEventId": 4,
+             "stateExitedEventDetails": {
+              "name": "default",
+              "output": "false"
+             }
+            },
+            {
+             "timestamp": "2021-01-01T17:03:44.239Z",
+             "type": "ExecutionSucceeded",
+             "id": 6,
+             "previousEventId": 5,
+             "executionSucceededEventDetails": {
+              "output": "false"
+             }
+            }
+          ]
+      }
+    ],
+    "definition": {
+        "StartAt": "Hello",
+        "States": {
+          "Hello": {
+            "Type": "Choice",
+            "InputPath": "$.input",
+            "Choices": [
+              {
+                "BooleanEquals": true,
+                "Variable": "$",
+                "Next": "pathForFirst"
+              }
+            ],
+            "Default": "default"
+          },
+          "pathForFirst": {
+            "Type": "Pass",
+            "End": true
+          },
+          "default": {
+            "Type": "Pass",
+            "End": true
+          }
+        }
+    }
+}
+

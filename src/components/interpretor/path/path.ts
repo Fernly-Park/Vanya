@@ -8,7 +8,7 @@ import { ContextObject } from '@App/components/contextObject/contextObject.inter
 
 
 export const retrieveField = <T>(input: StateInput, path: string): T => {
-    return JSONPath({json: input as any, path, wrap: false}) as T;
+    return path === '$' ? input as T : JSONPath({json: input as any, path, wrap: false}) as T;
 }
 
 export const applyPath = (rawInput: StateInput | StateOutput, path: string): StateInput | StateOutput => {

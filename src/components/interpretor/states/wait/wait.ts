@@ -18,7 +18,7 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
     if (state.Seconds) {
         time = getDateIn(state.Seconds * 1000)
     } else if (state.SecondsPath) {
-        const seconds = applyPath(effectiveInput, state.SecondsPath) as number
+        const seconds = retrieveField<number>(effectiveInput, state.SecondsPath)
         if (!Number.isInteger(seconds) || seconds < 0) { 
             throw new InvalidPathError(state.SecondsPath);
         }

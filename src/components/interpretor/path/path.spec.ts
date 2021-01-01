@@ -1,7 +1,7 @@
 import { ContextObject } from "@App/components/contextObject/contextObject.interfaces";
 import { InvalidPathError } from "@App/errors/customErrors";
 import { dummyExecutionArn, dummyRoleARN, dummyStateMachineArn } from "@Tests/testHelper";
-import { applyPath, applyPayloadTemplate, applyResultPath, } from './path';
+import { applyPath, applyPayloadTemplate, applyResultPath, retrieveField, } from './path';
 
 describe('inputPath tests', () => {
 
@@ -189,4 +189,14 @@ describe('result path', () => {
         const result = applyResultPath(input, {a: 'myOutput'}, null);
         expect(result).toStrictEqual(input);
     });
+})
+
+describe('retrieve field', () => {
+    it('should work with a path of $ and an input of 0', () => {
+        expect.assertions(1);
+
+        const result = retrieveField(0, '$');
+        
+        expect(result).toBe(0);
+    })
 })
