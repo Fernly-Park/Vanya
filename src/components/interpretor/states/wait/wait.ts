@@ -19,7 +19,6 @@ export const processWaitTask = async (task: RunningState, state: WaitState): Pro
         time = getDateIn(state.Seconds * 1000)
     } else if (state.SecondsPath) {
         const seconds = applyPath(effectiveInput, state.SecondsPath) as number
-        console.log('seconds : ', seconds, 'effective input : ', effectiveInput , 'path : ', state.SecondsPath)
         if (!Number.isInteger(seconds) || seconds < 0) { 
             throw new InvalidPathError(state.SecondsPath);
         }
