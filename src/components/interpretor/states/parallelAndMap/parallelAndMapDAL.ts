@@ -3,6 +3,7 @@ import { Logger } from "@App/modules";
 import { DALError } from "@App/errors/customErrors";
 import * as RedisKey from '@App/modules/database/redisKeys'
 import { StateType } from '@App/components/stateMachines/stateMachine.interfaces';
+import { StateInput } from '../../interpretor.interfaces';
 
 
 export const updateRunningStateInfo = async (req: {parallelStateKey: string, output: string, brancheNumber: number, stateType: StateType}): Promise<number> => {
@@ -16,6 +17,18 @@ export const updateRunningStateInfo = async (req: {parallelStateKey: string, out
         Logger.logError(err);
         throw new DALError(`An error occured when updating the running parallel state '${req.parallelStateKey ?? ''}'`)
     }
+}
+
+export type storedMapInput = {index: number, input: StateInput}
+export const storeMapInput = async (req: {token: string, input: storedMapInput}): Promise<void> => {
+    const {token, input} = req;
+    const redisKey = RedisKey.mapStateRemainingInputKey.get(token);
+    await Redis.rpushAsync(redisKey, JSON.stringify(input));
+}
+
+export const retrieveFirstMapInput = async (token: string): Promise<storedMapInput> => {
+    const redisKey = RedisKey.mapStateRemainingInputKey.get(token);
+    return JSON.parse(await Redis.lpopAsync(redisKey)) as storedMapInput;
 }
 
 export const getRunningStateInside = async (parallelStateToken: string) => {

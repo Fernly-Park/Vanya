@@ -107,8 +107,23 @@ export const mapStateKey = {
         return `${config.redis_prefix}:Map:${token}`;
     },
     match: (key: string): boolean => {
-        const firstElementAfterPrefix = removePrefixFromKey(key).split(':')[1]
-        return firstElementAfterPrefix === 'Map';
+        const splittedKey = removePrefixFromKey(key).split(':');
+        const firstElementAfterPrefix = splittedKey[1];
+        return firstElementAfterPrefix === 'Map' && splittedKey.length === 3;
+    },
+    extractToken: (key: string): string => {
+        return key.split(':')[3]
+    }
+}
+
+export const mapStateRemainingInputKey = {
+    get: (token: string): string => {
+        return `${config.redis_prefix}:Map:${token}:RemainingInputs`;
+    },
+    match: (key: string): boolean => {
+        const splittedKey = removePrefixFromKey(key).split(':');
+        const firstElementAfterPrefix = splittedKey[1];
+        return firstElementAfterPrefix === 'Map' && splittedKey.length === 4;
     },
     extractToken: (key: string): string => {
         return key.split(':')[3]

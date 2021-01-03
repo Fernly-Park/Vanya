@@ -1,0 +1,516 @@
+{
+    "describe": "state machine with a map state and a maxConcurrency of 2 containing a waitstate", 
+    "tests": [
+      {
+        "describe": "should work and correctly execute only 2 iteration at a time",
+        "input": [1, 2, 2, 0, 1],
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": [1, 2, 2, 0, 1],
+        "events": [
+          {
+           "timestamp": "2021-01-03T15:33:10.474Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "[1,2,2,0,1]",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:10.544Z",
+           "type": "MapStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "[1,2,2,0,1]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:10.544Z",
+           "type": "MapStateStarted",
+           "id": 3,
+           "previousEventId": 2,
+           "mapStateStartedEventDetails": {
+            "length": 5
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:10.544Z",
+           "type": "MapIterationStarted",
+           "id": 4,
+           "previousEventId": 3,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 0
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:10.544Z",
+           "type": "MapIterationStarted",
+           "id": 5,
+           "previousEventId": 3,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 1
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:10.645Z",
+           "type": "WaitStateEntered",
+           "id": 6,
+           "previousEventId": 4,
+           "stateEnteredEventDetails": {
+            "name": "Wait State",
+            "input": "1"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:10.652Z",
+           "type": "WaitStateEntered",
+           "id": 7,
+           "previousEventId": 5,
+           "stateEnteredEventDetails": {
+            "name": "Wait State",
+            "input": "2"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:11.645Z",
+           "type": "WaitStateExited",
+           "id": 8,
+           "previousEventId": 6,
+           "stateExitedEventDetails": {
+            "name": "Wait State",
+            "output": "1"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:11.645Z",
+           "type": "MapIterationSucceeded",
+           "id": 9,
+           "previousEventId": 8,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 0
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:11.645Z",
+           "type": "MapIterationStarted",
+           "id": 10,
+           "previousEventId": 8,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 2
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:11.653Z",
+           "type": "WaitStateEntered",
+           "id": 11,
+           "previousEventId": 10,
+           "stateEnteredEventDetails": {
+            "name": "Wait State",
+            "input": "2"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.652Z",
+           "type": "WaitStateExited",
+           "id": 12,
+           "previousEventId": 7,
+           "stateExitedEventDetails": {
+            "name": "Wait State",
+            "output": "2"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.652Z",
+           "type": "MapIterationSucceeded",
+           "id": 13,
+           "previousEventId": 12,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 1
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.652Z",
+           "type": "MapIterationStarted",
+           "id": 14,
+           "previousEventId": 12,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 3
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.660Z",
+           "type": "WaitStateEntered",
+           "id": 15,
+           "previousEventId": 14,
+           "stateEnteredEventDetails": {
+            "name": "Wait State",
+            "input": "0"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.660Z",
+           "type": "WaitStateExited",
+           "id": 16,
+           "previousEventId": 15,
+           "stateExitedEventDetails": {
+            "name": "Wait State",
+            "output": "0"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.660Z",
+           "type": "MapIterationSucceeded",
+           "id": 17,
+           "previousEventId": 16,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 3
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.660Z",
+           "type": "MapIterationStarted",
+           "id": 18,
+           "previousEventId": 16,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 4
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:12.668Z",
+           "type": "WaitStateEntered",
+           "id": 19,
+           "previousEventId": 18,
+           "stateEnteredEventDetails": {
+            "name": "Wait State",
+            "input": "1"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.653Z",
+           "type": "WaitStateExited",
+           "id": 20,
+           "previousEventId": 11,
+           "stateExitedEventDetails": {
+            "name": "Wait State",
+            "output": "2"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.653Z",
+           "type": "MapIterationSucceeded",
+           "id": 21,
+           "previousEventId": 20,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 2
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.669Z",
+           "type": "WaitStateExited",
+           "id": 22,
+           "previousEventId": 19,
+           "stateExitedEventDetails": {
+            "name": "Wait State",
+            "output": "1"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.669Z",
+           "type": "MapIterationSucceeded",
+           "id": 23,
+           "previousEventId": 22,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 4
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.669Z",
+           "type": "MapStateSucceeded",
+           "id": 24,
+           "previousEventId": 23
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.669Z",
+           "type": "MapStateExited",
+           "id": 25,
+           "previousEventId": 23,
+           "stateExitedEventDetails": {
+            "name": "MapState",
+            "output": "[1,2,2,0,1]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.677Z",
+           "type": "PassStateEntered",
+           "id": 26,
+           "previousEventId": 25,
+           "stateEnteredEventDetails": {
+            "name": "NEXT STATE",
+            "input": "[1,2,2,0,1]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.677Z",
+           "type": "PassStateExited",
+           "id": 27,
+           "previousEventId": 26,
+           "stateExitedEventDetails": {
+            "name": "NEXT STATE",
+            "output": "[1,2,2,0,1]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T15:33:13.677Z",
+           "type": "ExecutionSucceeded",
+           "id": 28,
+           "previousEventId": 27,
+           "executionSucceededEventDetails": {
+            "output": "[1,2,2,0,1]"
+           }
+          }
+        ]
+      },
+      {
+        "describe": "should work even if there is only one input",
+        "input": [0],
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": [0],
+        "events": [
+          {
+           "timestamp": "2021-01-03T16:48:48.628Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "[0]",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.668Z",
+           "type": "MapStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "[0]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.668Z",
+           "type": "MapStateStarted",
+           "id": 3,
+           "previousEventId": 2,
+           "mapStateStartedEventDetails": {
+            "length": 1
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.668Z",
+           "type": "MapIterationStarted",
+           "id": 4,
+           "previousEventId": 3,
+           "mapIterationStartedEventDetails": {
+            "name": "MapState",
+            "index": 0
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.770Z",
+           "type": "WaitStateEntered",
+           "id": 5,
+           "previousEventId": 4,
+           "stateEnteredEventDetails": {
+            "name": "Wait State",
+            "input": "0"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.770Z",
+           "type": "WaitStateExited",
+           "id": 6,
+           "previousEventId": 5,
+           "stateExitedEventDetails": {
+            "name": "Wait State",
+            "output": "0"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.770Z",
+           "type": "MapIterationSucceeded",
+           "id": 7,
+           "previousEventId": 6,
+           "mapIterationSucceededEventDetails": {
+            "name": "MapState",
+            "index": 0
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.770Z",
+           "type": "MapStateSucceeded",
+           "id": 8,
+           "previousEventId": 7
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.770Z",
+           "type": "MapStateExited",
+           "id": 9,
+           "previousEventId": 7,
+           "stateExitedEventDetails": {
+            "name": "MapState",
+            "output": "[0]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.778Z",
+           "type": "PassStateEntered",
+           "id": 10,
+           "previousEventId": 9,
+           "stateEnteredEventDetails": {
+            "name": "NEXT STATE",
+            "input": "[0]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.778Z",
+           "type": "PassStateExited",
+           "id": 11,
+           "previousEventId": 10,
+           "stateExitedEventDetails": {
+            "name": "NEXT STATE",
+            "output": "[0]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T16:48:48.778Z",
+           "type": "ExecutionSucceeded",
+           "id": 12,
+           "previousEventId": 11,
+           "executionSucceededEventDetails": {
+            "output": "[0]"
+           }
+          }
+        ]
+      },
+      {
+        "describe": "should work even if there is only one input",
+        "input": [],
+        "expectedStateMachineStatus": "SUCCEEDED",
+        "expectedOutput": [],
+        "events": [
+          {
+           "timestamp": "2021-01-03T21:17:59.916Z",
+           "type": "ExecutionStarted",
+           "id": 1,
+           "previousEventId": 0,
+           "executionStartedEventDetails": {
+            "input": "[]",
+            "roleArn": "todo"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T21:17:59.939Z",
+           "type": "MapStateEntered",
+           "id": 2,
+           "previousEventId": 0,
+           "stateEnteredEventDetails": {
+            "name": "MapState",
+            "input": "[]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T21:17:59.939Z",
+           "type": "MapStateStarted",
+           "id": 3,
+           "previousEventId": 2,
+           "mapStateStartedEventDetails": {
+            "length": 0
+           }
+          },
+          {
+           "timestamp": "2021-01-03T21:17:59.939Z",
+           "type": "MapStateSucceeded",
+           "id": 4,
+           "previousEventId": 3
+          },
+          {
+           "timestamp": "2021-01-03T21:17:59.939Z",
+           "type": "MapStateExited",
+           "id": 5,
+           "previousEventId": 3,
+           "stateExitedEventDetails": {
+            "name": "MapState",
+            "output": "[]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T21:18:00.039Z",
+           "type": "PassStateEntered",
+           "id": 6,
+           "previousEventId": 5,
+           "stateEnteredEventDetails": {
+            "name": "NEXT STATE",
+            "input": "[]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T21:18:00.039Z",
+           "type": "PassStateExited",
+           "id": 7,
+           "previousEventId": 6,
+           "stateExitedEventDetails": {
+            "name": "NEXT STATE",
+            "output": "[]"
+           }
+          },
+          {
+           "timestamp": "2021-01-03T21:18:00.039Z",
+           "type": "ExecutionSucceeded",
+           "id": 8,
+           "previousEventId": 7,
+           "executionSucceededEventDetails": {
+            "output": "[]"
+           }
+          }
+        ]
+      }
+    ],
+    "definition": {
+      "StartAt": "MapState",
+      "States": {
+        "MapState": {
+          "Type": "Map",
+          "MaxConcurrency": 2,
+          "Iterator": {
+            "StartAt": "Wait State",
+            "States": {
+              "Wait State": {
+                "Type": "Wait",
+                "SecondsPath": "$",
+                "End": true
+              }
+            }
+          },
+          "Next": "NEXT STATE"
+        },
+        "NEXT STATE": {
+          "Type": "Pass",
+          "End": true
+        }
+      }
+    }
+}
+
